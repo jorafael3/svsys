@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react'
 import axios from 'axios';
 import $ from 'jquery';
+import BarcodeReader from '../../../components/BarcodeReader';
 
 function Usuarios() {
     useEffect(() => {
@@ -27,7 +28,10 @@ function Usuarios() {
         });
     }, []);
     return (
-        <h1>HOLA</h1>
+        <div className="App">
+            <h1>Aplicación de Lectura de Códigos de Barras</h1>
+            <BarcodeReader />
+        </div>
     )
 }
 
