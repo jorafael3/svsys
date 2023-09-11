@@ -138,9 +138,11 @@ function Administrar() {
                             </div>
                         </div>
                         <div className='col-12 mt-5'>
-                            <table id='AD_TABLA_DATOS' className='table table-striped'>
+                            <div className='table-responsive'>
+                                <table id='AD_TABLA_DATOS' className='table table-striped'>
 
-                            </table>
+                                </table>
+                            </div>
                         </div>
 
                         <CModal size="lg" id='AD_MODAL_DETALLES' backdrop="static" visible={visible} onClose={() => setVisible(false)}>
