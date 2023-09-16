@@ -24,27 +24,39 @@ function Usuarios() {
     }, []);
 
     function Cargar_Usuarios() {
-        let url = 'http://10.5.0.238:8080/svsysback/usuarios/Cargar_Usuarios'
+        // let url = 'http://10.5.0.238:8080/svsysback/usuarios/Cargar_Usuarios'
 
-        let param = {
-            data1: "hola",
-            data2: "asdasd"
-        }
-        $.ajax({
-            url: url,
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                param
-            },
-            success: function (data) {
-                console.log('Data:', data);
-                Tabla_usuarios(data)
-            },
-            error: function (error) {
-                console.error('Error:', error);
+        // let param = {
+        //     data1: "hola",
+        //     data2: "asdasd"
+        // }
+        // $.ajax({
+        //     url: url,
+        //     method: 'POST',
+        //     dataType: 'json',
+        //     data: {
+        //         param
+        //     },
+        //     success: function (data) {
+        //         console.log('Data:', data);
+        //         Tabla_usuarios(data)
+        //     },
+        //     error: function (error) {
+        //         console.error('Error:', error);
+        //     }
+        // });
+        let x = [
+            {
+                "Usuario_ID": "1",
+                "Usuario": "JALVARADO",
+                "Nombre": "Jorge",
+                "password": "12345",
+                "fecha_creado": "2023-09-14 16:38:17",
+                "Estado": "1",
+                "email": null
             }
-        });
+        ];
+        Tabla_usuarios(x)
     }
 
     function Tabla_usuarios(datos) {
@@ -55,17 +67,18 @@ function Usuarios() {
             dom: 'Brtip',
             buttons: [
                 {
-                    text: `<span className"fw-bold"><i className="bi bi-save"></i></span>`,
+                    text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise"></i></span>`,
                     className: 'btn btn-info',
                     action: function (e, dt, node, config) {
-                        // Guardar_Orden();
+                        Cargar_Usuarios();
                     },
                 },
-                {
-                    extend: 'excel',
-                    text: '<i className="fa fa-file-excel"></i> Excel',
-                    className: 'btn btn-primary',
-                }],
+                // {
+                //     extend: 'excel',
+                //     text: '<i className="fa fa-file-excel"></i> Excel',
+                //     className: 'btn btn-primary',
+                // }
+            ],
             columns: [{
                 data: "Usuario",
                 title: "Usuario",
