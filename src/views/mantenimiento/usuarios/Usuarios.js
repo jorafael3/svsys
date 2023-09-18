@@ -4,14 +4,55 @@ import {
     CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter
 } from '@coreui/react'
 import axios from 'axios';
-import $ from 'jquery';
+import $, { param } from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/jquery.dataTables.css';
 import 'datatables.net-buttons';
 import 'datatables.net-buttons/js/buttons.html5.min.js';
 import 'datatables.net-buttons/js/buttons.print.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import BarcodeReader from '../../../components/BarcodeReader';
+// import BarcodeReader from '../../../components/BarcodeReader';
+import * as ajax from "../../../config/config";
+import CheckboxTree from 'react-checkbox-tree';
+import 'react-checkbox-tree/lib/react-checkbox-tree.css';
+var nodes = [];
+var CHECKEDS;
+var MENUS_ACTIVOS = []
+var MENUS_EXPANDIDOS = []
+
+class Tree extends React.Component {
+    state = {
+        checked: MENUS_ACTIVOS,
+        expanded: MENUS_EXPANDIDOS
+    };
+    onCheck = checked => {
+        console.log(nodes);
+        CHECKEDS = checked;
+        this.setState({ checked });
+    };
+    onExpand = expanded => {
+        this.setState({ expanded });
+    };
+    onClick = checked => {
+        console.log('onClick: ', checked);
+
+    };
+    render() {
+        const { checked, expanded } = this.state;
+        CHECKEDS = this.state.checked
+        console.log('this.state: ', this.state.checked);
+        return (
+            <CheckboxTree
+                nodes={nodes}
+                checked={checked}
+                expanded={expanded}
+                iconsClass="fa5"
+                onCheck={this.onCheck}
+                onExpand={this.onExpand}
+            />
+        );
+    }
+}
 
 function Usuarios() {
     const [visible, setVisible] = useState(false);
@@ -19,48 +60,30 @@ function Usuarios() {
     const [visible_a, setVisible_a] = useState(false);
     const [nombreCliente, setNombreCliente] = useState('');
     const [fecha, setFecha] = useState('');
+    const [checked, setChecked] = useState([]);
+    const [expanded, setExpanded] = useState([]);
     useEffect(() => {
         Cargar_Usuarios();
     }, []);
 
     function Cargar_Usuarios() {
-        let url = 'http://127.0.0.1:8080/svsysback/usuarios/Cargar_Usuarios'
-
+        let url = 'usuarios/Cargar_Usuarios';
         let param = {
             data1: "hola",
             data2: "asdasd"
         }
-        $.ajax({
-            url: url,
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                param
-            },
-            success: function (data) {
-               // console.log('Data:', data);
-                Tabla_usuarios(data)
-            },
-            error: function (error) {
-                console.error('Error:', error);
-            }
+        ajax.AjaxSendReceiveData(url, param, function (res) {
+            console.log('res: ', res);
+            Tabla_usuarios(res);
         });
-        // let x = [
-        //     {
-        //         "Usuario_ID": "1",
-        //         "Usuario": "JALVARADO",
-        //         "Nombre": "Jorge",
-        //         "password": "12345",
-        //         "fecha_creado": "2023-09-14 16:38:17",
-        //         "Estado": "1",
-        //         "email": null
-        //     }
-        // ];
-        // Tabla_usuarios(x)
     }
 
     function Tabla_usuarios(datos) {
         $('#US_TABLA_USUARIOS').empty();
+        if ($.fn.dataTable.isDataTable('#US_TABLA_USUARIOS')) {
+            $('#US_TABLA_USUARIOS').DataTable().destroy();
+            $('#US_TABLA_USUARIOS').empty();
+        }
         let TABLA_ = $('#US_TABLA_USUARIOS').DataTable({
             destroy: true,
             data: datos,
@@ -136,7 +159,6 @@ function Usuarios() {
                 $('td', row).eq(4).addClass("fw-bold fs-6");
             },
         });
-
         setTimeout(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
         }, 500);
@@ -150,16 +172,60 @@ function Usuarios() {
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_accesos', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
-            setVisible(false)
-            setVisible_a(true)
+
+            let url = 'usuarios/Consultar_Accesos';
+            let param = {
+                USUARIO_ID: data["Usuario_ID"],
+            }
+            ajax.AjaxSendReceiveData(url, param, function (x) {
+                console.log('x: ', x);
+                //nodes = x[0];
+                setVisible(false)
+                setVisible_a(true)
+                nodes = [
+                    {
+                        value: 'aaa',
+                        label: "Mars",
+                        // checked:true
+                    },
+                    {
+                        value: 'mars',
+                        label: "Mars",
+                        children: [
+                            { value: '1', label: "Phobos" },
+                            { value: '2', label: "Deimos" },
+                        ],
+                    },
+                    {
+                        value: 'tierra',
+                        label: "Earth",
+                        children: [
+                            {
+                                value: 'USA',
+                                label: "USA",
+                                children: [
+                                    { value: 'newyork', label: "New York" },
+                                    { value: 'sanfran', label: "San Francisco" },
+                                ],
+                            },
+                            { value: 'China', label: "China" },
+                        ],
+                    }
+                ]
+
+            })
+
             // setNombreCliente(data["CLIENTE"]);
             // setFecha(data["FECHA_ENTREGA"]);
         })
     }
 
-    function Nuevo_usuario(){
+    function Nuevo_usuario() {
         console.log("asdasd");
         setVisible_n(true);
+    }
+    function PROBAR() {
+        console.log('CHECKEDS: ', CHECKEDS);
     }
     return (
         <CRow>
@@ -179,6 +245,7 @@ function Usuarios() {
                                 </table>
                             </div>
                         </div>
+
                     </CCardBody>
                 </CCard>
             </CCol>
@@ -243,7 +310,7 @@ function Usuarios() {
                     <div id="kt_modal_new_target_form" className="form fv-plugins-bootstrap5 fv-plugins-framework" action="#">
                         <div className="mb-13 text-center">
                             <h1 className="mb-3">Nuevo Usuario</h1>
-                            
+
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -296,6 +363,9 @@ function Usuarios() {
                             <h1 className="mb-3">Accesos Usuario</h1>
                         </div>
                     </div>
+                    <Tree>
+                    </Tree>
+                    <button onClick={PROBAR}>oll</button>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setVisible_a(false)}>

@@ -2,13 +2,14 @@ import React from 'react'
 import $ from 'jquery';
 
 
-const URL = "http://127.0.0.1:8080/svsysback/"
+const host = window.location.hostname;
+const protocol = window.location.protocol;
+const port = ":8080";
 
-
+const URL = protocol + "//" + host + port + "/svsysback/"
+console.log('URL: ', URL);
 
 function AjaxSendReceiveData(url, param, callback) {
-
-
     $.ajax({
         url: URL + url,
         method: 'POST',
@@ -18,7 +19,6 @@ function AjaxSendReceiveData(url, param, callback) {
         },
         success: function (data) {
             callback(data)
-            //Tabla_usuarios(data)
         },
         error: function (error) {
             console.error('Error:', error);

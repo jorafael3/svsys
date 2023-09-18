@@ -21,7 +21,7 @@ function Accesos_vista() {
   return new Promise((resolve, reject) => {
     let url = 'menu/Cargar_Menu'
     ajax.AjaxSendReceiveData(url, "", function (res) {
-      console.log('x: ', res);
+      
       let Menu = [];
 
       res.map(function (x) {
@@ -63,7 +63,6 @@ function Accesos_vista() {
               return b;
             }
           })
-          console.log('menu_filter: ', menu_filter);
           b.items = items
           Menu.push(b)
 
@@ -134,12 +133,12 @@ var routes = [];
 
 Accesos_vista()
   .then((Menu) => {
-    console.log('Menu: ', Menu);
+    
     // Populate the routes array with the Menu data
     routes.push(...Menu);
   })
   .catch((error) => {
-    console.error('Error:', error);
+    
   });
 
 export default routes
