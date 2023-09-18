@@ -14,54 +14,132 @@ import {
   cilStar,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import * as ajax from "../src/config/config"
 
-const _nav = [
-  {
-    component: CNavItem,
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
-  },
-  {
-    component: CNavTitle,
-    name: 'App',
-  },
-  {
-    component: CNavGroup,
-    name: 'Despacho',
-    to: '/despacho',
-    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Guias',
-        to: '/despacho/guias',
-      },
-      {
-        component: CNavItem,
-        name: 'Administrar',
-        to: '/despacho/administrar',
-      },
+function Accesos_vista() {
 
-    ],
-  },
-  {
-    component: CNavGroup,
-    name: 'Mantenimiento',
-    to: '/mantenimiento',
-    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Usuarios',
-        to: '/mantenimiento/Usuarios',
-      },
-    ]
-  }
-]
+  return new Promise((resolve, reject) => {
+    let url = 'menu/Cargar_Menu'
+    ajax.AjaxSendReceiveData(url, "", function (res) {
+      console.log('x: ', res);
+      let Menu = [];
 
-export default _nav
+      res.map(function (x) {
+        let component;
+        let name;
+        let to;
+        let sub = [];
+        if (x.Ismenu == 1) {
+          component = CNavItem;
+          name = x.Nombre;
+          to = "/" + x.ruta;
+          let b = {
+            component: component,
+            name: name,
+            to: to,
+            icon: <CIcon icon={(cilSpeedometer)} customClassName="nav-icon" />,
+          }
+          Menu.push(b)
+        } else if (x.Ismenu_Drop == 1) {
+          component = CNavGroup;
+          name = x.Nombre;
+          to = "/" + x.ruta;
+          let b = {
+            component: component,
+            name: name,
+            to: to,
+            icon: <CIcon icon={(cilSpeedometer)} customClassName="nav-icon" />,
+            // items: sub
+          }
+          let items = [];
+          let menu_filter = res.filter(function (f) {
+            if (f.IsSubmenu == 1 && f.menu_ID == x.menu_ID) {
+              let b = {
+                component: CNavItem,
+                name: f.sub_nombre,
+                to: "/" + f.sub_ruta,
+              }
+              items.push(b);
+              return b;
+            }
+          })
+          console.log('menu_filter: ', menu_filter);
+          b.items = items
+          Menu.push(b)
+
+          // items = items;
+
+        }
+        // else if (x.IsSubmenu == 1) {
+
+        // }
+
+      });
+      resolve(Menu); // Resolve the promise with the Menu data
+    });
+  });
+
+  // const _nav = [
+  //   {
+  //     component: CNavItem,
+  //     name: 'Dashboard',
+  //     to: '/dashboard',
+  //     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  //     // badge: {
+  //     //   color: 'info',
+  //     //   text: 'NEW',
+  //     // },
+  //   },
+  //   {
+  //     component: CNavTitle,
+  //     name: 'App',
+  //   },
+  //   {
+  //     component: CNavGroup,
+  //     name: 'Despacho',
+  //     to: '/despacho',
+  //     icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+  //     items: [
+  //       {
+  //         component: CNavItem,
+  //         name: 'Guias',
+  //         to: '/despacho/guias',
+  //         icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  //       },
+  //       {
+  //         component: CNavItem,
+  //         name: 'Administrar',
+  //         to: '/despacho/administrar',
+  //       },
+
+  //     ],
+  //   },
+  //   {
+  //     component: CNavGroup,
+  //     name: 'Mantenimiento',
+  //     to: '/mantenimiento',
+  //     icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+  //     items: [
+  //       {
+  //         component: CNavItem,
+  //         name: 'Usuarios',
+  //         to: '/mantenimiento/Usuarios',
+  //       },
+  //     ]
+  //   }
+  // ];
+}
+// Accesos_vista()
+var routes = [];
+
+Accesos_vista()
+  .then((Menu) => {
+    console.log('Menu: ', Menu);
+    // Populate the routes array with the Menu data
+    routes.push(...Menu);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+export default routes

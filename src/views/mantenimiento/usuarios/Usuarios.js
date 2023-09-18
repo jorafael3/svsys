@@ -24,39 +24,39 @@ function Usuarios() {
     }, []);
 
     function Cargar_Usuarios() {
-        // let url = 'http://10.5.0.238:8080/svsysback/usuarios/Cargar_Usuarios'
+        let url = 'http://127.0.0.1:8080/svsysback/usuarios/Cargar_Usuarios'
 
-        // let param = {
-        //     data1: "hola",
-        //     data2: "asdasd"
-        // }
-        // $.ajax({
-        //     url: url,
-        //     method: 'POST',
-        //     dataType: 'json',
-        //     data: {
-        //         param
-        //     },
-        //     success: function (data) {
-        //         console.log('Data:', data);
-        //         Tabla_usuarios(data)
-        //     },
-        //     error: function (error) {
-        //         console.error('Error:', error);
-        //     }
-        // });
-        let x = [
-            {
-                "Usuario_ID": "1",
-                "Usuario": "JALVARADO",
-                "Nombre": "Jorge",
-                "password": "12345",
-                "fecha_creado": "2023-09-14 16:38:17",
-                "Estado": "1",
-                "email": null
+        let param = {
+            data1: "hola",
+            data2: "asdasd"
+        }
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                param
+            },
+            success: function (data) {
+               // console.log('Data:', data);
+                Tabla_usuarios(data)
+            },
+            error: function (error) {
+                console.error('Error:', error);
             }
-        ];
-        Tabla_usuarios(x)
+        });
+        // let x = [
+        //     {
+        //         "Usuario_ID": "1",
+        //         "Usuario": "JALVARADO",
+        //         "Nombre": "Jorge",
+        //         "password": "12345",
+        //         "fecha_creado": "2023-09-14 16:38:17",
+        //         "Estado": "1",
+        //         "email": null
+        //     }
+        // ];
+        // Tabla_usuarios(x)
     }
 
     function Tabla_usuarios(datos) {
