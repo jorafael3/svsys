@@ -5,6 +5,7 @@ const dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const guias = React.lazy(() => import('./views/despacho/guias/Guias'))
 const administracion = React.lazy(() => import('./views/despacho/administrar/Administrar'))
 const usuarios = React.lazy(() => import(`./views/mantenimiento/usuarios/Usuarios`))
+const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 function Accesos() {
@@ -52,6 +53,7 @@ var routes = [];
 
 Accesos()
   .then((Menu) => {
+    console.log('Menu: ', Menu);
     // Populate the routes array with the Menu data
     routes.push(...Menu);
   })
