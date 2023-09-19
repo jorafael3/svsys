@@ -15,6 +15,10 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import * as ajax from "../../../config/config";
 import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
+import Swal from 'sweetalert2';
+
+
+
 var nodes = [];
 var CHECKEDS;
 var MENUS_ACTIVOS = []
@@ -26,40 +30,56 @@ class Tree extends React.Component {
         expanded: MENUS_EXPANDIDOS
     };
     onCheck = checked => {
-        console.log(nodes);
+        console.log(checked);
         CHECKEDS = checked;
         this.setState({ checked });
     };
     onExpand = expanded => {
         this.setState({ expanded });
     };
-    onClick = checked => {
-        console.log('onClick: ', checked);
-
-    };
     render() {
         const { checked, expanded } = this.state;
         CHECKEDS = this.state.checked
-        console.log('this.state: ', this.state.checked);
+        // console.log('this.state: ', this.state.checked);
         return (
             <CheckboxTree
                 nodes={nodes}
                 checked={checked}
                 expanded={expanded}
-                iconsClass="fa5"
+                icons={{
+                    check: <span className="rct-icon rct-icon-check" />,
+                    uncheck: <span className="rct-icon rct-icon-uncheck" />,
+                    halfCheck: <span className="rct-icon rct-icon-half-check" />,
+                    expandClose: <span className="rct-icon rct-icon-expand-close" />,
+                    expandOpen: <span className="rct-icon rct-icon-expand-open" />,
+                    expandAll: <span className="rct-icon rct-icon-expand-all" />,
+                    collapseAll: <span className="rct-icon rct-icon-collapse-all" />,
+                    parentClose: <span className="rct-icon rct-icon-parent-close" />,
+                    parentOpen: <span className="rct-icon rct-icon-parent-open" />,
+                    leaf: <span className="rct-icon rct-icon-leaf" />,
+                }}
                 onCheck={this.onCheck}
                 onExpand={this.onExpand}
             />
         );
     }
 }
+function Mensaje(t1, t2, icon) {
+    Swal.fire({
+        title: t1,
+        text: t2,
+        icon: icon,
+        // iconUrl: 'ruta/a/mi/icono.png'
+    });
+}
+
 
 function Usuarios() {
     const [visible, setVisible] = useState(false);
     const [visible_n, setVisible_n] = useState(false);
     const [visible_a, setVisible_a] = useState(false);
-    const [nombreCliente, setNombreCliente] = useState('');
-    const [fecha, setFecha] = useState('');
+    const [Nombre_usuario, setNombre_usuario] = useState('');
+    const [usuario_id, setusuario_id] = useState('');
     const [checked, setChecked] = useState([]);
     const [expanded, setExpanded] = useState([]);
     useEffect(() => {
@@ -177,44 +197,46 @@ function Usuarios() {
             let param = {
                 USUARIO_ID: data["Usuario_ID"],
             }
+            setusuario_id(data["Usuario_ID"]);
             ajax.AjaxSendReceiveData(url, param, function (x) {
                 console.log('x: ', x);
-                //nodes = x[0];
+                nodes = x[0][0];
+                MENUS_EXPANDIDOS = x[0][1]
+                MENUS_ACTIVOS = x[0][2]
                 setVisible(false)
                 setVisible_a(true)
-                nodes = [
-                    {
-                        value: 'aaa',
-                        label: "Mars",
-                        // checked:true
-                    },
-                    {
-                        value: 'mars',
-                        label: "Mars",
-                        children: [
-                            { value: '1', label: "Phobos" },
-                            { value: '2', label: "Deimos" },
-                        ],
-                    },
-                    {
-                        value: 'tierra',
-                        label: "Earth",
-                        children: [
-                            {
-                                value: 'USA',
-                                label: "USA",
-                                children: [
-                                    { value: 'newyork', label: "New York" },
-                                    { value: 'sanfran', label: "San Francisco" },
-                                ],
-                            },
-                            { value: 'China', label: "China" },
-                        ],
-                    }
-                ]
-
+                // nodes = [
+                //     {
+                //         value: 'aaa',
+                //         label: "Mars",
+                //         // checked:true
+                //     },
+                //     {
+                //         value: 'mars',
+                //         label: "Mars",
+                //         children: [
+                //             { value: '1', label: "Phobos" },
+                //             { value: '2', label: "Deimos" },
+                //         ],
+                //     },
+                //     {
+                //         value: 'tierra',
+                //         label: "Earth",
+                //         children: [
+                //             {
+                //                 value: 'USA',
+                //                 label: "USA",
+                //                 children: [
+                //                     { value: 'newyork', label: "New York" },
+                //                     { value: 'sanfran', label: "San Francisco" },
+                //                 ],
+                //             },
+                //             { value: 'China', label: "China" },
+                //         ],
+                //     }
+                // ]
+                setNombre_usuario(data["Usuario"])
             })
-
             // setNombreCliente(data["CLIENTE"]);
             // setFecha(data["FECHA_ENTREGA"]);
         })
@@ -224,9 +246,55 @@ function Usuarios() {
         console.log("asdasd");
         setVisible_n(true);
     }
-    function PROBAR() {
-        console.log('CHECKEDS: ', CHECKEDS);
+
+    function Borrar_Accesos() {
+        Swal.fire({
+            title: 'Estas seguro?',
+            text: "Se eliminaran todos los accesos a este usuario!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, Borrar!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let param = {
+                    ACCESOS: 0,
+                    USUARIO_ID: usuario_id
+                }
+                console.log('param: ', param);
+                let url = 'usuarios/Guardar_Accesos';
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+                    console.log('x: ', x);
+                    if (x == true) {
+                        Mensaje("Accesos Borrados", "para ver los cambios solicitar refrescar la pagina", "success");
+                    } else {
+                        Mensaje("Error al guardar", "", "error");
+                    }
+                })
+            }
+        })
+
     }
+
+    function Guardar_Accesos() {
+        let param = {
+            ACCESOS: CHECKEDS.length == 0 ? 0 : CHECKEDS,
+            USUARIO_ID: usuario_id
+        }
+        console.log('param: ', param);
+        let url = 'usuarios/Guardar_Accesos';
+
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+            console.log('x: ', x);
+            if (x == true) {
+                Mensaje("Accesos guardados", "para ver los cambios solicitar refrescar la pagina", "success");
+            } else {
+                Mensaje("Error al guardar", "", "error");
+            }
+        })
+    }
+
     return (
         <CRow>
             <CCol xs={12}>
@@ -350,7 +418,7 @@ function Usuarios() {
                     <CButton color="secondary" onClick={() => setVisible_n(false)}>
                         Cerrar
                     </CButton>
-                    <CButton color="primary">Guardar Cambios</CButton>
+                    <CButton color="primary" >Guardar Cambios</CButton>
                 </CModalFooter>
             </CModal>
             <CModal size="lg" id='AD_MODAL_ACCESOS' backdrop="static" visible={visible_a} onClose={() => setVisible_a(false)}>
@@ -363,15 +431,25 @@ function Usuarios() {
                             <h1 className="mb-3">Accesos Usuario</h1>
                         </div>
                     </div>
-                    <Tree>
-                    </Tree>
-                    <button onClick={PROBAR}>oll</button>
+                    <div className='row p-2'>
+                        <div className='col-6'>
+                            <h3>Usuario</h3>
+                            <h4 className='text-muted mt-3 mb-3'>{Nombre_usuario}</h4>
+
+                        </div>
+                        <div className='col-6'>
+                            <Tree>
+                            </Tree>
+                        </div>
+                    </div>
+
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setVisible_a(false)}>
+                    <CButton color="danger" className='text-light fs-5 fw-bold' onClick={Borrar_Accesos}>Borrar todos los accesos <i className="bi bi-trash-fill"></i></CButton>
+                    <CButton color="primary" className='text-light fs-5 fw-bold' onClick={Guardar_Accesos}>Guardar Cambios <i className="bi bi-box-arrow-down"></i></CButton>
+                    <CButton color="info" className='text-light fs-5 fw-bold' onClick={() => setVisible_a(false)}>
                         Cerrar
                     </CButton>
-                    <CButton color="primary">Guardar Cambios</CButton>
                 </CModalFooter>
             </CModal>
         </CRow>
