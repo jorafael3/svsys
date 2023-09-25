@@ -10,11 +10,16 @@ import 'datatables.net-buttons/js/buttons.print.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import axios from 'axios';
 import Quagga from 'quagga';
+import * as ajax from "../../../config/config";
 
 // import 'datatables.net-buttons/css/buttons.dataTables.min.css';
 
 import * as funciones from '../../../funciones/Despacho/guias/guias';
 import { json } from 'react-router-dom';
+
+var URL_MODEL = "despacho/"
+
+
 
 function Guia() {
     const [data, setData] = useState([]);
@@ -22,6 +27,7 @@ function Guia() {
     const [parametro1, setParametro1] = useState('valor1');
     const [parametro2, setParametro2] = useState('valor2');
     var N_PEDIDO;
+
     function Mensaje(t1, t2, icon) {
         Swal.fire({
             title: t1,
@@ -32,33 +38,47 @@ function Guia() {
     }
 
     function Generar_Guia() {
+        let numero_pedido = $("#DES_GUI_NUMERO_PEDIDO").val()
+        console.log('numero_pedido: ', numero_pedido);
 
-        let Datos = funciones.Datos_Guias();
-        if (Datos.length > 0) {
-            let CABECERA = Datos[0];
-            console.log('CABECERA: ', CABECERA);
-            let DETALLE = Datos[0]["DETALLE"];
-            console.log('DETALLE: ', DETALLE);
-            $("#ORDEN").text(CABECERA["ORDEN"]);
-            $("#CLIENTE").text(CABECERA["CLIENTE"]);
-            $("#RUC").text(CABECERA["RUC"]);
-            $("#SOLICITANTE").text(CABECERA["SOILICTANTE"]);
-            $("#DIRECCION_1").text(CABECERA["DIRECCION_1"]);
-            $("#FECHA_EMISION").text(CABECERA["FECHA_EMISION"]);
-            $("#FACTURA").text(CABECERA["FACTURA"]);
-            $("#TELEFONO").text(CABECERA["TELEFONO"]);
-            $("#FECHA_VALIDEZ").text(CABECERA["FECHA_VALIDEZ"]);
-            $("#PTO_DE_PARTIDA").text(CABECERA["PARTIDA"]);
-            $("#PTO_DE_LLEGADA").text(CABECERA["LLEGADA"]);
-            $("#DIRECCION_2").text(CABECERA["DIRECCION_2"]);
-            $("#TIPO_DE_ENTREGA").text(CABECERA["TIPO_ENTREGA"]);
-            $("#PEDIDO_INTERNO").text(CABECERA["PEDIDO_INTERNO"]);
-            $("#PED_COMPRA").text(CABECERA["PEDIDO_COMPRA"]);
-            N_PEDIDO = CABECERA["PEDIDO_INTERNO"];
-            Tabla_Detalle(DETALLE)
-            $("#SECC_DATOS").removeClass("d-none");
+        let param = {
+            PEDIDO_INTERNO: numero_pedido
+        }
+        let url = URL_MODEL + "Cargar_Guia"
+
+        if (numero_pedido.trim() == "") {
+            Mensaje("Debe ingresar un numero de pedido", "", "error");
         } else {
-            Mensaje("No hay datos para mostrar", "", "error");
+            ajax.AjaxSendReceiveData(url, param, function (x) {
+                console.log('x: ', x);
+                let CABECERA = x[0][0];
+                let DETALLE = x[1];
+                if (CABECERA.length == 0) {
+                    Mensaje("No se encuentran datos", "verifique que el numero este correcto", "error");
+                } else {
+                    $("#ORDEN").text(CABECERA["ORDEN"]);
+                    $("#CLIENTE").text(CABECERA["CLIENTE"]);
+                    $("#RUC").text(CABECERA["CLIENTE_RUC"]);
+                    $("#SOLICITANTE").text(CABECERA["SOLICITANTE"]);
+                    $("#DIRECCION_1").text(CABECERA["DIRECCION_1"]);
+
+                    $("#FECHA_EMISION").text(CABECERA["FECHA_DE_EMISION"]);
+                    $("#FACTURA").text(CABECERA["FACTURA"]);
+                    $("#TELEFONO").text(CABECERA["TELEFONO"]);
+                    $("#FECHA_VALIDEZ").text(CABECERA["FECHA_VALIDEZ"]);
+
+                    $("#PTO_DE_PARTIDA").text(CABECERA["PTO_DE_PARTIDA"]);
+                    $("#PTO_DE_LLEGADA").text(CABECERA["PTO_DE_LLEGADA"]);
+                    $("#DIRECCION_2").text(CABECERA["DIRECCION_2"]);
+
+                    $("#TIPO_DE_ENTREGA").text(CABECERA["TIPO_DE_ENTREGA"]);
+                    $("#PEDIDO_INTERNO").text(CABECERA["PEDIDO_INTERNO"]);
+                    $("#PED_COMPRA").text(CABECERA["PED_COMPRA"]);
+                    $("#SECC_DATOS").removeClass("d-none");
+                    // N_PEDIDO = CABECERA["PEDIDO_INTERNO"];
+                    Tabla_Detalle(DETALLE)
+                }
+            });
         }
     }
 
@@ -94,8 +114,8 @@ function Guia() {
                 data: "UNIDAD",
                 title: "UNIDAD"
             }, {
-                data: "CANTIDAD",
-                title: "CANTIDAD"
+                data: "POR_DESPACHAR",
+                title: "POR DESPACHAR"
             }, {
                 data: "DESPACHADA",
                 title: "DESPACHADA"
@@ -169,8 +189,6 @@ function Guia() {
 
     }
 
-  
-
     useEffect(() => {
         // Coloca aquí la lógica que deseas ejecutar cuando la página se carga
         let CLIENTES = funciones.Clientes();
@@ -184,7 +202,7 @@ function Guia() {
 
 
     }, []);
-   
+
     return (
         <CRow>
             <CCol xs={12}>
@@ -193,6 +211,7 @@ function Guia() {
                         <strong>Ingresar Guia</strong>
                     </CCardHeader>
                     <CCardBody>
+                        <input id='DES_GUI_NUMERO_PEDIDO' className='form-control' type="text" />
                         <CButton color="primary" onClick={Generar_Guia}>Generar Guia</CButton>
                         <div id='SECC_DATOS' className='d-none'>
                             <div className='row p-3'>

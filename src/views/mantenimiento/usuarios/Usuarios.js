@@ -64,6 +64,7 @@ class Tree extends React.Component {
         );
     }
 }
+
 function Mensaje(t1, t2, icon) {
     Swal.fire({
         title: t1,

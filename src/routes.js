@@ -6,6 +6,7 @@ const guias = React.lazy(() => import('./views/despacho/guias/Guias'))
 const administracion = React.lazy(() => import('./views/despacho/administrar/Administrar'))
 const usuarios = React.lazy(() => import(`./views/mantenimiento/usuarios/Usuarios`))
 const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
+const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Clientes'))
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 function Accesos() {
