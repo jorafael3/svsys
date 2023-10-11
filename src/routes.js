@@ -13,6 +13,7 @@ function Accesos() {
   return new Promise((resolve, reject) => {
     let url = 'menu/Cargar_Menu'
     ajax.AjaxSendReceiveData(url, "", function (x) {
+      console.log('x: ', x);
       let Menu = [];
 
       x.map(function (x) {
@@ -54,7 +55,7 @@ var routes = [];
 
 Accesos()
   .then((Menu) => {
-    console.log('Menu: ', Menu);
+    console.log('Menusss: ', Menu);
     // Populate the routes array with the Menu data
     routes.push(...Menu);
   })
