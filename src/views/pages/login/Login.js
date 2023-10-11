@@ -17,10 +17,23 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { useNavigate, Route, Routes } from 'react-router-dom'
 import * as funciones from '../../../funciones/login/login';
+import $, { param } from 'jquery';
 
 const Login = () => {
   const navigate = useNavigate();
-  
+
+  function INI() {
+    let USUARIO = $("#USUARIO").val();
+    let PASS = $("#PASS").val();
+    console.log('PASS: ', PASS);
+    console.log('USUARIO: ', USUARIO);
+    let param = {
+      USUARIO:USUARIO,
+      PASS:PASS,
+    }
+    funciones.Iniciar_sesion(param);
+  }
+
   return (
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
@@ -36,13 +49,14 @@ const Login = () => {
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput id='USUARIO' placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
                       </CInputGroupText>
                       <CFormInput
+                        id='PASS'
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
@@ -50,7 +64,7 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4" onClick={funciones.Iniciar_sesion}>
+                        <CButton color="primary" className="px-4" onClick={INI}>
                           Login
                         </CButton>
                       </CCol>
