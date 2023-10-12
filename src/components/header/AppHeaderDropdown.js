@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CAvatar,
   CBadge,
@@ -22,40 +22,49 @@ import {
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
-import avatar8 from './../../assets/images/avatars/8.jpg'
+import avatar2 from './../../assets/images/avatars/2.jpg'
 import * as funciones from '../../funciones/login/login';
 
 const AppHeaderDropdown = () => {
-  
+  const [DATOSSESION, setDATOSSESION] = useState([]);
+
+  useEffect(() => {
+    let DATOS_SESION = funciones.GET_DATOS_SESION()
+    console.log('DATOS_SESION: ', DATOS_SESION);
+    
+    setDATOSSESION(DATOS_SESION);
+  }, []);
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>
-        <CAvatar src={avatar8} size="md" />
+        <CAvatar src={avatar2} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        {/* <CDropdownHeader className="bg-light fw-semibold py-2">Account</CDropdownHeader>
-        <CDropdownItem href="#">
-          <CIcon icon={cilBell} className="me-2" />
-          Updates
-          <CBadge color="info" className="ms-2">
+        <CDropdownHeader className="bg-light fw-semibold py-2">Account</CDropdownHeader>
+        <CDropdownItem>
+          <CIcon icon={cilUser} className="me-2" />
+          {DATOSSESION["Usuario"]}
+          {/* <CBadge color="info" className="ms-2">
             42
-          </CBadge>
+          </CBadge> */}
         </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilEnvelopeOpen} className="me-2" />
-          Messages
-          <CBadge color="success" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
+        <CDropdownItem>
           <CIcon icon={cilTask} className="me-2" />
-          Tasks
-          <CBadge color="danger" className="ms-2">
+          {DATOSSESION["departamento"]}
+
+          {/* <CBadge color="success" className="ms-2">
             42
-          </CBadge>
+          </CBadge> */}
         </CDropdownItem>
-        <CDropdownItem href="#">
+        <CDropdownItem>
+          <CIcon icon={cilTask} className="me-2" />
+          {DATOSSESION["sucursal"]}
+
+          {/* <CBadge color="danger" className="ms-2">
+            42
+          </CBadge> */}
+        </CDropdownItem>
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilCommentSquare} className="me-2" />
           Comments
           <CBadge color="warning" className="ms-2">
@@ -88,7 +97,7 @@ const AppHeaderDropdown = () => {
         <CDropdownDivider />
         <CDropdownItem onClick={funciones.LogOut} >
           <CIcon icon={cilLockLocked} className="me-2"
-            />
+          />
           Logout
         </CDropdownItem>
       </CDropdownMenu>

@@ -5,12 +5,20 @@ import Swal from 'sweetalert2';
 
 const host = window.location.hostname;
 const protocol = window.location.protocol;
-const port = ":8080";
+const port = ":80";
 
 const URL = protocol + "//" + host + port + "/svsysback/"
 console.log('URL: ', URL);
 
 function AjaxSendReceiveData(url, param, callback) {
+    let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
+    if (param.length == 0) {
+        param = {
+            TOKEN: token
+        }
+    } else {
+        param.TOKEN = token
+    }
     $.ajax({
         url: URL + url,
         method: 'POST',
