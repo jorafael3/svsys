@@ -116,15 +116,16 @@ function Usuarios() {
     }
 
     function Tabla_usuarios(datos) {
+        let TABLA_;
         $('#US_TABLA_USUARIOS').empty();
         if ($.fn.dataTable.isDataTable('#US_TABLA_USUARIOS')) {
             $('#US_TABLA_USUARIOS').DataTable().destroy();
-            $('#US_TABLA_USUARIOS').empty();
+            // $('#US_TABLA_USUARIOS').empty();
         }
-        let TABLA_ = $('#US_TABLA_USUARIOS').DataTable({
+        TABLA_ = $('#US_TABLA_USUARIOS').DataTable({
             destroy: true,
             data: datos,
-            dom: 'Brtip',
+            dom: 'Bfrtip',
             buttons: [
                 {
                     text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise"></i></span>`,
@@ -148,16 +149,24 @@ function Usuarios() {
                 title: "Nombre"
             },
             {
+                data: "departamento",
+                title: "Departamento"
+            },
+            {
+                data: "sucursal",
+                title: "Sucursal"
+            },
+            {
                 data: "Estado",
                 title: "Estado",
                 render: function (x) {
                     if (x == 1) {
                         x = `
-                        <span className="text-success">Activo</span>
+                        <span class="text-success">Activo</span>
                         `
                     } else if (x == 0) {
                         x = `
-                        <span className="text-danger">Inactivo</span>
+                        <span class="text-danger">Inactivo</span>
                         `
                     }
                     return x;
@@ -173,8 +182,16 @@ function Usuarios() {
             },
             {
                 data: null,
+                title: "Activar",
+                className: "btn_activar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-success text-light"><i class="bi bi-check"></i></button>',
+                orderable: "",
+                width: 20
+            },
+            {
+                data: null,
                 title: "Desactivar",
-                className: "btn_recibir text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                className: "btn_desactivar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
                 defaultContent: '<button type="button" class="btn_recibir btn btn-danger text-light"><i class="bi bi-eraser"></i></button>',
                 orderable: "",
                 width: 20
@@ -183,7 +200,7 @@ function Usuarios() {
                 data: null,
                 title: "Accesos",
                 className: "btn_accesos text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
-                defaultContent: '<button type="button" class="btn_accesos btn btn-success text-light"><i class="bi bi-eraser"></i></button>',
+                defaultContent: '<button type="button" class="btn_accesos btn btn-primary text-light"><i class="bi bi-capslock"></i></button>',
                 orderable: "",
                 width: 20
             }
@@ -194,18 +211,30 @@ function Usuarios() {
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
                 $('td', row).eq(4).addClass("fw-bold fs-6");
+
+                if (data["Estado"] == 1) {
+                    $('td', row).eq(6).removeClass("btn_activar");
+                    $('td', row).eq(6).html("");
+                }
+                if (data["Estado"] == 0) {
+                    $('td', row).eq(7).removeClass("btn_desactivar");
+                    $('td', row).eq(7).html("");
+                    $('td', row).eq(8).removeClass("btn_accesos");
+                    $('td', row).eq(8).html("");
+
+                }
             },
-        });
-        setTimeout(function () {
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
-        }, 500);
+        }).clear().rows.add(datos).draw();
+        // setTimeout(function () {
+        //     $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
+        // }, 500);
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
             setVisible(true)
             // setNombreCliente(data["CLIENTE"]);
             // setFecha(data["FECHA_ENTREGA"]);
-        })
+        });
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_accesos', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
@@ -256,7 +285,19 @@ function Usuarios() {
             })
             // setNombreCliente(data["CLIENTE"]);
             // setFecha(data["FECHA_ENTREGA"]);
-        })
+        });
+        $('#US_TABLA_USUARIOS').on('click', 'td.btn_desactivar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            data.OPERACION = 0
+            ActivarDesact_Usuario(data)
+        });
+        $('#US_TABLA_USUARIOS').on('click', 'td.btn_activar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            data.OPERACION = 1
+            ActivarDesact_Usuario(data)
+        });
     }
 
     function Nuevo_usuario() {
@@ -267,9 +308,54 @@ function Usuarios() {
         let US_PASS = $("#US_PASS").val();
         let US_CONF_PASS = $("#US_CONF_PASS").val();
         console.log('US_USUARIO: ', dept_select);
-        // setVisible_n(true);
+
+
+        if (US_USUARIO == "") {
+            ajax.Mensaje("Debe ingresar un nombre de usuario", "", "error");
+        } else if (US_NOMBRE == "") {
+            ajax.Mensaje("Debe ingresar un nombre", "", "error");
+        } else if (US_PASS == "") {
+            ajax.Mensaje("Debe ingresar una contraseña", "", "error");
+
+        } else if (US_CONF_PASS == "") {
+            ajax.Mensaje("Debe ingresar un confirmacion de contraseña", "", "error");
+        } else if (dept_select == "") {
+            ajax.Mensaje("Debe señleccionar un departamento", "", "error");
+
+        } else if (suc_select == "") {
+            ajax.Mensaje("Debe señleccionar una sucursal", "", "error");
+        } else {
+
+            if (US_PASS == US_CONF_PASS) {
+                let param = {
+                    US_USUARIO: US_USUARIO,
+                    US_NOMBRE: US_NOMBRE,
+                    US_EMAIL: US_EMAIL,
+                    US_PASS: US_PASS,
+                    US_DEPT: dept_select,
+                    US_SUCURSAL: suc_select
+                }
+                console.log('param: ', param);
+                let url = 'usuarios/Nuevo_Usuario';
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+                    console.log('x: ', x);
+                    if (x[0] == 1) {
+                        ajax.Mensaje(x[1], "", "success");
+                        Cargar_Usuarios();
+                        setVisible_n(false)
+                    } else {
+                        ajax.Mensaje(x[1].toString(), "intente en un momento", "success");
+                    }
+
+                });
+            } else {
+                ajax.Mensaje("Las contraseñas no coinciden", "", "error");
+            }
+        }
+        // 
     }
 
+    //*** ACCESOS  ***/
     function Borrar_Accesos() {
         Swal.fire({
             title: 'Estas seguro?',
@@ -317,6 +403,20 @@ function Usuarios() {
             }
         })
     }
+
+    //****** ACTIVAR DESACTIVAR*/
+    function ActivarDesact_Usuario(data) {
+        let url = 'usuarios/ActivarDesact_Usuario'
+        ajax.AjaxSendReceiveData(url, data, function (x) {
+            if (x[0] == 1) {
+                ajax.Mensaje(x[1], "", "success");
+                Cargar_Usuarios();
+            } else {
+                ajax.Mensaje(x[1].toString(), "", "error");
+            }
+        });
+    }
+
 
     return (
         <CRow>

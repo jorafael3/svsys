@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 
 const host = window.location.hostname;
 const protocol = window.location.protocol;
-const port = ":80";
+const port = ":8080";
 
 const URL = protocol + "//" + host + port + "/svsysback/"
 
