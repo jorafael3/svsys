@@ -13,10 +13,11 @@ import 'datatables.net-buttons/js/buttons.print.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 // import BarcodeReader from '../../../components/BarcodeReader';
 import * as ajax from "../../../config/config";
+import * as usu from "../../../funciones/usuarios/usuarios";
 import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import Swal from 'sweetalert2';
-
+import Select from 'react-select'
 
 
 var nodes = [];
@@ -83,8 +84,23 @@ function Usuarios() {
     const [usuario_id, setusuario_id] = useState('');
     const [checked, setChecked] = useState([]);
     const [expanded, setExpanded] = useState([]);
+
+    // NUEVO_USUARIO
+    const [departamentos, setdepartamentos] = useState([]);
+    const [dept_select, setdept_select] = useState("");
+    const [sucursales, setsucursales] = useState([]);
+    const [suc_select, setsuc_select] = useState("");
+
+
     useEffect(() => {
         Cargar_Usuarios();
+        usu.Cargar_Departamentos(function (x) {
+            setdepartamentos(x);
+        });
+        usu.Cargar_Sucursales(function (x) {
+            console.log('x: ', x);
+            setsucursales(x);
+        });
     }, []);
 
     function Cargar_Usuarios() {
@@ -245,7 +261,13 @@ function Usuarios() {
 
     function Nuevo_usuario() {
         console.log("asdasd");
-        setVisible_n(true);
+        let US_USUARIO = $("#US_USUARIO").val();
+        let US_NOMBRE = $("#US_NOMBRE").val();
+        let US_EMAIL = $("#US_EMAIL").val();
+        let US_PASS = $("#US_PASS").val();
+        let US_CONF_PASS = $("#US_CONF_PASS").val();
+        console.log('US_USUARIO: ', dept_select);
+        // setVisible_n(true);
     }
 
     function Borrar_Accesos() {
@@ -303,7 +325,11 @@ function Usuarios() {
                     <CCardHeader>
                         <h3>Usuarios</h3>
                         <div className='card-toolbar'>
-                            <button onClick={() => setVisible_n(true)} className='btn btn-success text-light fw-bold'>Nuevo +</button>
+                            <button onClick={() => {
+                                setVisible_n(true);
+                                setdept_select("");
+                                setsuc_select("");
+                            }} className='btn btn-success text-light fw-bold'>Nuevo +</button>
                         </div>
                     </CCardHeader>
                     <CCardBody>
@@ -371,15 +397,17 @@ function Usuarios() {
                     <CButton color="primary">Guardar Cambios</CButton>
                 </CModalFooter>
             </CModal>
-            <CModal size="lg" id='AD_MODAL_NUEVO' backdrop="static" visible={visible_n} onClose={() => setVisible_n(false)}>
+            <CModal size="lg" id='AD_MODAL_NUEVO' backdrop="static" visible={visible_n} onClose={() => {
+                setVisible_n(false)
+            }
+            }>
                 <CModalHeader>
-                    <CModalTitle>DETALLES</CModalTitle>
+                    <CModalTitle></CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <div id="kt_modal_new_target_form" className="form fv-plugins-bootstrap5 fv-plugins-framework" action="#">
                         <div className="mb-13 text-center">
-                            <h1 className="mb-3">Nuevo Usuario</h1>
-
+                            <h3 className="mb-3">Nuevo Usuario</h3>
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -401,6 +429,23 @@ function Usuarios() {
                         </div>
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
+                                <label className="required fs-6 fw-semibold mb-2">Departamento</label>
+                                <Select options={departamentos}
+                                    onChange={(items) => setdept_select(items.value)}
+                                />
+                                {/* <select id='US_DEPT' className='form-select'>
+
+                                </select> */}
+                            </div>
+                            <div className="col-md-6 fv-row">
+                                <label className="required fs-6 fw-semibold mb-2">Sucursal</label>
+                                <Select options={sucursales}
+                                    onChange={(items) => setsuc_select(items.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="row g-9 mb-8">
+                            <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Contraseña *</label>
                                 <input id='US_PASS' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
 
@@ -408,7 +453,6 @@ function Usuarios() {
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Confirmar contraseña *</label>
                                 <input id='US_CONF_PASS' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
-
                             </div>
                         </div>
 
@@ -419,7 +463,7 @@ function Usuarios() {
                     <CButton color="secondary" onClick={() => setVisible_n(false)}>
                         Cerrar
                     </CButton>
-                    <CButton color="primary" >Guardar Cambios</CButton>
+                    <CButton color="primary" onClick={Nuevo_usuario}>Guardar</CButton>
                 </CModalFooter>
             </CModal>
             <CModal size="lg" id='AD_MODAL_ACCESOS' backdrop="static" visible={visible_a} onClose={() => setVisible_a(false)}>

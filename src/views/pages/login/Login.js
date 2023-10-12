@@ -25,8 +25,8 @@ const Login = () => {
   function INI() {
     let USUARIO = $("#USUARIO").val();
     let PASS = $("#PASS").val();
-    console.log('PASS: ', PASS);
-    console.log('USUARIO: ', USUARIO);
+    
+    
     let param = {
       USUARIO:USUARIO,
       PASS:PASS,

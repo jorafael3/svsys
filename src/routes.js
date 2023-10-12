@@ -13,7 +13,7 @@ function Accesos() {
   return new Promise((resolve, reject) => {
     let url = 'menu/Cargar_Menu'
     ajax.AjaxSendReceiveData(url, "", function (x) {
-      console.log('x: ', x);
+      
       let Menu = [];
 
       x.map(function (x) {
@@ -55,12 +55,12 @@ var routes = [];
 
 Accesos()
   .then((Menu) => {
-    console.log('Menusss: ', Menu);
+    
     // Populate the routes array with the Menu data
     routes.push(...Menu);
   })
   .catch((error) => {
-    console.error('Error:', error);
+    
   });
 
 export default routes
@@ -68,12 +68,12 @@ export default routes
 // async function getMenu() {
 //   try {
 //     const acc = await Acessos();
-//     console.log('acc: ', acc);
+//     
 //   } catch (error) {
-//     console.error('Error:', error);
+//     
 //   }
 // }
-// console.log('getMenu(): ', getMenu());
+// 
 
 // const routes = [
 //   // { path: '/', exact: true, name: 'Home' },

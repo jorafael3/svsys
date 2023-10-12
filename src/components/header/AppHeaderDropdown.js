@@ -30,7 +30,7 @@ const AppHeaderDropdown = () => {
 
   useEffect(() => {
     let DATOS_SESION = funciones.GET_DATOS_SESION()
-    console.log('DATOS_SESION: ', DATOS_SESION);
+    
     
     setDATOSSESION(DATOS_SESION);
   }, []);

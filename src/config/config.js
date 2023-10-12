@@ -8,7 +8,7 @@ const protocol = window.location.protocol;
 const port = ":80";
 
 const URL = protocol + "//" + host + port + "/svsysback/"
-console.log('URL: ', URL);
+
 
 function AjaxSendReceiveData(url, param, callback) {
     let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
@@ -30,7 +30,7 @@ function AjaxSendReceiveData(url, param, callback) {
             callback(data)
         },
         error: function (error) {
-            console.error('Error:', error);
+            
         }
     });
 }
