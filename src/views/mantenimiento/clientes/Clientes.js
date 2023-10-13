@@ -51,22 +51,38 @@ function Clientes() {
     }
 
     function Tabla_Clientes(datos) {
-        let t = $('#CLI_TABLA_CLIENTES');
-        t.empty();
-        if ($.fn.dataTable.isDataTable('#CLI_TABLA_CLIENTES')) {
-            t.DataTable().destroy();
-            t.empty();
+
+        $('#CLI_TABLA_CLIENTES_SECC').empty();
+        if ($.fn.dataTable.isDataTable('#US_TABLA_USUARIOS')) {
+            $('#CLI_TABLA_CLIENTES').DataTable().destroy();
+            $('#CLI_TABLA_CLIENTES_SECC').empty();
         }
-        let TABLA_ = t.DataTable({
+
+        let tabla = `
+        <table id='CLI_TABLA_CLIENTES' class='table display table-striped'>
+        </table>
+        `;
+        $('#CLI_TABLA_CLIENTES_SECC').append(tabla);
+
+        let TABLA_ = $('#CLI_TABLA_CLIENTES').DataTable({
             destroy: true,
             data: datos,
-            dom: 'Brtip',
+            dom: 'Bfrtip',
             buttons: [
                 {
-                    text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise"></i></span>`,
+                    text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise fs-4"></i></span>`,
                     className: 'btn btn-info',
                     action: function (e, dt, node, config) {
                         Cargar_Clientes();
+                    },
+                },
+                {
+                    text: `<span class"fw-bold"><i class="bi bi-person-plus-fill fs-4"></i></span>`,
+                    className: 'btn btn-success',
+                    action: function (e, dt, node, config) {
+                        setVisible_n(true);
+                        // setdept_select("");
+                        // setsuc_select("");
                     },
                 },
                 // {
@@ -88,13 +104,46 @@ function Clientes() {
                 title: "CLIENTE_RAZON_SOCIAL",
             },
             {
+                data: "estado",
+                title: "estado",
+                render: function (x) {
+                    if (x == 1) {
+                        x = `
+                        <span class="text-success">Activo</span>
+                        `
+                    } else if (x == 0) {
+                        x = `
+                        <span class="text-danger">Inactivo</span>
+                        `
+                    }
+                    return x;
+                }
+            },
+            {
                 data: null,
                 title: "Editar",
                 className: "btn_editar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
                 defaultContent: '<button type="button" class="btn_editar btn btn-warning text-light"><i class="bi bi-pencil"></i></button>',
                 orderable: "",
                 width: 20
+            },
+            {
+                data: null,
+                title: "Activar",
+                className: "btn_activar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-success text-light"><i class="bi bi-check"></i></button>',
+                orderable: "",
+                width: 20
+            },
+            {
+                data: null,
+                title: "Desactivar",
+                className: "btn_desactivar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-danger text-light"><i class="bi bi-eraser"></i></button>',
+                orderable: "",
+                width: 20
             }
+
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-6 ");
@@ -102,12 +151,27 @@ function Clientes() {
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
                 $('td', row).eq(4).addClass("fw-bold fs-6");
+
+                if (data["estado"] == 1) {
+                    $('td', row).eq(5).removeClass("btn_activar");
+                    $('td', row).eq(5).html("");
+                }
+                if (data["estado"] == 0) {
+                    $('td', row).eq(4).removeClass("btn_editar");
+                    $('td', row).eq(4).html("");
+                    $('td', row).eq(6).removeClass("btn_desactivar");
+                    $('td', row).eq(6).html("");
+                }
+
+
+                
+
             },
         });
         setTimeout(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
         }, 500);
-        t.on('click', 'td.btn_editar', function (respuesta) {
+        $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
             setVisible_e(true)
@@ -116,7 +180,20 @@ function Clientes() {
             // console.log('CLI_EDI_NOMBRE: ', CLI_EDI_NOMBRE);
             // $("#CLI_EDI_NOMBRE").val(data["CLIENTE_NOMBRE"]);
             // setFecha(data["FECHA_ENTREGA"]);
-        })
+        });
+        $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_activar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            data.OPERACION = 1;
+            ActivarDesact_Cliente(data);
+
+        });
+        $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_desactivar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            data.OPERACION = 0;
+            ActivarDesact_Cliente(data);
+        });
     }
 
     function Cargar_Provincias() {
@@ -177,6 +254,22 @@ function Clientes() {
         }
     }
 
+    //****** ACTIVAR DESACTIVAR*/
+    function ActivarDesact_Cliente(data) {
+        // console.log('data: ', data);
+        let url = 'clientes/ActivarDesact_Cliente'
+        ajax.AjaxSendReceiveData(url, data, function (x) {
+            console.log('x: ', x);
+            if (x[0] == 1) {
+                ajax.Mensaje(x[1], "", "success");
+                Cargar_Clientes();
+            } else {
+                ajax.Mensaje(x[1].toString(), "", "error");
+            }
+        });
+    }
+
+
 
     return (
         <CRow>
@@ -184,13 +277,13 @@ function Clientes() {
                 <CCard className="mb-4">
                     <CCardHeader>
                         <h3>Clientes</h3>
-                        <div className='card-toolbar'>
+                        {/* <div className='card-toolbar'>
                             <button onClick={() => Cargar_Provincias()} className='btn btn-success text-light fw-bold'>Nuevo +</button>
-                        </div>
+                        </div> */}
                     </CCardHeader>
                     <CCardBody>
                         <div className='col-12 mt-5'>
-                            <div className='table-responsive'>
+                            <div className='table-responsive' id='CLI_TABLA_CLIENTES_SECC'>
                                 <table id='CLI_TABLA_CLIENTES' className='table table-striped'>
 
                                 </table>

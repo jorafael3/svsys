@@ -134,7 +134,7 @@ function Usuarios() {
             $('#US_TABLA_USUARIOS_SECC').empty();
         }
         let tabla = `
-        <table id='US_TABLA_USUARIOS' className='table table-striped'>
+        <table id='US_TABLA_USUARIOS' class='table display table-striped'>
         </table>
         `;
         $('#US_TABLA_USUARIOS_SECC').append(tabla);
@@ -242,6 +242,8 @@ function Usuarios() {
                     $('td', row).eq(6).html("");
                 }
                 if (data["Estado"] == 0) {
+                    $('td', row).eq(5).removeClass("btn_editar");
+                    $('td', row).eq(5).html("");
                     $('td', row).eq(7).removeClass("btn_desactivar");
                     $('td', row).eq(7).html("");
                     $('td', row).eq(8).removeClass("btn_accesos");
