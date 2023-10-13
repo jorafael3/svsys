@@ -91,6 +91,16 @@ function Usuarios() {
     const [sucursales, setsucursales] = useState([]);
     const [suc_select, setsuc_select] = useState("");
 
+    //** EDITAR USUARIO */
+    const [US_NOMBRE_ED, setUS_NOMBRE_ED] = useState("");
+    const [US_USUARIO_ED, setUS_USUARIO_ED] = useState("");
+    const [US_USUARIOID_ED, setUS_USUARIOID_ED] = useState("");
+    const [US_EMAIL_ED, setUS_EMAIL_ED] = useState("");
+    const [US_PASS_ED, setUS_PASS_ED] = useState("");
+    const [US_SUCURSAL_ED, setUS_SUCURSAL_ED] = useState("");
+    const [US_DEPARTAMENTO_ED, setUS_DEPARTAMENTO_ED] = useState("");
+    // const [US_NOMBRE_ED, setUS_NOMBRE_ED] = useState("");
+
 
     useEffect(() => {
         Cargar_Usuarios();
@@ -116,22 +126,37 @@ function Usuarios() {
     }
 
     function Tabla_usuarios(datos) {
-        let TABLA_;
+        // console.log('$(}', $('#US_TABLA_USUARIOS'));
+
         $('#US_TABLA_USUARIOS').empty();
         if ($.fn.dataTable.isDataTable('#US_TABLA_USUARIOS')) {
             $('#US_TABLA_USUARIOS').DataTable().destroy();
-            // $('#US_TABLA_USUARIOS').empty();
+            $('#US_TABLA_USUARIOS_SECC').empty();
         }
-        TABLA_ = $('#US_TABLA_USUARIOS').DataTable({
+        let tabla = `
+        <table id='US_TABLA_USUARIOS' className='table table-striped'>
+        </table>
+        `;
+        $('#US_TABLA_USUARIOS_SECC').append(tabla);
+        let TABLA_ = $('#US_TABLA_USUARIOS').DataTable({
             destroy: true,
             data: datos,
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise"></i></span>`,
-                    className: 'btn btn-info',
+                    text: `<span class"fw-bold"><i class="bi bi-arrow-clockwise fs-4"></i></span>`,
+                    className: 'btn btn-success',
                     action: function (e, dt, node, config) {
                         Cargar_Usuarios();
+                    },
+                },
+                {
+                    text: `<span class"fw-bold"><i class="bi bi-person-plus-fill fs-4"></i></span>`,
+                    className: 'btn btn-success',
+                    action: function (e, dt, node, config) {
+                        setVisible_n(true);
+                        setdept_select("");
+                        setsuc_select("");
                     },
                 },
                 // {
@@ -206,11 +231,11 @@ function Usuarios() {
             }
             ],
             "createdRow": function (row, data, index) {
-                $('td', row).eq(0).addClass("fw-bold fs-6 ");
-                $('td', row).eq(1).addClass("fw-bold fs-6 ");
-                $('td', row).eq(2).addClass("fw-bold fs-6 ");
-                $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
-                $('td', row).eq(4).addClass("fw-bold fs-6");
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-light-warning");
+                $('td', row).eq(4).addClass("fw-bold fs-7");
 
                 if (data["Estado"] == 1) {
                     $('td', row).eq(6).removeClass("btn_activar");
@@ -231,6 +256,15 @@ function Usuarios() {
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
+            setUS_NOMBRE_ED(data["Nombre"]);
+            setUS_USUARIO_ED(data["Usuario"]);
+            setUS_USUARIOID_ED(data["Usuario_ID"]);
+            setUS_EMAIL_ED(data["email"]);
+            setUS_PASS_ED(data["password"]);
+            setUS_DEPARTAMENTO_ED(data["departamento_id"]);
+            setUS_SUCURSAL_ED(data["sucursal_id"]);
+            setdept_select(data["departamento_id"]);
+            setsuc_select(data["sucursal_id"]);
             setVisible(true)
             // setNombreCliente(data["CLIENTE"]);
             // setFecha(data["FECHA_ENTREGA"]);
@@ -301,7 +335,6 @@ function Usuarios() {
     }
 
     function Nuevo_usuario() {
-        console.log("asdasd");
         let US_USUARIO = $("#US_USUARIO").val();
         let US_NOMBRE = $("#US_NOMBRE").val();
         let US_EMAIL = $("#US_EMAIL").val();
@@ -320,10 +353,10 @@ function Usuarios() {
         } else if (US_CONF_PASS == "") {
             ajax.Mensaje("Debe ingresar un confirmacion de contraseña", "", "error");
         } else if (dept_select == "") {
-            ajax.Mensaje("Debe señleccionar un departamento", "", "error");
+            ajax.Mensaje("Debe seleccionar un departamento", "", "error");
 
         } else if (suc_select == "") {
-            ajax.Mensaje("Debe señleccionar una sucursal", "", "error");
+            ajax.Mensaje("Debe seleccionar una sucursal", "", "error");
         } else {
 
             if (US_PASS == US_CONF_PASS) {
@@ -343,10 +376,11 @@ function Usuarios() {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Usuarios();
                         setVisible_n(false)
+                    } else if (x[0] == -1) {
+                        ajax.Mensaje(x[1].toString(), "Pruebe con otro nombre de usuario", "info");
                     } else {
                         ajax.Mensaje(x[1].toString(), "intente en un momento", "success");
                     }
-
                 });
             } else {
                 ajax.Mensaje("Las contraseñas no coinciden", "", "error");
@@ -355,6 +389,56 @@ function Usuarios() {
         // 
     }
 
+    function Editar_Usuario() {
+        let US_USUARIO = $("#US_USUARIO_ED").val();
+        let US_NOMBRE = $("#US_NOMBRE_ED").val();
+        let US_EMAIL = $("#US_EMAIL_ED").val();
+        let US_PASS = $("#US_PASS_ED").val();
+        let US_CONF_PASS = $("#US_CONF_PASS_ED").val();
+
+
+        if (US_USUARIO == "") {
+            ajax.Mensaje("Debe ingresar un nombre de usuario", "", "error");
+        } else if (US_NOMBRE == "") {
+            ajax.Mensaje("Debe ingresar un nombre", "", "error");
+        } else if (US_PASS == "") {
+            ajax.Mensaje("Debe ingresar una contraseña", "", "error");
+
+        } else if (US_CONF_PASS == "") {
+            ajax.Mensaje("Debe ingresar un confirmacion de contraseña", "", "error");
+        } else if (dept_select == "") {
+            ajax.Mensaje("Debe seleccionar un departamento", "", "error");
+
+        } else if (suc_select == "") {
+            ajax.Mensaje("Debe seleccionar una sucursal", "", "error");
+        } else {
+
+            if (US_PASS == US_CONF_PASS) {
+                let param = {
+                    US_USUARIO: US_USUARIOID_ED,
+                    US_NOMBRE: US_NOMBRE,
+                    US_EMAIL: US_EMAIL,
+                    US_PASS: US_PASS,
+                    US_DEPT: dept_select,
+                    US_SUCURSAL: suc_select
+                }
+                console.log('paramddd: ', param);
+                let url = 'usuarios/Editar_Usuario';
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+                    console.log('x: ', x);
+                    if (x[0] == 1) {
+                        ajax.Mensaje(x[1], "", "success");
+                        Cargar_Usuarios();
+                        setVisible_n(false)
+                    } else {
+                        ajax.Mensaje(x[1].toString(), "intente en un momento", "success");
+                    }
+                });
+            } else {
+                ajax.Mensaje("Las contraseñas no coinciden", "", "error");
+            }
+        }
+    }
     //*** ACCESOS  ***/
     function Borrar_Accesos() {
         Swal.fire({
@@ -425,16 +509,14 @@ function Usuarios() {
                     <CCardHeader>
                         <h3>Usuarios</h3>
                         <div className='card-toolbar'>
-                            <button onClick={() => {
-                                setVisible_n(true);
-                                setdept_select("");
-                                setsuc_select("");
-                            }} className='btn btn-success text-light fw-bold'>Nuevo +</button>
+                            {/* <button onClick={() => {
+                              
+                            }} className='btn btn-success text-light fw-bold'>Nuevo +</button> */}
                         </div>
                     </CCardHeader>
                     <CCardBody>
                         <div className='col-12 mt-5'>
-                            <div className='table-responsive'>
+                            <div className='table-responsive' id='US_TABLA_USUARIOS_SECC'>
                                 <table id='US_TABLA_USUARIOS' className='table table-striped'>
 
                                 </table>
@@ -446,43 +528,64 @@ function Usuarios() {
             </CCol>
             <CModal size="lg" id='AD_MODAL_DETALLES' backdrop="static" visible={visible} onClose={() => setVisible(false)}>
                 <CModalHeader>
-                    <CModalTitle>DETALLES</CModalTitle>
+                    <CModalTitle></CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <div id="kt_modal_new_target_form" className="form fv-plugins-bootstrap5 fv-plugins-framework" action="#">
                         <div className="mb-13 text-center">
-                            <h1 className="mb-3">Editar Usuario</h1>
-                            <div className="text-muted fw-semibold fs-5">If you need more info, please check
+                            <h3 className="mb-3">Editar Usuario</h3>
+                            {/* <div className="text-muted fw-semibold fs-5">If you need more info, please check
                                 <a href="#" className="fw-bold link-primary">Project Guidelines</a>.
-                            </div>
+                            </div> */}
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Usuario *</span>
                             </label>
-                            <input id='US_USUARIO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input disabled defaultValue={US_USUARIO_ED} id='US_USUARIO_ED' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Nombre *</span>
                             </label>
-                            <input id='US_NOMBRE' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={US_NOMBRE_ED} id='US_NOMBRE_ED' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Email</span>
                             </label>
-                            <input id='US_EMAIL' type="email" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={US_EMAIL_ED} id='US_EMAIL_ED' type="email" className="form-control form-control-solid" placeholder="" name="target_title" />
+                        </div>
+                        <div className="row g-9 mb-8">
+                            <div className="col-md-6 fv-row fv-plugins-icon-container">
+                                <label className="required fs-6 fw-semibold mb-2">Departamento</label>
+                                <Select options={departamentos}
+                                    defaultValue={departamentos.find(option => option.value === US_DEPARTAMENTO_ED)}
+                                    onChange={(items) => setdept_select(items.value)}
+                                />
+                                {/* <select id='US_DEPT' className='form-select'>
+
+                                </select> */}
+                            </div>
+                            <div className="col-md-6 fv-row">
+                                <label className="required fs-6 fw-semibold mb-2">Sucursal</label>
+                                <Select options={sucursales}
+                                    defaultValue={sucursales.find(option => option.value === US_SUCURSAL_ED)}
+                                    onChange={(items) =>
+                                        setsuc_select(items.value)
+                                    }
+                                />
+                            </div>
                         </div>
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Contraseña *</label>
-                                <input id='US_PASS' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input defaultValue={US_PASS_ED} id='US_PASS_ED' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
 
                             </div>
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Confirmar contraseña *</label>
-                                <input id='US_CONF_PASS' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input defaultValue={US_PASS_ED} id='US_CONF_PASS_ED' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
 
                             </div>
                         </div>
@@ -494,7 +597,7 @@ function Usuarios() {
                     <CButton color="secondary" onClick={() => setVisible(false)}>
                         Cerrar
                     </CButton>
-                    <CButton color="primary">Guardar Cambios</CButton>
+                    <CButton color="primary" onClick={Editar_Usuario}>Guardar</CButton>
                 </CModalFooter>
             </CModal>
             <CModal size="lg" id='AD_MODAL_NUEVO' backdrop="static" visible={visible_n} onClose={() => {

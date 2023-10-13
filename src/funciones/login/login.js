@@ -16,6 +16,7 @@ function Iniciar_sesion(param) {
     fun.Mensaje("Debe ingresar una contraseña", "", "error");
   } else {
     fun.AjaxSendReceiveData(URL, param, function (x) {
+      console.log('x: ', x);
       
       if (x[0] == true) {
         SESION(x[1][0]);
