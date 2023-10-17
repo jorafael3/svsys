@@ -96,12 +96,12 @@ function Clientes() {
                 title: "RUC",
             },
             {
-                data: "CLIENTE_NOMBRE",
-                title: "NOMBRE"
+                data: "CLIENTE_PROVINCIA_NOMBRE",
+                title: "PROVINCIA"
             },
             {
-                data: "CLIENTE_RAZON_SOCIAL",
-                title: "CLIENTE_RAZON_SOCIAL",
+                data: "CLIENTE_DIRECCION",
+                title: "DIRECCION",
             },
             {
                 data: "estado",
@@ -163,6 +163,33 @@ function Clientes() {
                     $('td', row).eq(6).html("");
                 }
 
+                let CLIENTE = `
+                <div class="d-flex justify-content-start flex-column">
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_RUC"] + `</span>
+                    <span class="text-muted d-block fs-7">Nombre:</span>
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_NOMBRE"] + `</span>
+                    <span class="text-muted d-block fs-7">Razon Social:</span>
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_NOMBRE"] + `</span>
+                </div>`
+
+                let CIUDAD = `
+                <div class="d-flex justify-content-start flex-column">
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_PROVINCIA_NOMBRE"] + `</span>
+                    <span class="text-muted d-block fs-7">Ciudad:</span>
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_CIUDAD"] + `</span>
+                </div>`
+                let DIRECCION = `
+                <div class="d-flex justify-content-start flex-column">
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_DIRECCION"] + `</span>
+                    <span class="text-muted d-block fs-7">Direccion Despacho:</span>
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_DIRECCION_DESPACHO"] + `</span>
+                    <span class="text-muted d-block fs-7">Telefono:</span>
+                    <span class="text-gray-700 fw-bold d-block fs-7">`+ data["CLIENTE_TELEFONO"] + `</span>
+                </div>`
+
+                $('td', row).eq(0).html(CLIENTE);
+                $('td', row).eq(1).html(CIUDAD);
+                $('td', row).eq(2).html(DIRECCION);
 
 
 
@@ -513,7 +540,7 @@ function Clientes() {
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Ciudad</label>
                                 <select defaultValue={CLI_EDI_CIUDADES} className='form-select' id='CLI_EDI_CIUDADES' name="" >
-                                    
+
                                     {ciudades.map((option, index) => (
                                         <option key={index} value={option}>{option}</option>
                                     ))}

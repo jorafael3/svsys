@@ -43,7 +43,7 @@ function AjaxSendReceiveData(url, param, callback) {
                 callback(data)
             },
             error: function (error) {
-
+                callback(error)
             }
         });
     }

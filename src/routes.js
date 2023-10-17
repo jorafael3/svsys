@@ -7,6 +7,7 @@ const administracion = React.lazy(() => import('./views/despacho/administrar/Adm
 const usuarios = React.lazy(() => import(`./views/mantenimiento/usuarios/Usuarios`))
 const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
 const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Clientes'))
+const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 function Accesos() {
