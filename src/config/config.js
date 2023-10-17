@@ -1,23 +1,67 @@
 import React from 'react'
 import $ from 'jquery';
 import Swal from 'sweetalert2';
+import * as fun from "../funciones/login/login"
 
 
 const host = window.location.hostname;
 const protocol = window.location.protocol;
-const port = ":80";
+const port = ":8080";
 
 const URL = protocol + "//" + host + port + "/svsysback/"
 
 
 function AjaxSendReceiveData(url, param, callback) {
+    let DATOS_SESION = fun.GET_DATOS_SESION();
+    // console.log('DATOS_SESION: ', DATOS_SESION);
+    if (DATOS_SESION == null || DATOS_SESION == undefined || DATOS_SESION.length == 0) {
+        Mensaje("LA SESION HA CADUCADO", "Por favor iniciar sesion nuevamente", "success");
+    } else {
+        let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
+        if (param.length == 0) {
+            param = {
+                TOKEN: token,
+                USUARIO: DATOS_SESION["Usuario"],
+                USUARIO_ID: DATOS_SESION["Usuario_ID"],
+                SUCURSAL_ID: DATOS_SESION["sucursal_id"],
+            }
+        } else {
+            param.TOKEN = token;
+            param.USUARIO_ID = DATOS_SESION["Usuario_ID"];
+            param.SUCURSAL_ID = DATOS_SESION["sucursal_id"];
+            param.USUARIO = DATOS_SESION["Usuario"];
+
+        }
+        $.ajax({
+            url: URL + url,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                param
+            },
+            success: function (data) {
+                callback(data)
+            },
+            error: function (error) {
+
+            }
+        });
+    }
+
+}
+
+function AjaxSendReceiveDatalogin(url, param, callback) {
+    let DATOS_SESION = fun.GET_DATOS_SESION();
+    console.log('DATOS_SESION: ', DATOS_SESION);
+
     let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
     if (param.length == 0) {
         param = {
-            TOKEN: token
+            TOKEN: token,
         }
     } else {
-        param.TOKEN = token
+        param.TOKEN = token;
+
     }
     $.ajax({
         url: URL + url,
@@ -30,7 +74,7 @@ function AjaxSendReceiveData(url, param, callback) {
             callback(data)
         },
         error: function (error) {
-            
+
         }
     });
 }
@@ -46,35 +90,35 @@ function Mensaje(t1, t2, icon) {
 
 function Provincias() {
     let provincias = [
-        { id: "01", nombre: "Azuay" },
-        { id: "02", nombre: "Bolívar" },
-        { id: "03", nombre: "Cañar" },
-        { id: "04", nombre: "Carchi" },
-        { id: "05", nombre: "Chimborazo" },
-        { id: "06", nombre: "Cotopaxi" },
-        { id: "07", nombre: "El Oro" },
-        { id: "08", nombre: "Esmeraldas" },
-        { id: "09", nombre: "Galápagos" },
-        { id: "10", nombre: "Guayas" },
-        { id: "11", nombre: "Imbabura" },
-        { id: "12", nombre: "Loja" },
-        { id: "13", nombre: "Los Ríos" },
-        { id: "14", nombre: "Manabí" },
-        { id: "15", nombre: "Morona Santiago" },
-        { id: "16", nombre: "Napo" },
-        { id: "17", nombre: "Orellana" },
-        { id: "18", nombre: "Pastaza" },
-        { id: "19", nombre: "Pichincha" },
-        { id: "20", nombre: "Santa Elena" },
-        { id: "21", nombre: "Santo Domingo de los Tsáchilas" },
-        { id: "22", nombre: "Sucumbíos" },
-        { id: "23", nombre: "Tungurahua" },
-        { id: "24", nombre: "Zamora Chinchipe" }
+        { value: "01", label: "Azuay" },
+        { value: "02", label: "Bolívar" },
+        { value: "03", label: "Cañar" },
+        { value: "04", label: "Carchi" },
+        { value: "05", label: "Chimborazo" },
+        { value: "06", label: "Cotopaxi" },
+        { value: "07", label: "El Oro" },
+        { value: "08", label: "Esmeraldas" },
+        { value: "09", label: "Galápagos" },
+        { value: "10", label: "Guayas" },
+        { value: "11", label: "Imbabura" },
+        { value: "12", label: "Loja" },
+        { value: "13", label: "Los Ríos" },
+        { value: "14", label: "Manabí" },
+        { value: "15", label: "Morona Santiago" },
+        { value: "16", label: "Napo" },
+        { value: "17", label: "Orellana" },
+        { value: "18", label: "Pastaza" },
+        { value: "19", label: "Pichincha" },
+        { value: "20", label: "Santa Elena" },
+        { value: "21", label: "Santo Domingo de los Tsáchilas" },
+        { value: "22", label: "Sucumbíos" },
+        { value: "23", label: "Tungurahua" },
+        { value: "24", label: "Zamora Chinchipe" }
     ];
     return provincias;
 }
 
-function Ciudades(id) {
+function Ciudades(value) {
     var ciudadesPorProvincia = {
         '01': ['Cuenca', 'Gualaceo', 'Chordeleg', 'Paute'], // Azuay
         '02': ['Guaranda', 'Chillanes', 'San Miguel'], // Bolívar
@@ -130,7 +174,7 @@ function Ciudades(id) {
         '24': ['Zamora', 'Yantzaza', 'Zamora'], // Zamora Chinchipe
         // Puedes agregar más ciudades para cada provincia aquí si es necesario
     };
-    return ciudadesPorProvincia[id];
+    return ciudadesPorProvincia[value];
 }
 
-export { AjaxSendReceiveData, Mensaje, Ciudades, Provincias };
+export { AjaxSendReceiveData, Mensaje, Ciudades, Provincias, AjaxSendReceiveDatalogin };

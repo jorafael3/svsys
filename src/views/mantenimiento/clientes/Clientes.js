@@ -11,6 +11,7 @@ import 'datatables.net-buttons';
 import 'datatables.net-buttons/js/buttons.html5.min.js';
 import 'datatables.net-buttons/js/buttons.print.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Select from 'react-select'
 
 var URL = "clientes/"
 
@@ -19,7 +20,10 @@ function Clientes() {
     const [visible_e, setVisible_e] = useState(false);
     const [selectedValue, setSelectedValue] = useState('');
     const [ciudades, setciudades] = useState([]);
-    const provincias = ajax.Provincias()
+    const provincias = ajax.Provincias();
+    const [prov_select, setprov_select] = useState("");
+    const [prov_id_select, setprov_id_select] = useState("");
+
 
     const [CLI_EDI_RUC, setCLI_EDI_RUC] = useState('');
     const [CLI_EDI_RAZON, setCLI_EDI_RAZON] = useState('');
@@ -27,15 +31,11 @@ function Clientes() {
     const [CLI_EDI_PROVINCIA, setCLI_EDI_PROVINCIA] = useState('');
     const [CLI_EDI_CIUDADES, setCLI_EDI_CIUDADES] = useState('');
     const [CLI_EDI_DIRECCION, setCLI_EDI_DIRECCION] = useState('');
+    const [CLI_EDI_DIRECCION_DESPACHO, setCLI_EDI_DIRECCION_DESPACHO] = useState('');
     const [CLI_EDI_CORREO, setCLI_EDI_CORREO] = useState('');
     const [CLI_EDI_TELEFONO, setCLI_EDI_TELEFONO] = useState('');
+    const [CLI_EDI_CLIENTE_ID, setCLI_EDI_CLIENTE_ID] = useState('');
 
-
-    const handleEditarClick = (data) => {
-        console.log('data: ', data);
-        setCLI_EDI_RUC(data["CLIENTE_NOMBRE"]); // Update the state variable
-        console.log('data["CLIENTE_NOMBRE"]: ', data["CLIENTE_NOMBRE"]);
-    };
 
     useEffect(() => {
         // Cargar_Provincias()
@@ -164,7 +164,7 @@ function Clientes() {
                 }
 
 
-                
+
 
             },
         });
@@ -174,12 +174,24 @@ function Clientes() {
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
-            setVisible_e(true)
-            handleEditarClick(data)
-            // setCLI_EDI_RUC(data["CLIENTE_NOMBRE"]);
-            // console.log('CLI_EDI_NOMBRE: ', CLI_EDI_NOMBRE);
-            // $("#CLI_EDI_NOMBRE").val(data["CLIENTE_NOMBRE"]);
-            // setFecha(data["FECHA_ENTREGA"]);
+            setVisible_e(true);
+
+            setCLI_EDI_RUC(data["CLIENTE_RUC"]);
+            setCLI_EDI_NOMBRE(data["CLIENTE_NOMBRE"]);
+            setCLI_EDI_RAZON(data["CLIENTE_RAZON_SOCIAL"]);
+            setCLI_EDI_DIRECCION(data["CLIENTE_DIRECCION"]);
+            setCLI_EDI_DIRECCION_DESPACHO(data["CLIENTE_DIRECCION_DESPACHO"]);
+            setCLI_EDI_CORREO(data["CLIENTE_EMAIL"]);
+            setCLI_EDI_TELEFONO(data["CLIENTE_TELEFONO"]);
+            setCLI_EDI_PROVINCIA(data["CLIENTE_PROVINCIA_ID"]);
+            setprov_select(data["CLIENTE_PROVINCIA_NOMBRE"]);
+            setprov_id_select(data["CLIENTE_PROVINCIA_ID"]);
+            setCLI_EDI_CLIENTE_ID(data["ID"]);
+            setCLI_EDI_CIUDADES(data["CLIENTE_CIUDAD"]);
+            if (data["CLIENTE_PROVINCIA_ID"] != null) {
+                Cambiar_Ciudad(data["CLIENTE_PROVINCIA_ID"]);
+            }
+
         });
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_activar', function (respuesta) {
             var data = TABLA_.row(this).data();
@@ -202,24 +214,29 @@ function Clientes() {
         setSelectedValue("")
     }
 
-    function Cambiar_Ciudad(event) {
-        setSelectedValue(event.target.value)
+    function Cambiar_Ciudad(value) {
+        // setSelectedValue(event.target.value);
         let pr = $("#CLI_PROVINCIA").val();
-        let array_ciudades = ajax.Ciudades(pr);
+        let array_ciudades = ajax.Ciudades(value);
         console.log('ciudades: ', array_ciudades);
         setciudades(array_ciudades)
     }
+
+    //********* GUARDAR */
 
     function Guardar_Clientes() {
         let CLI_RUC = $("#CLI_RUC").val()
         let CLI_RAZON = $("#CLI_RAZON").val()
         let CLI_NOMBRE = $("#CLI_NOMBRE").val()
-        let CLI_PROVINCIA = $("#CLI_PROVINCIA option:selected").text()
-        let CLI_PROVINCIA_ID = $("#CLI_PROVINCIA").val()
+        let CLI_PROVINCIA = prov_select;
+        // let CLI_PROVINCIA = $("#CLI_PROVINCIA option:selected").text();
+        let CLI_PROVINCIA_ID = prov_id_select;
+        // let CLI_PROVINCIA_ID = $("#CLI_PROVINCIA").val()
         let CLI_CIUDADES = $("#CLI_CIUDADES").val()
         let CLI_DIRECCION = $("#CLI_DIRECCION").val()
-        let CLI_CORREO = $("#CLI_DIRECCION").val()
-        let CLI_TELEFONO = $("#CLI_DIRECCION").val()
+        let CLI_DIRECCION_DESPACHO = $("#CLI_DIRECCION_DESPACHO").val();
+        let CLI_CORREO = $("#CLI_CORREO").val()
+        let CLI_TELEFONO = $("#CLI_TELEFONO").val()
 
         if (CLI_RUC == "") {
             ajax.Mensaje("Debe ingresar un numero de cédula/ruc", "", "error");
@@ -234,26 +251,86 @@ function Clientes() {
                 CLI_PROVINCIA_ID: CLI_PROVINCIA_ID,
                 CLI_CIUDADES: CLI_CIUDADES,
                 CLI_DIRECCION: CLI_DIRECCION,
+                CLI_DIRECCION_DESPACHO: CLI_DIRECCION_DESPACHO,
                 CLI_CORREO: CLI_CORREO,
                 CLI_TELEFONO: CLI_TELEFONO,
             }
+            console.log('param: ', param);
 
-            let url = URL + "Nuevo_Cliente"
-            ajax.AjaxSendReceiveData(url, param, function (x) {
-                console.log('x: ', x);
-                if (x[0] == true) {
-                    ajax.Mensaje(x[1], "", x[2]);
-                    if (x[2] == "success") {
-                        setVisible_n(false)
+            if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
+                ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
+            } else {
+                let url = URL + "Nuevo_Cliente"
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+                    console.log('x: ', x);
+                    if (x[0] == true) {
+                        ajax.Mensaje(x[1], "", x[2]);
+                        if (x[2] == "success") {
+                            setVisible_n(false);
+                            Cargar_Clientes();
+                        }
+                    } else {
+                        ajax.Mensaje(x[1], "", x[2]);
                     }
-                } else {
-                    ajax.Mensaje(x[1], "", x[2]);
-                }
-            })
-
+                })
+            }
         }
     }
 
+    //*** ACTUALIZAR ****/
+    function Actualizar_Cliente() {
+        let CLI_RUC = $("#CLI_EDI_RUC").val()
+        let CLI_RAZON = $("#CLI_EDI_RAZON").val()
+        let CLI_NOMBRE = $("#CLI_EDI_NOMBRE").val()
+        let CLI_PROVINCIA = prov_select;
+        // let CLI_PROVINCIA = $("#CLI_PROVINCIA option:selected").text();
+        let CLI_PROVINCIA_ID = prov_id_select;
+        // let CLI_PROVINCIA_ID = $("#CLI_PROVINCIA").val()
+        let CLI_CIUDADES = $("#CLI_EDI_CIUDADES").val()
+        let CLI_DIRECCION = $("#CLI_EDI_DIRECCION").val()
+        let CLI_DIRECCION_DESPACHO = $("#CLI_EDI_DIRECCION_DES").val();
+        let CLI_CORREO = $("#CLI_EDI_CORREO").val()
+        let CLI_TELEFONO = $("#CLI_EDI_TELEFONO").val()
+
+        if (CLI_RUC == "") {
+            ajax.Mensaje("Debe ingresar un numero de cédula/ruc", "", "error");
+        } else if (CLI_NOMBRE == "") {
+            ajax.Mensaje("Debe ingresar un nombre de cliente", "", "error");
+        } else {
+            let param = {
+                CLI_RUC: CLI_RUC,
+                CLI_RAZON: CLI_RAZON,
+                CLI_NOMBRE: CLI_NOMBRE,
+                CLI_PROVINCIA: CLI_PROVINCIA,
+                CLI_PROVINCIA_ID: CLI_PROVINCIA_ID,
+                CLI_CIUDADES: CLI_CIUDADES,
+                CLI_DIRECCION: CLI_DIRECCION,
+                CLI_DIRECCION_DESPACHO: CLI_DIRECCION_DESPACHO,
+                CLI_CORREO: CLI_CORREO,
+                CLI_TELEFONO: CLI_TELEFONO,
+                CLI_ID: CLI_EDI_CLIENTE_ID
+            }
+            console.log('param: ', param);
+
+            if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
+                ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
+            } else {
+                let url = URL + "Actualizar_Cliente"
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+                    console.log('x: ', x);
+                    if (x[0] == true) {
+                        ajax.Mensaje(x[1], "", x[2]);
+                        if (x[2] == "success") {
+                            setVisible_e(false);
+                            Cargar_Clientes();
+                        }
+                    } else {
+                        ajax.Mensaje(x[1], "", x[2]);
+                    }
+                })
+            }
+        }
+    }
     //****** ACTIVAR DESACTIVAR*/
     function ActivarDesact_Cliente(data) {
         // console.log('data: ', data);
@@ -269,14 +346,26 @@ function Clientes() {
         });
     }
 
+    function Validar_Input() {
 
+        $("#CLI_RUC").on({
+            "focus": function (event) {
+                $(event.target).select();
+            },
+            "keyup": function (event) {
+                $(event.target).val(function (index, value) {
+                    return value.replace(/\D/g, "")
+                });
+            }
+        });
+    }
 
     return (
         <CRow>
             <CCol xs={12}>
                 <CCard className="mb-4">
                     <CCardHeader>
-                        <h3>Clientes</h3>
+                        <h3>Fichero de Clientes</h3>
                         {/* <div className='card-toolbar'>
                             <button onClick={() => Cargar_Provincias()} className='btn btn-success text-light fw-bold'>Nuevo +</button>
                         </div> */}
@@ -306,7 +395,7 @@ function Clientes() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Cliente Ruc/Cedula *</span>
                             </label>
-                            <input id='CLI_RUC' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input onKeyUp={Validar_Input} id='CLI_RUC' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -318,22 +407,29 @@ function Clientes() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Nombre </span>
                             </label>
-                            <input id='CLI_NOMBRE' type="email" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input id='CLI_NOMBRE' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Provincia</label>
-                                <select value={selectedValue} className='form-select' id='CLI_PROVINCIA' onChange={Cambiar_Ciudad}>
+                                <Select options={provincias}
+                                    onChange={(items) => {
+                                        setprov_select(items.label);
+                                        setprov_id_select(items.value);
+                                        Cambiar_Ciudad(items.value);
+                                    }}
+                                />
+                                {/* <select value={selectedValue} className='form-select' id='CLI_PROVINCIA' onChange={Cambiar_Ciudad}>
                                     <option value="">Seleccione</option>
                                     {provincias.map((option, index) => (
                                         <option key={index} value={option.id}>{option.nombre}</option>
                                     ))}
-                                </select>
+                                </select> */}
                             </div>
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Ciudad</label>
                                 <select className='form-select' id='CLI_CIUDADES' name="" >
-                                    <option value="">Seleccione</option>
+                                    {/* <option value="">Seleccione</option> */}
                                     {ciudades.map((option, index) => (
                                         <option key={index} value={option}>{option}</option>
                                     ))}
@@ -344,17 +440,23 @@ function Clientes() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Direccion </span>
                             </label>
-                            <input id='CLI_DIRECCION' type="email" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input id='CLI_DIRECCION' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                        </div>
+                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span className="required">Direccion Despacho</span>
+                            </label>
+                            <input id='CLI_DIRECCION_DESPACHO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Correo</label>
-                                <input id='CLI_CORREO' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input id='CLI_CORREO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
 
                             </div>
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Telefono</label>
-                                <input id='CLI_TELEFONO' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input id='CLI_TELEFONO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
 
                             </div>
                         </div>
@@ -382,13 +484,13 @@ function Clientes() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Cliente Ruc/Cedula *</span>
                             </label>
-                            <input id='CLI_EDI_RUC' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={CLI_EDI_RUC} id='CLI_EDI_RUC' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Razon social </span>
                             </label>
-                            <input id='CLI_EDI_RAZON' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={CLI_EDI_RAZON} id='CLI_EDI_RAZON' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -399,17 +501,19 @@ function Clientes() {
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Provincia</label>
-                                <select value={selectedValue} className='form-select' id='CLI_EDI_PROVINCIA' onChange={Cambiar_Ciudad}>
-                                    <option value="">Seleccione</option>
-                                    {provincias.map((option, index) => (
-                                        <option key={index} value={option.id}>{option.nombre}</option>
-                                    ))}
-                                </select>
+                                <Select options={provincias}
+                                    defaultValue={provincias.find(option => option.value === CLI_EDI_PROVINCIA)}
+                                    onChange={(items) => {
+                                        setprov_select(items.label);
+                                        setprov_id_select(items.value);
+                                        Cambiar_Ciudad(items.value);
+                                    }}
+                                />
                             </div>
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Ciudad</label>
-                                <select className='form-select' id='CLI_EDI_CIUDADES' name="" >
-                                    <option value="">Seleccione</option>
+                                <select defaultValue={CLI_EDI_CIUDADES} className='form-select' id='CLI_EDI_CIUDADES' name="" >
+                                    
                                     {ciudades.map((option, index) => (
                                         <option key={index} value={option}>{option}</option>
                                     ))}
@@ -420,16 +524,22 @@ function Clientes() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">Direccion </span>
                             </label>
-                            <input id='CLI_EDI_DIRECCION' type="email" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={CLI_EDI_DIRECCION} id='CLI_EDI_DIRECCION' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                        </div>
+                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span className="required">Direccion de despacho</span>
+                            </label>
+                            <input defaultValue={CLI_EDI_DIRECCION_DESPACHO} id='CLI_EDI_DIRECCION_DES' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
                         <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="required fs-6 fw-semibold mb-2">Correo</label>
-                                <input id='CLI_EDI_CORREO' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input defaultValue={CLI_EDI_CORREO} id='CLI_EDI_CORREO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Telefono</label>
-                                <input id='CLI_EDI_TELEFONO' type="password" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input defaultValue={CLI_EDI_TELEFONO} id='CLI_EDI_TELEFONO' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                         </div>
                         <div></div>
@@ -440,7 +550,7 @@ function Clientes() {
                     <CButton color="secondary" onClick={() => setVisible_e(false)}>
                         Cerrar
                     </CButton>
-                    <CButton color="primary" onClick={Guardar_Clientes} >Guardar Cambios</CButton>
+                    <CButton color="primary" onClick={Actualizar_Cliente} >Guardar Cambios</CButton>
                 </CModalFooter>
             </CModal>
         </CRow>
