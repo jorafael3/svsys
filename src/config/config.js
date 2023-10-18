@@ -40,7 +40,8 @@ function AjaxSendReceiveData(url, param, callback) {
                 param
             },
             success: function (data) {
-                callback(data)
+                callback(data);
+                
             },
             error: function (error) {
                 callback(error)

@@ -1,35 +1,29 @@
-function Cargar_datos() {
+import * as fun from "../../../config/config"
+var URL = "despacho/"
 
-    let DATOS = [{
-        ID: 1,
-        CLIENTE: "CLIENTE_1",
-        ENTREGA: "MATRIZ",
-        SERVICIO: "CARGA",
-        FECHA_ENTREGA: "2023-09-10",
-        PEDIDO: "554566"
-    }, {
-        ID: 2,
-        CLIENTE: "CLIENTE_2",
-        ENTREGA: "MATRIZ",
-        SERVICIO: "CARGA",
-        FECHA_ENTREGA: "2023-09-10",
-        PEDIDO: "412334"
-    }, {
-        ID: 3,
-        CLIENTE: "CLIENTE_3",
-        ENTREGA: "MATRIZ",
-        SERVICIO: "CARGA",
-        FECHA_ENTREGA: "2023-09-10",
-        PEDIDO: "123112"
-    }, {
-        ID: 4,
-        CLIENTE: "CLIENTE_4",
-        ENTREGA: "MATRIZ",
-        SERVICIO: "CARGA",
-        FECHA_ENTREGA: "2023-09-10",
-        PEDIDO: "312332"
-    }]
-    return DATOS;
+
+function Cargar_Guias_Sin_Despachar(param, callback) {
+    let url = URL + 'Cargar_Guias_Sin_Despachar'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        callback(x);
+    });
 }
 
-export { Cargar_datos };
+
+function Cargar_Guias_Sin_Despachar_detalle(param, callback) {
+    let url = URL + 'Cargar_Guias_Sin_Despachar_detalle'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        callback(x);
+    });
+}
+
+function Reasignar_Nueva_placa(param) {
+    let url = URL + 'Reasignar_Nueva_placa'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        console.log('x: ', x);
+
+    });
+}
+
+
+export { Cargar_Guias_Sin_Despachar, Cargar_Guias_Sin_Despachar_detalle,Reasignar_Nueva_placa };
