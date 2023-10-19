@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, CNav, CNavItem, CNavLink } from 'react';
 import {
     CFormLabel, CFormInput, CButton, CCard, CCardBody, CCardHeader, CCol, CRow,
     CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter
@@ -14,9 +14,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import axios from 'axios';
 import moment from 'moment';
 import * as funciones from '../../../funciones/Despacho/administrar/administrar';
+import * as fun from "../../../config/config"
 
 function Administrar() {
-    const [visible, setVisible] = useState(false)
+    const [visible, setVisible] = useState(false);
+    const [visible_h, setVisible_h] = useState(false);
+    const [barra_visible, setbarra_visible] = useState(false);
 
 
     //*********** DATOS DETALLE*/
@@ -36,22 +39,30 @@ function Administrar() {
     const [vigente, setvigente] = useState('');
     const [placa, setplaca] = useState('');
     const [chofer, setchofer] = useState('');
+    const [estado_despacho, setestado_despacho] = useState('');
+    const [estado_despacho_texto, setestado_despacho_texto] = useState('');
 
 
     function Cargar_Datos() {
         let FECHA_INI = $("#AD_FECHA_INI").val();
         let FECHA_FIN = $("#AD_FECHA_FIN").val();
+        // let ESTADO = $("#SEL_ESTADO_PEDIDO").val();
         let param = {
             FECHA_INI: moment(FECHA_INI).format("YYYYMMDD"),
             FECHA_FIN: moment(FECHA_FIN).format("YYYYMMDD")
         }
-        console.log('param: ', param);
+
         let DATOS = funciones.Cargar_Guias_Sin_Despachar(param, function (x) {
-            console.log('DATOS: ', x);
             Tabla_guias_sin_despachar(x)
         });
-        // 
+        funciones.Guias_Despachadas_General(param, function (x) {
+            console.log('x: ', x);
+            Tabla_guias_despachadas_general(x);
+        });
+        setbarra_visible(true);
     }
+
+    //****** GUIAS SIN DESPACHAR ******/
 
     function Tabla_guias_sin_despachar(datos) {
 
@@ -103,15 +114,19 @@ function Administrar() {
                 data: "VENCIDO",
                 title: "ESTADO",
                 render: function (x, y, r) {
+                    const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
+
                     if (x == 1) {
                         x = `
                         <span class="text-success">Vigente</span><br>
-                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span>
+                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                        <span class="text-muted">`+ diferenciaEnDias + ` días </span>
                         `
                     } else {
                         x = `
-                        <span class="text-success">Vencida</span><br>
-                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span>
+                        <span class="text-danger">Vencida</span><br>
+                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                        <span class="text-muted">`+ diferenciaEnDias + ` días</span>
                         `
                     }
                     return x;
@@ -140,7 +155,7 @@ function Administrar() {
         }, 500);
         $('#AD_TABLA_DATOS').on('click', 'td.btn_recibir', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             setVisible(true);
             setPedido(data["PEDIDO_INTERNO"]);
             setNombreCliente(data["CLIENTE"] + " (" + data["CLIENTE_RUC"] + ")");
@@ -164,10 +179,12 @@ function Administrar() {
             }
 
             funciones.Cargar_Guias_Sin_Despachar_detalle(param, function (x) {
-                console.log('x: ', x);
+
                 Tabla_guias_sin_despachar_detalles(x)
             })
-        })
+        });
+
+
 
     }
 
@@ -220,10 +237,353 @@ function Administrar() {
             PEDIDO_INTERNO: PEDIDO,
             PLACA: placa,
         }
-        console.log('param: ', param);
+
         funciones.Reasignar_Nueva_placa(param);
         Cargar_Datos();
     }
+
+    //****** GUIAS DESPACHADAS *********/
+
+    function Tabla_guias_despachadas_general(datos) {
+
+        $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC').empty();
+        if ($.fn.dataTable.isDataTable('#AD_TABLA_DATOS')) {
+            $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').DataTable().destroy();
+            $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC').empty();
+        }
+
+        let tabla = `
+        <table id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL' class='table display table-striped' style="width:100%">
+        </table>
+        `;
+        $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC').append(tabla);
+        let TABLA_ = $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'Bfrtip',
+            order: [[0, "desc"]],
+            drawCallback: function () {
+
+            },
+            buttons: [
+                {
+                    text: `<span class"fw-bold"><i class="bi bi-arrow-clockwise fs-4"></i></span>`,
+                    className: 'btn btn-info',
+                    action: function (e, dt, node, config) {
+                        Cargar_Datos();
+                    },
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel fs-4"></i>',
+                    className: 'btn btn-primary',
+                }],
+            columns: [{
+                data: "FECHA_DE_EMISION",
+                title: "FECHA DE EMISION",
+            }, {
+                data: "FECHA_CREADO",
+                title: "FECHA DE GENERADA",
+            },
+            {
+                data: "PEDIDO_INTERNO",
+                title: "PEDIDO INTERNO"
+            },
+            {
+                data: "PEDIDO_CREADO_POR",
+                title: "PEDIDO_CREADO_POR"
+            },
+            {
+                data: "ESTADO_DESPACHO_TEXTO",
+                title: "ESTADO_DESPACHO_TEXTO",
+                // render: function (x, y, r) {
+                //     const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
+
+                //     if (x == 1) {
+                //         x = `
+                //         <span class="text-success">Vigente</span><br>
+                //         <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                //         <span class="text-muted">`+ diferenciaEnDias + ` días </span>
+                //         `
+                //     } else {
+                //         x = `
+                //         <span class="text-danger">Vencida</span><br>
+                //         <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                //         <span class="text-muted">`+ diferenciaEnDias + ` días</span>
+                //         `
+                //     }
+                //     return x;
+                // }
+            },
+            {
+                data: null,
+                title: "DETALLES",
+                className: "btn_detalles text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle"></i></button>',
+                orderable: "",
+                width: 20
+            },
+            {
+                data: null,
+                title: "HISTORIAL",
+                className: "btn_historial text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle"></i></button>',
+                orderable: "",
+                width: 20
+            }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
+                $('td', row).eq(4).addClass("fw-bold fs-6");
+            },
+        });
+
+        setTimeout(function () {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
+        }, 500);
+        $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_detalles', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            setVisible(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            setNombreCliente(data["CLIENTE"] + " (" + data["CLIENTE_RUC"] + ")");
+            setFecha(data["FECHA_DE_EMISION"]);
+            setsolicitante(data["SOLICITANTE"]);
+            setdireccion(data["DIRECCION_1"]);
+            setpartida(data["PTO_DE_PARTIDA"]);
+            setllegada(data["PTO_DE_LLEGADA"]);
+            setdireccion2(data["DIRECCION_2"]);
+            setfactura(data["FACTURA"]);
+            settelefono(data["TELEFONO"]);
+            setvalidez(data["FECHA_VALIDEZ"]);
+            setentrega(data["TIPO_DE_ENTREGA"]);
+            setcompra(data["PED_COMPRA"]);
+            setvigente(data["VENCIDO"] == 1 ? "VIGENTE" : "VENCIDA");
+            setplaca(data["placa"] != null ? data["placa"] : "SIN ASIGNAR");
+            setchofer(data["chofer_nombre"] ? data["chofer_nombre"] : "SIN ASIGNAR");
+
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
+            }
+
+            funciones.Guias_Despachadas_General_detalle(param, function (x) {
+                console.log('x: ', x);
+
+                Tabla_guias_despachadas_general_detalle(x)
+            })
+        });
+
+        $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_historial', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            setVisible_h(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            setestado_despacho(data["ESTADO_DESPACHO"]);
+            setestado_despacho_texto(data["ESTADO_DESPACHO_TEXTO"]);
+
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
+            }
+            console.log('param: ', param);
+
+            funciones.Guias_Despachadas_Historial(param, function (x) {
+                console.log('x: ', x);
+                Tabla_Guias_Despachadas_Historial(x);
+            })
+
+        });
+
+    }
+
+    function Tabla_guias_despachadas_general_detalle(datos) {
+        let TABLA_ = $('#DES_TABLA_GUIAS_DETALLE').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            order: [[0, "asc"]],
+            columns: [{
+                data: "ORD",
+                title: "ORD",
+            },
+            {
+                data: "CODIGO",
+                title: "CODIGO"
+            },
+            {
+                data: "DESCRIPCION",
+                title: "DESCRIPCION"
+            }, {
+                data: "UNIDAD",
+                title: "UNIDAD"
+            }, {
+                data: "POR_DESPACHAR",
+                title: "POR_DESPACHAR"
+            }, {
+                data: "DESPACHADA",
+                title: "DESPACHADA",
+                render: function (x) {
+                    return parseFloat(x).toFixed(2)
+                }
+            }, {
+                data: "RESTANTE",
+                title: "RESTANTE"
+            }, {
+                data: "ENTREGADA",
+                title: "ENTREGADA"
+            }
+
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-success bg-opacity-10");
+
+
+            },
+        });
+    }
+
+    function Tabla_Guias_Despachadas_Historial(datos) {
+        let TABLA_ = $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            order: [[0, "asc"]],
+            columns: [{
+                data: "FECHA_CREADO",
+                title: "FECHA DESPACHO",
+            },
+            {
+                data: "CLIENTE_NOMBRE",
+                title: "CLIENTE"
+            },
+            {
+                data: "DESTINO",
+                title: "DESTINO"
+            }, {
+                data: "SERVICIO",
+                title: "SERVICIO"
+            }, {
+                data: "PARCIAL",
+                title: "ESTADO ENTREGA",
+                render: function (x) {
+                    if (x == 1) {
+                        x = "<span class='text-danger'>ENTREGA PARCIAL</span>"
+                    } else {
+                        x = "<span class='text-success'>ENTREGA COMPLETA</span>"
+
+                    }
+                    return x;
+                }
+            }, {
+                data: null,
+                title: "DETALLE",
+                className: "btn_historial text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_historial btn btn-info"><i class="bi bi-card-list"></i></button>',
+                orderable: "",
+                width: 20
+            }
+
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 ");
+
+
+            },
+        });
+        $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL').on('click', 'td.btn_historial', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
+                despacho_ID: data["despacho_ID"],
+            }
+            console.log('param: ', param);
+            funciones.Guias_Despachadas_Historial_detalle(param, function (x) {
+                console.log('x: ', x);
+                x = x.filter(item => (item.PARCIAL == 1 ? item.CANTIDAD_PARCIAL : item.CANTIDAD_TOTAL) != 0)
+                Tabla_Guias_Despachadas_Historial_detalle(x);
+            })
+        });
+
+    }
+
+    function Tabla_Guias_Despachadas_Historial_detalle(datos) {
+        let TABLA_ = $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL_DETALLE').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            order: [[0, "asc"]],
+            columns: [
+                {
+                    data: "CODIGO",
+                    title: "CODIGO"
+                },
+                {
+                    data: "DESCRIPCION",
+                    title: "DESCRIPCION"
+                }, {
+                    data: "UNIDAD",
+                    title: "UNIDAD"
+                }, {
+                    data: "POR_DESPACHAR",
+                    title: "POR_DESPACHAR"
+                }, {
+                    data: "POR_DESPACHAR",
+                    title: "RESTANTE",
+                    render: function (x, y, r) {
+                        x = parseFloat(r.POR_DESPACHAR) - parseFloat((r.PARCIAL == 1 ? r.CANTIDAD_PARCIAL : r.CANTIDAD_TOTAL))
+                        return parseFloat(x).toFixed(2)
+                    }
+                }, {
+                    data: null,
+                    title: "DESPACHADA",
+                    render: function (x, y, r) {
+                        if (r.PARCIAL == 1) {
+                            x = r.CANTIDAD_PARCIAL
+                        } else {
+                            x = r.CANTIDAD_TOTAL
+                        }
+                        return parseFloat(x).toFixed(2)
+                    }
+                }
+
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-success bg-opacity-10");
+
+
+            },
+        });
+    }
+
+
+
+
+
+
+
+
+
 
     useEffect(() => {
         // Coloca aquí la lógica que deseas ejecutar cuando la página se carga
@@ -231,8 +591,10 @@ function Administrar() {
         let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
         $("#AD_FECHA_INI").val(inicio_mes);
         $("#AD_FECHA_FIN").val(hoy);
-
     }, []);
+    function ajustar(item) {
+        Cargar_Datos();
+    }
 
     return (
         <CRow>
@@ -245,13 +607,11 @@ function Administrar() {
                         <div className='col-12'>
                             <div className="row g-9 mb-8">
                                 {/* <div className="col-md-3 col-sm-12 fv-row fv-plugins-icon-container">
-                                    <label className="required fs-6 fw-bold mb-2">CHOFER <span className='text-danger'>*</span></label>
-                                    <select id='SEL_CLIENTES' className="form-select form-select-solid" >
-                                        <option value="">Seleccione</option>
-                                        <option value="1">NOMBRE 1</option>
-                                        <option value="2">NOMBRE 2</option>
-                                        <option value="3">NOMBRE 3</option>
-
+                                    <label className="required fs-6 fw-bold mb-2">Pedido estado</label>
+                                    <select id='SEL_ESTADO_PEDIDO' className="form-select form-select-solid" >
+                                        <option value="" className='fw-bold'>Seleccione</option>
+                                        <option value="1" className='fw-bold'>SIN DESPACHAR</option>
+                                        <option value="2" className='fw-bold'>DESPACHADAS</option>
                                     </select>
                                 </div> */}
                                 <div className="col-md-3 fv-row">
@@ -268,13 +628,49 @@ function Administrar() {
                                 </div>
                             </div>
                         </div>
-                        <div className='col-12 mt-5'>
-                            <div className='table-responsive' id='AD_TABLA_DATOS_SECC'>
-                                <table id='AD_TABLA_DATOS' className='table table-striped'>
+                        {
+                            barra_visible == true && (
+                                <div className='col-12 mt-3'>
+                                    <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                        <li className="nav-item" role="presentation">
+                                            <a onClick={(item) => ajustar(item)} className="nav-link active fs-6 fw-bold" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">SIN DESPACHAR</a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link fs-6 fw-bold" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">DESPACHADAS</a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link fs-6 fw-bold" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+                                        </li>
+                                    </ul>
+                                    <div className="tab-content" id="myTabContent">
+                                        <div className="tab-pane  show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                            <div className='col-12 mt-5'>
+                                                <div className='table-responsive' id='AD_TABLA_DATOS_SECC'>
+                                                    <table id='AD_TABLA_DATOS' className='table table-striped'>
 
-                                </table>
-                            </div>
-                        </div>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="tab-pane " id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                            <div className='col-12 mt-5'>
+                                                <div className='table-responsive' id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC'>
+                                                    <table id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL' className='table table-striped'>
+
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="tab-pane " id="contact" role="tabpanel" aria-labelledby="contact-tab">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
+
+
+
 
                         <CModal size="xl" id='AD_MODAL_DETALLES' backdrop="static" visible={visible} onClose={() => setVisible(false)}>
                             <CModalHeader>
@@ -384,7 +780,7 @@ function Administrar() {
 
                                     <div className='col-12' >
                                         <div className='table-responsive'>
-                                            <table id='DES_TABLA_GUIAS_DETALLE'>
+                                            <table id='DES_TABLA_GUIAS_DETALLE' className='display table table-striped'>
 
                                             </table>
                                         </div>
@@ -403,6 +799,46 @@ function Administrar() {
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible(false)}>
+                                    Cerrar
+                                </CButton>
+                                <CButton color="primary">Guardar Cambios</CButton>
+                            </CModalFooter>
+                        </CModal>
+                        <CModal size="xl" id='AD_MODAL_HISTORIAL' backdrop="static" visible={visible_h} onClose={() => setVisible_h(false)}>
+                            <CModalHeader>
+                                <CModalTitle>Historial de entrega</CModalTitle>
+                            </CModalHeader>
+                            <CModalBody>
+                                <div className='row'>
+                                    <h4 className="mb-2 mb-3">Pedido Interno #
+                                        <span className="text-gray-700" id="ORDEN_NUM">{Pedido}</span>
+                                    </h4>
+                                    <h4 className="mb-2 mb-3">Estado:
+                                        <span className={estado_despacho == 1 ? "text-danger" : "text-success"} id="ORDEN_NUM">{estado_despacho_texto}</span>
+                                    </h4>
+
+                                    <div className='col-12' >
+                                        <div className='table-responsive'>
+                                            <table id='DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL' className='display table table-striped'>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+
+                                    <div className='col-12' >
+                                        <div className='table-responsive'>
+                                            <table id='DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL_DETALLE' className='display table table-striped'>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </CModalBody>
+                            <CModalFooter>
+                                <CButton color="secondary" onClick={() => setVisible_h(false)}>
                                     Cerrar
                                 </CButton>
                                 <CButton color="primary">Guardar Cambios</CButton>

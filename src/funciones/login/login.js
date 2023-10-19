@@ -15,7 +15,7 @@ function Iniciar_sesion(param) {
   } else if (param.PASS == "") {
     fun.Mensaje("Debe ingresar una contraseña", "", "error");
   } else {
-    fun.AjaxSendReceiveData(URL, param, function (x) {
+    fun.AjaxSendReceiveDatalogin(URL, param, function (x) {
       console.log('x: ', x);
       
       if (x[0] == true) {
