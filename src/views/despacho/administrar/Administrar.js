@@ -19,6 +19,7 @@ import * as fun from "../../../config/config"
 function Administrar() {
     const [visible, setVisible] = useState(false);
     const [visible_h, setVisible_h] = useState(false);
+    const [visible_f, setVisible_f] = useState(false);
     const [barra_visible, setbarra_visible] = useState(false);
 
 
@@ -41,6 +42,14 @@ function Administrar() {
     const [chofer, setchofer] = useState('');
     const [estado_despacho, setestado_despacho] = useState('');
     const [estado_despacho_texto, setestado_despacho_texto] = useState('');
+
+    //******* FACTURA */
+    const [parametros, setparametros] = useState([]);
+    const [parametros_iva, setparametros_iva] = useState("");
+    const [F_IVA, setF_IVA] = useState("0.00");
+    const [F_TOTAL, setF_TOTAL] = useState("0.00");
+    const [F_SUBTOTAL_0, setF_SUBTOTAL_0] = useState("0.00");
+    const [F_SUBTOTAL_12, setF_SUBTOTAL_12] = useState("0.00");
 
 
     function Cargar_Datos() {
@@ -136,7 +145,14 @@ function Administrar() {
                 data: null,
                 title: "MAS",
                 className: "btn_recibir text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
-                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle"></i></button>',
+                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle fs-4"></i></button>',
+                orderable: "",
+                width: 20
+            }, {
+                data: null,
+                title: "INGRESAR FACTURA",
+                className: "btn_factura text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_factura btn btn-warning"><i class="bi bi-receipt-cutoff fw-bold fs-4"></i></button>',
                 orderable: "",
                 width: 20
             }
@@ -182,6 +198,19 @@ function Administrar() {
 
                 Tabla_guias_sin_despachar_detalles(x)
             })
+        });
+        $('#AD_TABLA_DATOS').on('click', 'td.btn_factura', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            setVisible_f(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            funciones.Obtener_Parametros(function (x) {
+                let iva = x.filter(item => item.parametro_nombre = "IVA");
+                setparametros_iva(iva[0]["paramentro_valor"]);
+            })
+
+            Cargar_facturas_Pedido(data["PEDIDO_INTERNO"]);
+
         });
 
 
@@ -577,11 +606,159 @@ function Administrar() {
     }
 
 
+    //********* FACTURAS ******//
 
 
+    function Calcular_Valor(item) {
+        let SUBTOTAL_0 = $("#SUBTOTAL_0").val();
+        SUBTOTAL_0 = parseFloat(SUBTOTAL_0);
+        console.log('SUBTOTAL_0: ', SUBTOTAL_0);
+        let SUBTOTAL_12 = $("#SUBTOTAL_12").val();
+        SUBTOTAL_12 = parseFloat(SUBTOTAL_12);
+        console.log('SUBTOTAL_12: ', SUBTOTAL_12);
+
+        if (isNaN(SUBTOTAL_0) || SUBTOTAL_0 < 0) {
+            SUBTOTAL_0 = 0;
+        }
+        if (isNaN(SUBTOTAL_12) || SUBTOTAL_12 < 0) {
+            SUBTOTAL_12 = 0;
+        }
+
+        setF_SUBTOTAL_0(SUBTOTAL_0);
+        setF_SUBTOTAL_12(SUBTOTAL_12);
+
+        let iva = SUBTOTAL_12 * (parametros_iva / 100)
+        iva = parseFloat(iva).toFixed(2);
+        setF_IVA(iva);
+
+        let total = parseFloat(SUBTOTAL_12) + parseFloat(iva) + parseFloat(SUBTOTAL_0);
+        total = parseFloat(total).toFixed(2);
+        console.log('total: ', total);
+        setF_TOTAL(total);
 
 
+    }
 
+    function Cargar_facturas_Pedido(pedido) {
+        let param = {
+            PEDIDO_INTERNO: pedido
+        }
+        funciones.Cargar_facturas_Pedido(param, function (x) {
+            console.log('x: ', x);
+            Tabla_Cargar_facturas_Pedido(x);
+        })
+
+    }
+
+    function Tabla_Cargar_facturas_Pedido(datos) {
+        $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').empty();
+        if ($.fn.dataTable.isDataTable('#AD_TABLA_DATOS')) {
+            $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS').DataTable().destroy();
+            $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').empty();
+        }
+
+        let tabla = `
+        <table id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS' class='table display table-striped' style="width:100%">
+        </table>
+        `;
+        
+        $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').append(tabla);
+
+        let TABLA_ = $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            order: [[0, "asc"]],
+            columns: [{
+                data: "FECHA_CREADO",
+                title: "FECHA INGRESO",
+            },
+            {
+                data: "factura_fecha",
+                title: "FECHA FACTURA"
+            },
+            {
+                data: "factura_nombre",
+                title: "NOMBRE"
+            }, {
+                data: "factura_nota",
+                title: "NOTA"
+            }, {
+                data: "factura_subtotal_0",
+                title: "SUBTOTAL 0",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
+
+            }, {
+                data: "factura_subtotal_12",
+                title: "SUBTOTAL 12",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
+            },
+            {
+                data: "factura_total",
+                title: "TOTAL",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
+            }
+
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+
+
+            },
+        });
+    }
+
+    function Guardar_Factura() {
+        let FECHA = $("#FECHA_FACTURA").val();
+        let SECUENCIA = $("#SECUENCIA").val();
+        let FACT_NOMBRE = $("#FACT_NOMBRE").val();
+        let NOTA = $("#NOTA").val();
+
+        if (FECHA == "") {
+            fun.Mensaje("INGRESE UNA FECHA VALIDA", "", "error");
+        } else if (SECUENCIA == "") {
+            fun.Mensaje("INGRESE NUMERO DE SECUENCIA", "", "error");
+
+        } else if (FACT_NOMBRE == "") {
+            fun.Mensaje("INGRESE UN NOMBRE", "", "error");
+        } else {
+
+            if (parseFloat(F_TOTAL) <= 0) {
+                fun.Mensaje("EL TOTAL DE LA FACTURA NO PUEDE SER 0", "", "error");
+            } else {
+                let param = {
+                    PEDIDO_INTERNO: Pedido,
+                    FECHA: FECHA,
+                    SECUENCIA: SECUENCIA,
+                    FACT_NOMBRE: FACT_NOMBRE,
+                    NOTA: NOTA,
+                    SUBTOTAL_0: F_SUBTOTAL_0,
+                    SUBTOTAL_12: F_SUBTOTAL_12,
+                    IVA: F_IVA,
+                    TOTAL: F_TOTAL
+                }
+                console.log('param: ', param);
+
+                funciones.Guardar_Factura(param, function (x) {
+                    console.log('x: ', x);
+                    if (x[0] == 1) {
+                        fun.Mensaje(x[1], "", "success");
+                        Cargar_facturas_Pedido(Pedido);
+                    } else {
+                        fun.Mensaje("ERROR AL GUARDAR", x[1].toString(), "error");
+
+                    }
+                })
+            }
+        }
+    }
 
 
 
@@ -668,10 +845,6 @@ function Administrar() {
                                 </div>
                             )
                         }
-
-
-
-
                         <CModal size="xl" id='AD_MODAL_DETALLES' backdrop="static" visible={visible} onClose={() => setVisible(false)}>
                             <CModalHeader>
                                 <CModalTitle>DETALLES</CModalTitle>
@@ -715,8 +888,6 @@ function Administrar() {
                                             </tbody>
 
                                         </table>
-
-
                                     </div>
                                     <div className="col-6 p-1">
 
@@ -839,6 +1010,90 @@ function Administrar() {
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible_h(false)}>
+                                    Cerrar
+                                </CButton>
+                                <CButton color="primary">Guardar Cambios</CButton>
+                            </CModalFooter>
+                        </CModal>
+                        <CModal size="xl" id='AD_MODAL_FACTURAS' backdrop="static" visible={visible_f} onClose={() => setVisible_f(false)}>
+                            <CModalHeader>
+                                <CModalTitle>Ingresar Factura</CModalTitle>
+                            </CModalHeader>
+                            <CModalBody>
+                                <h4 className="mb-2 mb-3">Pedido Interno #
+                                    <span className="text-gray-700" id="ORDEN_NUM">{Pedido}</span>
+                                </h4>
+                                <div className='row'>
+                                    <div className='col-4'>
+                                        <form className="row g-3">
+                                            <div className="col-md-6">
+                                                <label className="form-label fw-bold">FECHA FACTURA</label>
+                                                <input id="FECHA_FACTURA" type="date" className="form-control" />
+                                            </div>
+                                            <div className="col-md-6">
+                                                <label className="form-label fw-bold">SECUENCIA</label>
+                                                <input type="text" className="form-control" id="SECUENCIA" />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label fw-bold">FACTURA NOMBRE</label>
+                                                <input type="text" className="form-control" id="FACT_NOMBRE" placeholder="" />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label fw-bold">NOTA</label>
+                                                <input type="text" className="form-control" id="NOTA" placeholder="" />
+                                            </div>
+
+                                            <table className="table m-2">
+                                                <tbody>
+                                                    <tr >
+                                                        <td className='fw-bold'>SUBTOTAL 0</td>
+                                                        <td className="text-muted fw-bold fs-7">
+                                                            <input step={0.01} defaultValue={0} id='SUBTOTAL_0' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
+                                                        </td>
+                                                    </tr>
+                                                    <tr >
+                                                        <td className='fw-bold'>SUBTOTAL 12</td>
+                                                        <td className="text-muted fw-bold fs-7">
+                                                            <input step={0.01} defaultValue={0} id='SUBTOTAL_12' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
+                                                        </td>
+                                                    </tr>
+                                                    <tr >
+                                                        <td className='fw-bold'>IVA</td>
+                                                        <td className="text-muted fw-bold fs-5 text-end">$
+                                                            <span id='IVA'>{F_IVA}</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className='fw-bold'>TOTAL</td>
+                                                        <td className="text-muted fw-bold fs-5 text-end">$
+                                                            <span id='TOTAL'>{F_TOTAL}</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+
+                                            </table>
+
+                                            <div className="col-12">
+                                                <button onClick={Guardar_Factura} className="btn btn-primary">Guardar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div className='col-8'>
+                                        <h4>Faturas Ingresadas</h4>
+                                        <div className='col-12' >
+                                            <div className='table-responsive' id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC'>
+                                                <table id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS' className='display table table-striped'>
+
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </CModalBody>
+                            <CModalFooter>
+                                <CButton color="secondary" onClick={() => setVisible_f(false)}>
                                     Cerrar
                                 </CButton>
                                 <CButton color="primary">Guardar Cambios</CButton>

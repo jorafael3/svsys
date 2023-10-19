@@ -40,15 +40,36 @@ function Guias_Despachadas_General_detalle(param, callback) {
     });
 }
 
-function Guias_Despachadas_Historial(param,callback){
+function Guias_Despachadas_Historial(param, callback) {
     let url = URL + 'Guias_Despachadas_Historial'
     fun.AjaxSendReceiveData(url, param, function (x) {
         callback(x);
     });
 }
 
-function Guias_Despachadas_Historial_detalle(param,callback){
+function Guias_Despachadas_Historial_detalle(param, callback) {
     let url = URL + 'Guias_Despachadas_Historial_detalle'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        callback(x);
+    });
+}
+
+function Obtener_Parametros(callback) {
+    let url = URL + 'Obtener_Parametros'
+    fun.AjaxSendReceiveData(url, [], function (x) {
+        callback(x);
+    });
+}
+
+function Cargar_facturas_Pedido(param, callback) {
+    let url = URL + 'Cargar_facturas_Pedido'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        callback(x);
+    });
+}
+
+function Guardar_Factura(param, callback) {
+    let url = URL + 'Guardar_Factura'
     fun.AjaxSendReceiveData(url, param, function (x) {
         callback(x);
     });
@@ -63,5 +84,8 @@ export {
     Guias_Despachadas_General,
     Guias_Despachadas_General_detalle,
     Guias_Despachadas_Historial,
-    Guias_Despachadas_Historial_detalle
+    Guias_Despachadas_Historial_detalle,
+    Obtener_Parametros,
+    Guardar_Factura,
+    Cargar_facturas_Pedido
 };
