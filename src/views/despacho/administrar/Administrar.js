@@ -120,6 +120,24 @@ function Administrar() {
                 title: "FACTURA"
             },
             {
+                data: "placa",
+                title: "PLACA",
+                render: function (x, y, r) {
+                    if (x == null) {
+                        x = `
+                        <span class="text-danger">SIN ASIGNAR</span>
+                        `;
+                    } else {
+                        x = `
+                        <span>`+ x + `</span><br>
+                        <span>`+ r.chofer_nombre + `</span>
+                        `;
+                    }
+
+                    return x;
+                }
+            },
+            {
                 data: "TOTAL_FACTURAS",
                 title: "TOTAL FACT.",
                 render: $.fn.dataTable.render.number(',', '.', 2, "$")
@@ -168,6 +186,7 @@ function Administrar() {
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
                 $('td', row).eq(4).addClass("fw-bold fs-6");
+                $('td', row).eq(5).addClass("fw-bold fs-6");
             },
         });
 
@@ -176,6 +195,7 @@ function Administrar() {
         }, 500);
         $('#AD_TABLA_DATOS').on('click', 'td.btn_recibir', function (respuesta) {
             var data = TABLA_.row(this).data();
+            console.log('data: ', data);
 
             setVisible(true);
             setPedido(data["PEDIDO_INTERNO"]);
@@ -1084,20 +1104,13 @@ function Administrar() {
                                     </div>
                                 </div>
 
-                                <div className='col-6'>
-                                    <div className="d-flex flex-column mb-7 fv-row fv-plugins-icon-container">
-                                        <label className="required fs-6 fw-semibold form-label mb-2">INGRESAR FACTURA</label>
-                                        <div className="position-relative">
-                                            <input type="text" className="form-control form-control-solid" placeholder='000-000-00000000' />
-                                        </div>
-                                    </div>
-                                </div>
+                              
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible(false)}>
                                     Cerrar
                                 </CButton>
-                                <CButton color="primary">Guardar Cambios</CButton>
+                                {/* <CButton color="primary">Guardar Cambios</CButton> */}
                             </CModalFooter>
                         </CModal>
                         <CModal size="xl" id='AD_MODAL_HISTORIAL' backdrop="static" visible={visible_h} onClose={() => setVisible_h(false)}>
@@ -1137,7 +1150,7 @@ function Administrar() {
                                 <CButton color="secondary" onClick={() => setVisible_h(false)}>
                                     Cerrar
                                 </CButton>
-                                <CButton color="primary">Guardar Cambios</CButton>
+                                {/* <CButton color="primary">Guardar Cambios</CButton> */}
                             </CModalFooter>
                         </CModal>
                         <CModal size="xl" id='AD_MODAL_FACTURAS' backdrop="static" visible={visible_f} onClose={() => setVisible_f(false)}>
