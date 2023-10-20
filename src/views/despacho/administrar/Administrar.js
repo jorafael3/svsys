@@ -286,8 +286,21 @@ function Administrar() {
             $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC').empty();
         }
 
+        var total = datos.reduce(function (acc, obj) { return acc + (obj.TOTAL_FACTURAS == null ? 0 : parseFloat(obj.TOTAL_FACTURAS)); }, 0);
+        console.log('total: ', total);
+
+
         let tabla = `
         <table id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL' class='table display table-striped' style="width:100%">
+            <tfoot>
+                <tr>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">TOTAL</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(total).toFixed(2) + `</th>
+                </tr>
+            </tfoot>
         </table>
         `;
         $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC').append(tabla);
@@ -326,6 +339,12 @@ function Administrar() {
             {
                 data: "PEDIDO_CREADO_POR",
                 title: "PEDIDO CREADO POR"
+            },
+            {
+                data: "TOTAL_FACTURAS",
+                title: "TOTAL FACTURAS",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
+
             },
             {
                 data: "ESTADO_DESPACHO_TEXTO",
@@ -390,14 +409,16 @@ function Administrar() {
                 $('td', row).eq(0).addClass("fw-bold fs-6 ");
                 $('td', row).eq(1).addClass("fw-bold fs-6 ");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
-                $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
-                $('td', row).eq(4).addClass("fw-bold fs-6");
+                $('td', row).eq(3).addClass("fw-bold fs-6");
+                $('td', row).eq(4).addClass("fw-bold fs-6  bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6");
             },
         });
 
         setTimeout(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
         }, 500);
+
         $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
@@ -919,9 +940,9 @@ function Administrar() {
                                         <li className="nav-item" role="presentation">
                                             <a className="nav-link fs-6 fw-bold" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">DESPACHADAS</a>
                                         </li>
-                                        <li className="nav-item" role="presentation">
+                                        {/* <li className="nav-item" role="presentation">
                                             <a className="nav-link fs-6 fw-bold" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
-                                        </li>
+                                        </li> */}
                                     </ul>
                                     <div className="tab-content" id="myTabContent">
                                         <div className="tab-pane  show active" id="home" role="tabpanel" aria-labelledby="home-tab">
@@ -1129,7 +1150,7 @@ function Administrar() {
                                 </h4>
                                 <div className='row'>
                                     <div className='col-4'>
-                                        <form className="row g-3">
+                                        <div className="row g-3">
                                             <div className="col-md-6">
                                                 <label className="form-label fw-bold">FECHA FACTURA</label>
                                                 <input id="FECHA_FACTURA" type="date" className="form-control" />
@@ -1180,7 +1201,7 @@ function Administrar() {
                                             <div className="col-12">
                                                 <button onClick={Guardar_Factura} className="btn btn-primary">Guardar</button>
                                             </div>
-                                        </form>
+                                        </div>
                                     </div>
                                     <div className='col-8'>
                                         <h4>Faturas Ingresadas</h4>

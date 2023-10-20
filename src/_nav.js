@@ -139,6 +139,7 @@ function Accesos_vista() {
 // Accesos_vista()
 var routes = [];
 
+
 Accesos_vista()
   .then((Menu) => {
     console.log('Menu: ', Menu);
@@ -147,6 +148,7 @@ Accesos_vista()
     routes.push(...Menu);
   })
   .catch((error) => {
+    console.log('error: ', error);
 
   });
 
