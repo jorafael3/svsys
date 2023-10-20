@@ -15,13 +15,21 @@ import {
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import * as ajax from "../src/config/config"
+import * as funciones from '../src/funciones/login/login';
 
 function Accesos_vista() {
 
   return new Promise((resolve, reject) => {
-    let url = 'menu/Cargar_Menu'
-    ajax.AjaxSendReceiveData(url, "", function (res) {
-      
+    let url = 'menu/Cargar_Menu';
+    let DATOS_SESION = funciones.GET_DATOS_SESION()
+    let param = {
+      Usuario_ID: DATOS_SESION["Usuario_ID"]
+    }
+    console.log('param: ', param);
+
+    ajax.AjaxSendReceiveData(url, param, function (res) {
+      console.log('res: ', res);
+
       let Menu = [];
 
       res.map(function (x) {
@@ -133,12 +141,13 @@ var routes = [];
 
 Accesos_vista()
   .then((Menu) => {
-    
+    console.log('Menu: ', Menu);
+
     // Populate the routes array with the Menu data
     routes.push(...Menu);
   })
   .catch((error) => {
-    
+
   });
 
 export default routes

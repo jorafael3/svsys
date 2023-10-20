@@ -30,9 +30,9 @@ const AppHeaderDropdown = () => {
 
   useEffect(() => {
     let DATOS_SESION = funciones.GET_DATOS_SESION()
-    
-    
     setDATOSSESION(DATOS_SESION);
+
+
   }, []);
   return (
     <CDropdown variant="nav-item">

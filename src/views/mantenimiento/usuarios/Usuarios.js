@@ -277,7 +277,7 @@ function Usuarios() {
 
             let url = 'usuarios/Consultar_Accesos';
             let param = {
-                USUARIO_ID: data["Usuario_ID"],
+                Usuario_ID: data["Usuario_ID"],
             }
             setusuario_id(data["Usuario_ID"]);
             ajax.AjaxSendReceiveData(url, param, function (x) {
@@ -475,7 +475,7 @@ function Usuarios() {
     function Guardar_Accesos() {
         let param = {
             ACCESOS: CHECKEDS.length == 0 ? 0 : CHECKEDS,
-            USUARIO_ID: usuario_id
+            usuario_id: usuario_id
         }
         console.log('param: ', param);
         let url = 'usuarios/Guardar_Accesos';

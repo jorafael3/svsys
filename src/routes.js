@@ -10,59 +10,131 @@ const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Cliente
 const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
-function Accesos() {
-  return new Promise((resolve, reject) => {
-    let url = 'menu/Cargar_Menu'
-    ajax.AjaxSendReceiveData(url, "", function (x) {
-      
-      let Menu = [];
+// const routes = [
+//   { path: '/', exact: true, name: 'Home' },
+//   { path: '/dashboard', name: 'Dashboard', element: dashboard },
+//   { path: '/despacho', name: 'Despacho', exact: true },
+//   { path: '/despacho/guias', name: 'Guias', element: guias },
+//   { path: '/despacho/administrar', name: 'Administrar', element: administracion },
+//   { path: '/mantenimiento', name: 'Mantenimiento', exact: true },
+// ]
+// console.log('routes: ', routes);
 
-      x.map(function (x) {
-        let path;
-        let name;
-        let exact = false;
-        let element;
-        if (x.Ismenu == 1) {
-          path = x.ruta;
-          name = x.Nombre;
-          element = (x.menu_variable).trim()
-        } else if (x.Ismenu_Drop == 1) {
-          path = x.ruta;
-          name = x.Nombre;
-          element = "";
-          exact = true;
-        }
-        else if (x.IsSubmenu == 1) {
-          path = x.sub_ruta;
-          name = x.sub_nombre;
-          element =  (x.sub_variable).trim()
-        }
-        // const LazyComponent = React.lazy(() => import(element));
-        let b = {
-          path: "/" + path,
-          name: name,
-          element: eval(element),
-          // element: LazyComponent,
-          exact: exact
-        }
-        Menu.push(b)
-      });
-      resolve(Menu); // Resolve the promise with the Menu data
-    });
-  });
-}
-Accesos()
-var routes = [];
+const routes = [
+  { path: '/', exact: true, name: 'Home' },
+  {
+    "path": "/dashboard",
+    "name": "Dashboard",
+    "element": dashboard,
+    "exact": false
+  },
+  {
+    "path": "/despacho",
+    "name": "Despacho",
+    "exact": true
+  },
+  {
+    "path": "/despacho/guias",
+    "name": "Ingresar Guia",
+    "element": guias,
+    "exact": false
+  },
+  {
+    "path": "/despacho/administrar",
+    "name": "Administrar Guias",
+    "element": administracion,
+    "exact": false
+  },
+  {
+    "path": "/mantenimiento",
+    "name": "Mantenimiento",
+    "exact": true
+  },
+  {
+    "path": "/mantenimiento/usuarios",
+    "name": "Usuarios",
+    "element": usuarios,
+    "exact": false
+  },
+  {
+    "path": "/mantenimiento/clientes",
+    "name": "Clientes",
+    "element": clientes,
+    "exact": false
+  },
+  {
+    "path": "/mantenimiento/choferes",
+    "name": "Choferes",
+    "element": choferes,
+    "exact": false
+  },
+  {
+    "path": "/desarrollo",
+    "name": "Desarrollo",
+    "exact": true
+  },
+  {
+    "path": "/desarrollo/scrapy",
+    "name": "Scrapys",
+    "element": scrapy,
+    "exact": false
+  }
+]
 
-Accesos()
-  .then((Menu) => {
-    
-    // Populate the routes array with the Menu data
-    routes.push(...Menu);
-  })
-  .catch((error) => {
-    
-  });
+// function Accesos() {
+//   return new Promise((resolve, reject) => {
+//     let url = 'menu/Cargar_Menu'
+//     ajax.AjaxSendReceiveData(url, "", function (x) {
+
+//       let Menu = [];
+
+//       x.map(function (x) {
+//         let path;
+//         let name;
+//         let exact = false;
+//         let element;
+//         if (x.Ismenu == 1) {
+//           path = x.ruta;
+//           name = x.Nombre;
+//           element = (x.menu_variable).trim()
+//         } else if (x.Ismenu_Drop == 1) {
+//           path = x.ruta;
+//           name = x.Nombre;
+//           element = "";
+//           exact = true;
+//         }
+//         else if (x.IsSubmenu == 1) {
+//           path = x.sub_ruta;
+//           name = x.sub_nombre;
+//           element =  (x.sub_variable).trim()
+//         }
+//         // const LazyComponent = React.lazy(() => import(element));
+//         let b = {
+//           path: "/" + path,
+//           name: name,
+//           element: eval(element),
+//           // element: LazyComponent,
+//           exact: exact
+//         }
+//         Menu.push(b)
+//       });
+//       resolve(Menu); // Resolve the promise with the Menu data
+//     });
+//   });
+// }
+// Accesos()
+// var routes = [];
+
+// Accesos()
+//   .then((Menu) => {
+//     console.log('Menu: ', Menu);
+
+//     // Populate the routes array with the Menu data
+//     routes.push(...Menu);
+//   })
+//   .catch((error) => {
+
+//   });
 
 export default routes
 
@@ -77,7 +149,7 @@ export default routes
 // 
 
 // const routes = [
-//   // { path: '/', exact: true, name: 'Home' },
+// { path: '/', exact: true, name: 'Home' },
 //   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 //   { path: '/despacho', name: 'Despacho', exact: true },
 //   { path: '/despacho/guias', name: 'Guias', element: Despacho },

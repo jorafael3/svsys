@@ -82,7 +82,7 @@ function Administrar() {
         }
 
         let tabla = `
-        <table id='AD_TABLA_DATOS' class='table display table-striped'>
+        <table id='AD_TABLA_DATOS' class=' display table table-striped'>
         </table>
         `;
         $('#AD_TABLA_DATOS_SECC').append(tabla);
@@ -118,6 +118,11 @@ function Administrar() {
             {
                 data: "FACTURA",
                 title: "FACTURA"
+            },
+            {
+                data: "TOTAL_FACTURAS",
+                title: "TOTAL FACT.",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
             },
             {
                 data: "VENCIDO",
@@ -161,7 +166,7 @@ function Administrar() {
                 $('td', row).eq(0).addClass("fw-bold fs-6 ");
                 $('td', row).eq(1).addClass("fw-bold fs-6 ");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
-                $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
+                $('td', row).eq(3).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
                 $('td', row).eq(4).addClass("fw-bold fs-6");
             },
         });
@@ -320,11 +325,11 @@ function Administrar() {
             },
             {
                 data: "PEDIDO_CREADO_POR",
-                title: "PEDIDO_CREADO_POR"
+                title: "PEDIDO CREADO POR"
             },
             {
                 data: "ESTADO_DESPACHO_TEXTO",
-                title: "ESTADO_DESPACHO_TEXTO",
+                title: "ESTADO DESPACHO",
                 // render: function (x, y, r) {
                 //     const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
 
@@ -348,7 +353,7 @@ function Administrar() {
                 data: null,
                 title: "DETALLES",
                 className: "btn_detalles text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
-                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle"></i></button>',
+                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-ticket-detailed fw-bold fs-4"></i></button>',
                 orderable: "",
                 width: 20
             },
@@ -356,7 +361,16 @@ function Administrar() {
                 data: null,
                 title: "HISTORIAL",
                 className: "btn_historial text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
-                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle"></i></button>',
+                defaultContent: '<button type="button" class="btn_recibir btn btn-success"><i class="bi bi-clock-history fw-bold fs-4"></i></button>',
+                orderable: "",
+                width: 20,
+
+            },
+            {
+                data: null,
+                title: "INGRESAR FACTURA",
+                className: "btn_factura text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_factura btn btn-warning"><i class="bi bi-receipt-cutoff fw-bold fs-4"></i></button>',
                 orderable: "",
                 width: 20
             }
@@ -422,6 +436,20 @@ function Administrar() {
                 console.log('x: ', x);
                 Tabla_Guias_Despachadas_Historial(x);
             })
+
+        });
+
+        $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_factura', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            setVisible_f(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            funciones.Obtener_Parametros(function (x) {
+                let iva = x.filter(item => item.parametro_nombre = "IVA");
+                setparametros_iva(iva[0]["paramentro_valor"]);
+            })
+
+            Cargar_facturas_Pedido(data["PEDIDO_INTERNO"]);
 
         });
 
@@ -610,6 +638,7 @@ function Administrar() {
 
 
     function Calcular_Valor(item) {
+        console.log('item: ', item.target.value);
         let SUBTOTAL_0 = $("#SUBTOTAL_0").val();
         SUBTOTAL_0 = parseFloat(SUBTOTAL_0);
         console.log('SUBTOTAL_0: ', SUBTOTAL_0);
@@ -657,17 +686,35 @@ function Administrar() {
             $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').empty();
         }
 
+        var sub_0 = datos.reduce(function (acc, obj) { return acc + parseFloat(obj.factura_subtotal_0); }, 0);
+        var sub_12 = datos.reduce(function (acc, obj) { return acc + parseFloat(obj.factura_subtotal_12); }, 0);
+        var imp = datos.reduce(function (acc, obj) { return acc + parseFloat(obj.factura_impuesto); }, 0);
+        var total = datos.reduce(function (acc, obj) { return acc + parseFloat(obj.factura_total); }, 0);
+
         let tabla = `
         <table id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS' class='table display table-striped' style="width:100%">
+            <tfoot>
+                <tr>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">TOTAL</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_0).toFixed(2) + `</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_12).toFixed(2) + `</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(imp).toFixed(2) + `</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(total).toFixed(2) + `</th>
+                </tr>
+            </tfoot>
         </table>
         `;
-        
+
         $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').append(tabla);
 
         let TABLA_ = $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS').DataTable({
             destroy: true,
             data: datos,
             dom: 'rtip',
+            "pageLength": 5,
             order: [[0, "asc"]],
             columns: [{
                 data: "FECHA_CREADO",
@@ -685,12 +732,16 @@ function Administrar() {
                 title: "NOTA"
             }, {
                 data: "factura_subtotal_0",
-                title: "SUBTOTAL 0",
+                title: "SUB 0",
                 render: $.fn.dataTable.render.number(',', '.', 2, "$")
 
             }, {
                 data: "factura_subtotal_12",
-                title: "SUBTOTAL 12",
+                title: "SUB 12",
+                render: $.fn.dataTable.render.number(',', '.', 2, "$")
+            }, {
+                data: "factura_impuesto",
+                title: "IMP.",
                 render: $.fn.dataTable.render.number(',', '.', 2, "$")
             },
             {
@@ -746,16 +797,40 @@ function Administrar() {
                 }
                 console.log('param: ', param);
 
-                funciones.Guardar_Factura(param, function (x) {
-                    console.log('x: ', x);
-                    if (x[0] == 1) {
-                        fun.Mensaje(x[1], "", "success");
-                        Cargar_facturas_Pedido(Pedido);
-                    } else {
-                        fun.Mensaje("ERROR AL GUARDAR", x[1].toString(), "error");
+                Swal.fire({
+                    title: 'Estas seguro?',
+                    text: "antes de continuar confirma que los datos ingreados sean los correctos!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si, Continuar!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        funciones.Guardar_Factura(param, function (x) {
+                            console.log('x: ', x);
+                            if (x[0] == 1) {
+                                fun.Mensaje(x[1], "", "success");
+                                Cargar_facturas_Pedido(Pedido);
+                                $("#SECUENCIA").val("");
+                                $("#FACT_NOMBRE").val("");
+                                $("#NOTA").val();
+                                $("#SUBTOTAL_0").val(0);
+                                $("#SUBTOTAL_12").val(0);
+                                setF_SUBTOTAL_0(0);
+                                setF_SUBTOTAL_12(0);
+                                setF_IVA("0.00");
+                                setF_TOTAL("0.00");
 
+                            } else {
+                                fun.Mensaje("ERROR AL GUARDAR", x[1].toString(), "error");
+
+                            }
+                        })
                     }
                 })
+
+
             }
         }
     }
@@ -1048,13 +1123,13 @@ function Administrar() {
                                                     <tr >
                                                         <td className='fw-bold'>SUBTOTAL 0</td>
                                                         <td className="text-muted fw-bold fs-7">
-                                                            <input step={0.01} defaultValue={0} id='SUBTOTAL_0' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
+                                                            <input onChange={Calcular_Valor} step={0.01} defaultValue={0} id='SUBTOTAL_0' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
                                                         </td>
                                                     </tr>
                                                     <tr >
                                                         <td className='fw-bold'>SUBTOTAL 12</td>
                                                         <td className="text-muted fw-bold fs-7">
-                                                            <input step={0.01} defaultValue={0} id='SUBTOTAL_12' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
+                                                            <input onChange={Calcular_Valor} step={0.01} defaultValue={0} id='SUBTOTAL_12' onKeyUp={(item) => Calcular_Valor(item)} type="number" className='form-control' />
                                                         </td>
                                                     </tr>
                                                     <tr >
@@ -1096,7 +1171,6 @@ function Administrar() {
                                 <CButton color="secondary" onClick={() => setVisible_f(false)}>
                                     Cerrar
                                 </CButton>
-                                <CButton color="primary">Guardar Cambios</CButton>
                             </CModalFooter>
                         </CModal>
                     </CCardBody>
