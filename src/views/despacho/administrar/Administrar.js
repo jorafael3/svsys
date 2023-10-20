@@ -330,6 +330,17 @@ function Administrar() {
             {
                 data: "ESTADO_DESPACHO_TEXTO",
                 title: "ESTADO DESPACHO",
+                render: function (x, y, r) {
+
+                    if (r.ESTADO_DESPACHO == 1) {
+                        x = `<span class="text-danger">` + x + `</span>`
+                    } else {
+                        x = `<span class="text-success">` + x + `</span><br>
+                        <span>` + r.FECHA_COMPLETADO + `</span>
+                        `
+                    }
+                    return x;
+                }
                 // render: function (x, y, r) {
                 //     const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
 
@@ -529,6 +540,20 @@ function Administrar() {
                 data: "SERVICIO",
                 title: "SERVICIO"
             }, {
+                data: "DESPACHADO_POR",
+                title: "DESPACHADO POR"
+            }, {
+                data: "PLACA",
+                title: "PLACA",
+                render: function (x, y, r) {
+                    if (r.PLACA_CAMBIADA == 1) {
+                        x = `<span class='text-dark'>` + r.PLACA_CAMBIADA_NUMERO + `</span><br>
+                            <span class='text-danger'>(PLACA CAMBIADA)</span><br>
+                        `
+                    }
+                    return x;
+                }
+            }, {
                 data: "PARCIAL",
                 title: "ESTADO ENTREGA",
                 render: function (x) {
@@ -556,6 +581,8 @@ function Administrar() {
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 ");
                 $('td', row).eq(4).addClass("fw-bold fs-6 ");
+                $('td', row).eq(5).addClass("fw-bold fs-6 ");
+                $('td', row).eq(6).addClass("fw-bold fs-6 ");
 
 
             },
@@ -597,14 +624,16 @@ function Administrar() {
                 }, {
                     data: "POR_DESPACHAR",
                     title: "POR_DESPACHAR"
-                }, {
-                    data: "POR_DESPACHAR",
-                    title: "RESTANTE",
-                    render: function (x, y, r) {
-                        x = parseFloat(r.POR_DESPACHAR) - parseFloat((r.PARCIAL == 1 ? r.CANTIDAD_PARCIAL : r.CANTIDAD_TOTAL))
-                        return parseFloat(x).toFixed(2)
-                    }
-                }, {
+                },
+                //  {
+                //     data: "POR_DESPACHAR",
+                //     title: "RESTANTE",
+                //     render: function (x, y, r) {
+                //         x = parseFloat(r.POR_DESPACHAR) - parseFloat((r.PARCIAL == 1 ? r.CANTIDAD_PARCIAL : r.CANTIDAD_TOTAL))
+                //         return parseFloat(x).toFixed(2)
+                //     }
+                // }, 
+                {
                     data: null,
                     title: "DESPACHADA",
                     render: function (x, y, r) {
