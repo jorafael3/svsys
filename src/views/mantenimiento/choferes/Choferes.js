@@ -30,18 +30,18 @@ function Choferes() {
 
     function Cargar_Choferes() {
         let url = "choferes/Cargar_Choferes";
-        console.log('url: ', url);
+        
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+            
             Tabla_Choferes(x);
         })
     }
 
     function Cargar_Usuarios() {
         let url = "choferes/Cargar_Usuarios";
-        console.log('url: ', url);
+        
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+            
             setusuarios(x);
         })
     }
@@ -163,21 +163,21 @@ function Choferes() {
 
         $('#CH_TABLA_CHOFERES').on('click', 'td.btn_activar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 1;
             ActivarDesact_Chofer(data);
 
         });
         $('#CH_TABLA_CHOFERES').on('click', 'td.btn_desactivar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 0;
             ActivarDesact_Chofer(data);
         });
 
         $('#CH_TABLA_CHOFERES').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             setplaca(data["placa"]);
             setusuario_id(data["ID"]);
             setVisible_e(true);
@@ -187,10 +187,10 @@ function Choferes() {
     }
 
     function ActivarDesact_Chofer(data) {
-        // console.log('data: ', data);
+        // 
         let url = 'choferes/ActivarDesact_Chofer'
         ajax.AjaxSendReceiveData(url, data, function (x) {
-            console.log('x: ', x);
+            
             if (x[0] == 1) {
                 ajax.Mensaje(x[1], "", "success");
                 Cargar_Choferes();
@@ -219,11 +219,11 @@ function Choferes() {
                             ID: USUARIO_ID,
                             PLACA: PLACA,
                         }
-                        console.log('param: ', param);
+                        
 
                         let url = "choferes/Nuevo_Chofer";
                         ajax.AjaxSendReceiveData(url, param, function (x) {
-                            console.log('x: ', x);
+                            
                             if (x[0] == 1) {
                                 ajax.Mensaje(x[1], "", "success");
                                 setVisible_n(false);
@@ -248,7 +248,7 @@ function Choferes() {
     function Actualizar_Chofer() {
         let USUARIO_ID = usuario_id;
         let PLACA = $("#CH_PLACA_EDI").val();
-        console.log('PLACA: ', PLACA);
+        
         if (PLACA == "") {
             ajax.Mensaje("INGRESE NUMERO DE PLACA", "", "error");
         } else {
@@ -262,10 +262,10 @@ function Choferes() {
                             ID: USUARIO_ID,
                             PLACA: PLACA,
                         }
-                        console.log('param: ', param);
+                        
                         let url = "choferes/Actualizar_Chofer";
                         ajax.AjaxSendReceiveData(url, param, function (x) {
-                            console.log('x: ', x);
+                            
                             if (x[0] == 1) {
                                 ajax.Mensaje(x[1], "", "success");
                                 setVisible_e(false);

@@ -31,7 +31,7 @@ class Tree extends React.Component {
         expanded: MENUS_EXPANDIDOS
     };
     onCheck = checked => {
-        console.log(checked);
+        
         CHECKEDS = checked;
         this.setState({ checked });
     };
@@ -41,7 +41,7 @@ class Tree extends React.Component {
     render() {
         const { checked, expanded } = this.state;
         CHECKEDS = this.state.checked
-        // console.log('this.state: ', this.state.checked);
+        // 
         return (
             <CheckboxTree
                 nodes={nodes}
@@ -108,7 +108,7 @@ function Usuarios() {
             setdepartamentos(x);
         });
         usu.Cargar_Sucursales(function (x) {
-            console.log('x: ', x);
+            
             setsucursales(x);
         });
     }, []);
@@ -120,13 +120,13 @@ function Usuarios() {
             data2: "asdasd"
         }
         ajax.AjaxSendReceiveData(url, param, function (res) {
-            console.log('res: ', res);
+            
             Tabla_usuarios(res);
         });
     }
 
     function Tabla_usuarios(datos) {
-        // console.log('$(}', $('#US_TABLA_USUARIOS'));
+        // 
 
         $('#US_TABLA_USUARIOS').empty();
         if ($.fn.dataTable.isDataTable('#US_TABLA_USUARIOS')) {
@@ -257,7 +257,7 @@ function Usuarios() {
         // }, 500);
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             setUS_NOMBRE_ED(data["Nombre"]);
             setUS_USUARIO_ED(data["Usuario"]);
             setUS_USUARIOID_ED(data["Usuario_ID"]);
@@ -273,7 +273,7 @@ function Usuarios() {
         });
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_accesos', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
 
             let url = 'usuarios/Consultar_Accesos';
             let param = {
@@ -281,7 +281,7 @@ function Usuarios() {
             }
             setusuario_id(data["Usuario_ID"]);
             ajax.AjaxSendReceiveData(url, param, function (x) {
-                console.log('x: ', x);
+                
                 nodes = x[0][0];
                 MENUS_EXPANDIDOS = x[0][1]
                 MENUS_ACTIVOS = x[0][2]
@@ -324,13 +324,13 @@ function Usuarios() {
         });
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_desactivar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 0
             ActivarDesact_Usuario(data)
         });
         $('#US_TABLA_USUARIOS').on('click', 'td.btn_activar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 1
             ActivarDesact_Usuario(data)
         });
@@ -342,7 +342,7 @@ function Usuarios() {
         let US_EMAIL = $("#US_EMAIL").val();
         let US_PASS = $("#US_PASS").val();
         let US_CONF_PASS = $("#US_CONF_PASS").val();
-        console.log('US_USUARIO: ', dept_select);
+        
 
 
         if (US_USUARIO == "") {
@@ -370,10 +370,10 @@ function Usuarios() {
                     US_DEPT: dept_select,
                     US_SUCURSAL: suc_select
                 }
-                console.log('param: ', param);
+                
                 let url = 'usuarios/Nuevo_Usuario';
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    console.log('x: ', x);
+                    
                     if (x[0] == 1) {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Usuarios();
@@ -424,10 +424,10 @@ function Usuarios() {
                     US_DEPT: dept_select,
                     US_SUCURSAL: suc_select
                 }
-                console.log('paramddd: ', param);
+                
                 let url = 'usuarios/Editar_Usuario';
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    console.log('x: ', x);
+                    
                     if (x[0] == 1) {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Usuarios();
@@ -457,10 +457,10 @@ function Usuarios() {
                     ACCESOS: 0,
                     USUARIO_ID: usuario_id
                 }
-                console.log('param: ', param);
+                
                 let url = 'usuarios/Guardar_Accesos';
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    console.log('x: ', x);
+                    
                     if (x == true) {
                         Mensaje("Accesos Borrados", "para ver los cambios solicitar refrescar la pagina", "success");
                     } else {
@@ -477,11 +477,11 @@ function Usuarios() {
             ACCESOS: CHECKEDS.length == 0 ? 0 : CHECKEDS,
             usuario_id: usuario_id
         }
-        console.log('param: ', param);
+        
         let url = 'usuarios/Guardar_Accesos';
 
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            console.log('x: ', x);
+            
             if (x == true) {
                 Mensaje("Accesos guardados", "para ver los cambios solicitar refrescar la pagina", "success");
             } else {

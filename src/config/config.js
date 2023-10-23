@@ -14,84 +14,84 @@ const port = ":8080";
 const URL = "https://lcaimport.com/svsysback/"
 
 // https://lcaimport.com/svsysback/usuarios/Validar_Usuario_movil
-// function AjaxSendReceiveData(url, param, callback) {
-//     let DATOS_SESION = fun.GET_DATOS_SESION();
-//     // console.log('DATOS_SESION: ', DATOS_SESION);
-//     if (DATOS_SESION == null || DATOS_SESION == undefined || DATOS_SESION.length == 0) {
-//         Mensaje("LA SESION HA CADUCADO", "Por favor iniciar sesion nuevamente", "success");
-//     } else {
-//         let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
-//         if (param.length == 0) {
-//             param = {
-//                 TOKEN: token,
-//                 USUARIO: DATOS_SESION["Usuario"],
-//                 USUARIO_ID: DATOS_SESION["Usuario_ID"],
-//                 SUCURSAL_ID: DATOS_SESION["sucursal_id"],
-//             }
-//         } else {
-//             param.TOKEN = token;
-//             param.USUARIO_ID = DATOS_SESION["Usuario_ID"];
-//             param.SUCURSAL_ID = DATOS_SESION["sucursal_id"];
-//             param.USUARIO = DATOS_SESION["Usuario"];
-
-//         }
-//         $.ajax({
-//             url: URL + url,
-//             method: 'POST',
-//             dataType: 'json',
-//             data: {
-//                 param
-//             },
-//             success: function (data) {
-//                 callback(data);
-
-//             },
-//             error: function (error) {
-//                 callback(error)
-//             }
-//         });
-//     }
-
-// }
-
 function AjaxSendReceiveData(url, param, callback) {
-
-    let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
-    if (param.length == 0) {
-        param = {
-            TOKEN: token,
-            USUARIO: "jorge",
-            USUARIO_ID: "1",
-            SUCURSAL_ID: "1",
-        }
+    let DATOS_SESION = fun.GET_DATOS_SESION();
+    // 
+    if (DATOS_SESION == null || DATOS_SESION == undefined || DATOS_SESION.length == 0) {
+        Mensaje("LA SESION HA CADUCADO", "Por favor iniciar sesion nuevamente", "success");
     } else {
-        param.TOKEN = token;
-        param.USUARIO_ID = "1";
-        param.SUCURSAL_ID = "1";
-        param.USUARIO = "jorge";
+        let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
+        if (param.length == 0) {
+            param = {
+                TOKEN: token,
+                USUARIO: DATOS_SESION["Usuario"],
+                USUARIO_ID: DATOS_SESION["Usuario_ID"],
+                SUCURSAL_ID: DATOS_SESION["sucursal_id"],
+            }
+        } else {
+            param.TOKEN = token;
+            param.USUARIO_ID = DATOS_SESION["Usuario_ID"];
+            param.SUCURSAL_ID = DATOS_SESION["sucursal_id"];
+            param.USUARIO = DATOS_SESION["Usuario"];
 
-    }
-    $.ajax({
-        url: URL + url,
-        method: 'POST',
-        dataType: 'json',
-        data: {
-            param
-        },
-        success: function (data) {
-            callback(data);
-
-        },
-        error: function (error) {
-            callback(error)
         }
-    });
+        $.ajax({
+            url: URL + url,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                param
+            },
+            success: function (data) {
+                callback(data);
+
+            },
+            error: function (error) {
+                callback(error)
+            }
+        });
+    }
 
 }
 
+// function AjaxSendReceiveData(url, param, callback) {
+
+//     let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
+//     if (param.length == 0) {
+//         param = {
+//             TOKEN: token,
+//             USUARIO: "jorge",
+//             USUARIO_ID: "1",
+//             SUCURSAL_ID: "1",
+//         }
+//     } else {
+//         param.TOKEN = token;
+//         param.USUARIO_ID = "1";
+//         param.SUCURSAL_ID = "1";
+//         param.USUARIO = "jorge";
+
+//     }
+//     $.ajax({
+//         url: URL + url,
+//         method: 'POST',
+//         dataType: 'json',
+//         data: {
+//             param
+//         },
+//         success: function (data) {
+//             callback(data);
+
+//         },
+//         error: function (error) {
+//             callback(error)
+//         }
+//     });
+
+// }
+
 function AjaxSendReceiveDatalogin(url, param, callback) {
     let DATOS_SESION = fun.GET_DATOS_SESION();
-    console.log('DATOS_SESION: ', DATOS_SESION);
+    
 
     let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
     if (param.length == 0) {
@@ -101,7 +101,7 @@ function AjaxSendReceiveDatalogin(url, param, callback) {
     } else {
         param.TOKEN = token;
     }
-    console.log('param: ', param);
+    
 
     $.ajax({
         url: URL + url,
@@ -114,7 +114,7 @@ function AjaxSendReceiveDatalogin(url, param, callback) {
             callback(data)
         },
         error: function (error) {
-            console.log('error: ', error);
+            
         }
     });
 }

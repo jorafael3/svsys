@@ -1,11 +1,21 @@
-import React, { Suspense } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
-import routes from '../routes'
+import * as r from '../routes'
 
 const AppContent = () => {
+
+  const [routes, setroutes] = useState([]);
+
+  useEffect(() => {
+    r.Cargar_Rutas(function (x) {
+      
+      setroutes(x);
+    });
+  }, []);
+
   return (
     <CContainer lg>
       <Suspense fallback={<CSpinner color="primary" />}>

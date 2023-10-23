@@ -1,4 +1,3 @@
-import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler } from '@coreui/react'
@@ -14,11 +13,27 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
+import * as men from '../../src/funciones/Menu/Menu';
+import React, { useEffect, useRef, useState, CNav, CNavItem, CNavLink } from 'react';
+
+
+
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
-  const sidebarShow = useSelector((state) => state.sidebarShow)
+  const sidebarShow = useSelector((state) => state.sidebarShow);
+  const [barra_visible, setbarra_visible] = useState([]);
+
+
+ 
+  useEffect(() => {
+    men.Cargar_Menu(function (x) {
+      
+      setbarra_visible(x);
+    });  
+  }, []);
+
 
   return (
     <CSidebar
@@ -36,7 +51,7 @@ const AppSidebar = () => {
       </CSidebarBrand>
       <CSidebarNav>
         <SimpleBar>
-          <AppSidebarNav items={navigation} />
+          <AppSidebarNav items={barra_visible} />
         </SimpleBar>
       </CSidebarNav>
       <CSidebarToggler

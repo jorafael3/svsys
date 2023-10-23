@@ -1,5 +1,9 @@
 import React, { Suspense } from 'react';
 import * as ajax from "../src/config/config"
+import * as funciones from "../src/funciones/login/login"
+
+import Choferes from './views/mantenimiento/choferes/Choferes';
+
 
 const dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const guias = React.lazy(() => import('./views/despacho/guias/Guias'))
@@ -7,8 +11,12 @@ const administracion = React.lazy(() => import('./views/despacho/administrar/Adm
 const usuarios = React.lazy(() => import(`./views/mantenimiento/usuarios/Usuarios`))
 const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
 const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Clientes'))
-const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
+
+const choferes = Choferes;
+// const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
+
+
 
 // const routes = [
 //   { path: '/', exact: true, name: 'Home' },
@@ -18,68 +26,114 @@ const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Chofere
 //   { path: '/despacho/administrar', name: 'Administrar', element: administracion },
 //   { path: '/mantenimiento', name: 'Mantenimiento', exact: true },
 // ]
-// console.log('routes: ', routes);
+// 
 
-const routes = [
-  { path: '/', exact: true, name: 'Home' },
-  {
-    "path": "/dashboard",
-    "name": "Dashboard",
-    "element": dashboard,
-    "exact": false
-  },
-  {
-    "path": "/despacho",
-    "name": "Despacho",
-    "exact": true
-  },
-  {
-    "path": "/despacho/guias",
-    "name": "Ingresar Guia",
-    "element": guias,
-    "exact": false
-  },
-  {
-    "path": "/despacho/administrar",
-    "name": "Administrar Guias",
-    "element": administracion,
-    "exact": false
-  },
-  {
-    "path": "/mantenimiento",
-    "name": "Mantenimiento",
-    "exact": true
-  },
-  {
-    "path": "/mantenimiento/usuarios",
-    "name": "Usuarios",
-    "element": usuarios,
-    "exact": false
-  },
-  {
-    "path": "/mantenimiento/clientes",
-    "name": "Clientes",
-    "element": clientes,
-    "exact": false
-  },
-  {
-    "path": "/mantenimiento/choferes",
-    "name": "Choferes",
-    "element": choferes,
-    "exact": false
-  },
-  {
-    "path": "/desarrollo",
-    "name": "Desarrollo",
-    "exact": true
-  },
-  {
-    "path": "/desarrollo/scrapy",
-    "name": "Scrapys",
-    "element": scrapy,
-    "exact": false
+function Cargar_Rutas(callback) {
+  const routes = [
+    { path: '/', exact: true, name: 'Home' },
+    {
+      "path": "/dashboard",
+      "name": "Dashboard",
+      "element": dashboard,
+      "exact": false
+    },
+    {
+      "path": "/despacho",
+      "name": "Despacho",
+      "exact": true
+    },
+    {
+      "path": "/despacho/guias",
+      "name": "Ingresar Guia",
+      "element": guias,
+      "exact": false
+    },
+    {
+      "path": "/despacho/administrar",
+      "name": "Administrar Guias",
+      "element": administracion,
+      "exact": false
+    },
+    {
+      "path": "/mantenimiento",
+      "name": "Mantenimiento",
+      "exact": true
+    },
+    {
+      "path": "/mantenimiento/usuarios",
+      "name": "Usuarios",
+      "element": usuarios,
+      "exact": false
+    },
+    {
+      "path": "/mantenimiento/clientes",
+      "name": "Clientes",
+      "element": clientes,
+      "exact": false
+    },
+    {
+      "path": "/mantenimiento/choferes",
+      "name": "Choferes",
+      "element": choferes,
+      "exact": false
+    },
+    {
+      "path": "/desarrollo",
+      "name": "Desarrollo",
+      "exact": true
+    },
+    {
+      "path": "/desarrollo/scrapy",
+      "name": "Scrapys",
+      "element": scrapy,
+      "exact": false
+    }
+  ]
+  let url = 'menu/Cargar_Menu'
+  let DATOS_SESION = funciones.GET_DATOS_SESION()
+  let param = {
+    Usuario_ID: DATOS_SESION["Usuario_ID"]
   }
-]
+  // ajax.AjaxSendReceiveData(url, param, function (x) {
+    
+  //   let Menu = [];
+  //   Menu.push({ path: '/', exact: true, name: 'Home' });
+  //   x.map(function (x) {
+  //     let path;
+  //     let name;
+  //     let exact = false;
+  //     let element;
+  //     if (x.Ismenu == 1) {
+  //       path = x.ruta;
+  //       name = x.Nombre;
+  //       element = (x.menu_variable).trim()
+  //     } else if (x.Ismenu_Drop == 1) {
+  //       path = x.ruta;
+  //       name = x.Nombre;
+  //       element = "";
+  //       exact = true;
+  //     }
+  //     else if (x.IsSubmenu == 1) {
+  //       path = x.sub_ruta;
+  //       name = x.sub_nombre;
+  //       element = (x.sub_variable).trim()
+  //     }
+  //     // const LazyComponent = React.lazy(() => import(element));
+  //     let b = {
+  //       path: "/" + path,
+  //       name: name,
+  //       element: eval(element),
+  //       // element: LazyComponent,
+  //       exact: exact
+  //     }
+  //     Menu.push(b)
+  //   });
+  //   callback(Menu); // Resolve the promise with the Menu data
+  // });
+  callback(routes);
+}
+
+
 
 // function Accesos() {
 //   return new Promise((resolve, reject) => {
@@ -127,7 +181,7 @@ const routes = [
 
 // Accesos()
 //   .then((Menu) => {
-//     console.log('Menu: ', Menu);
+//     
 
 //     // Populate the routes array with the Menu data
 //     routes.push(...Menu);
@@ -136,7 +190,21 @@ const routes = [
 
 //   });
 
-export default routes
+
+
+// export default routes
+
+export { Cargar_Rutas };
+
+
+
+
+
+
+
+
+
+
 
 // async function getMenu() {
 //   try {

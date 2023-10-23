@@ -1,11 +1,22 @@
-import React from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import routes from '../routes'
+// import routes from '../routes'
+import * as r from '../routes'
 
 import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
 
 const AppBreadcrumb = () => {
+
+  const [routes, setroutes] = useState([]);
+
+  useEffect(() => {
+    r.Cargar_Rutas(function (x) {
+      
+      setroutes(x);
+    });
+  }, []);
+
   const currentLocation = useLocation().pathname
 
   const getRouteName = (pathname, routes) => {

@@ -45,7 +45,7 @@ function Clientes() {
     function Cargar_Clientes() {
         let url = URL + "Cargar_Clientes"
         ajax.AjaxSendReceiveData(url, "", function (x) {
-            console.log('x: ', x);
+            
             Tabla_Clientes(x)
         })
     }
@@ -200,7 +200,7 @@ function Clientes() {
         }, 500);
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             setVisible_e(true);
 
             setCLI_EDI_RUC(data["CLIENTE_RUC"]);
@@ -222,14 +222,14 @@ function Clientes() {
         });
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_activar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 1;
             ActivarDesact_Cliente(data);
 
         });
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_desactivar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             data.OPERACION = 0;
             ActivarDesact_Cliente(data);
         });
@@ -245,7 +245,7 @@ function Clientes() {
         // setSelectedValue(event.target.value);
         let pr = $("#CLI_PROVINCIA").val();
         let array_ciudades = ajax.Ciudades(value);
-        console.log('ciudades: ', array_ciudades);
+        
         setciudades(array_ciudades)
     }
 
@@ -282,14 +282,14 @@ function Clientes() {
                 CLI_CORREO: CLI_CORREO,
                 CLI_TELEFONO: CLI_TELEFONO,
             }
-            console.log('param: ', param);
+            
 
             if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
                 ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
             } else {
                 let url = URL + "Nuevo_Cliente"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    console.log('x: ', x);
+                    
                     if (x[0] == true) {
                         ajax.Mensaje(x[1], "", x[2]);
                         if (x[2] == "success") {
@@ -337,14 +337,14 @@ function Clientes() {
                 CLI_TELEFONO: CLI_TELEFONO,
                 CLI_ID: CLI_EDI_CLIENTE_ID
             }
-            console.log('param: ', param);
+            
 
             if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
                 ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
             } else {
                 let url = URL + "Actualizar_Cliente"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    console.log('x: ', x);
+                    
                     if (x[0] == true) {
                         ajax.Mensaje(x[1], "", x[2]);
                         if (x[2] == "success") {
@@ -360,10 +360,10 @@ function Clientes() {
     }
     //****** ACTIVAR DESACTIVAR*/
     function ActivarDesact_Cliente(data) {
-        // console.log('data: ', data);
+        // 
         let url = 'clientes/ActivarDesact_Cliente'
         ajax.AjaxSendReceiveData(url, data, function (x) {
-            console.log('x: ', x);
+            
             if (x[0] == 1) {
                 ajax.Mensaje(x[1], "", "success");
                 Cargar_Clientes();
