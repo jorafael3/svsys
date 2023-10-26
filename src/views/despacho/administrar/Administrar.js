@@ -584,6 +584,16 @@ function Administrar() {
                 data: "DESPACHADO_POR",
                 title: "DESPACHADO POR"
             }, {
+                data: "UBICACION",
+                title: "UBICACION",
+                className: "btn_ubicacion link-success",
+                render: function (x, y, r) {
+                        x = `<button class='btn btn-outline-success fw-bold'>` + x + `</button>
+                        `
+                    return x;
+                }
+
+            }, {
                 data: "PLACA",
                 title: "PLACA",
                 render: function (x, y, r) {
@@ -624,6 +634,7 @@ function Administrar() {
                 $('td', row).eq(4).addClass("fw-bold fs-6 ");
                 $('td', row).eq(5).addClass("fw-bold fs-6 ");
                 $('td', row).eq(6).addClass("fw-bold fs-6 ");
+                $('td', row).eq(7).addClass("fw-bold fs-6 ");
 
 
             },
@@ -641,6 +652,14 @@ function Administrar() {
                 x = x.filter(item => (item.PARCIAL == 1 ? item.CANTIDAD_PARCIAL : item.CANTIDAD_TOTAL) != 0)
                 Tabla_Guias_Despachadas_Historial_detalle(x);
             })
+        });
+
+        $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL').on('click', 'td.btn_ubicacion', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+
+            var url = "https://www.google.com/maps/search/?api=1&query=" + data["UBICACION"];
+            window.open(url, "_blank");
         });
 
     }
