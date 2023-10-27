@@ -588,7 +588,7 @@ function Administrar() {
                 title: "UBICACION",
                 className: "btn_ubicacion link-success",
                 render: function (x, y, r) {
-                        x = `<button class='btn btn-outline-success fw-bold'>` + x + `</button>
+                    x = `<button class='btn btn-outline-success fw-bold'>` + x + `</button>
                         `
                     return x;
                 }
@@ -1123,7 +1123,7 @@ function Administrar() {
                                     </div>
                                 </div>
 
-                              
+
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible(false)}>
