@@ -3,17 +3,17 @@ import * as ajax from "../../../src/config/config"
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilCursor,
-  cilDescription,
-  cilDrop,
-  cilNotes,
-  cilPencil,
-  cilPuzzle,
-  cilSpeedometer,
-  cilStar,
+    cilBell,
+    cilCalculator,
+    cilChartPie,
+    cilCursor,
+    cilDescription,
+    cilDrop,
+    cilNotes,
+    cilPencil,
+    cilPuzzle,
+    cilSpeedometer,
+    cilStar,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -23,9 +23,9 @@ function Cargar_Menu(callback) {
     let param = {
         Usuario_ID: DATOS_SESION["Usuario_ID"]
     }
-    
+
     ajax.AjaxSendReceiveData(url, param, function (res) {
-        
+
         let Menu = [];
 
         res.map(function (x) {
@@ -62,6 +62,8 @@ function Cargar_Menu(callback) {
                             component: CNavItem,
                             name: f.sub_nombre,
                             to: "/" + f.sub_ruta,
+                            icon: <i style={{ fontSize: 9 }} className="bi bi-circle-fill">_</i>,
+
                         }
                         items.push(b);
                         return b;
@@ -78,7 +80,7 @@ function Cargar_Menu(callback) {
             // }
 
         });
-        callback(Menu); 
+        callback(Menu);
     });
 }
 

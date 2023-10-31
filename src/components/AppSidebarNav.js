@@ -10,7 +10,9 @@ export const AppSidebarNav = ({ items }) => {
     return (
       <>
         {icon && icon}
-        {name && name}
+        <span className='fw-bold text-light'>
+          {name && name}
+        </span>
         {badge && (
           <CBadge color={badge.color} className="ms-auto">
             {badge.text}
@@ -27,8 +29,8 @@ export const AppSidebarNav = ({ items }) => {
       <Component
         {...(rest.to &&
           !rest.items && {
-            component: NavLink,
-          })}
+          component: NavLink,
+        })}
         key={index}
         {...rest}
       >

@@ -51,6 +51,8 @@ function Administrar() {
     const [F_SUBTOTAL_0, setF_SUBTOTAL_0] = useState("0.00");
     const [F_SUBTOTAL_12, setF_SUBTOTAL_12] = useState("0.00");
 
+    const [filtro_chofer_state, setfiltro_chofer_state] = useState(0);
+
 
     function Cargar_Datos() {
         let FECHA_INI = $("#AD_FECHA_INI").val();
@@ -66,7 +68,28 @@ function Administrar() {
         });
         funciones.Guias_Despachadas_General(param, function (x) {
             console.log('x: ', x);
-            Tabla_guias_despachadas_general(x);
+            let Estado = $("#GUI_DES_ESTADO").val();
+            let Chofer = $("#GUI_DES_CHOFERES").val();
+            console.log('Chofer: ', Chofer);
+
+            let datafiltrada;
+            if (Estado == "") {
+                datafiltrada = x
+            } else {
+                datafiltrada = x.filter(item => item.ESTADO_DESPACHO == Estado);
+            }
+
+            if (Chofer == "" || Chofer == null) {
+
+            } else {
+                datafiltrada = datafiltrada.filter(item => item.usuario_id == Chofer);
+            }
+
+            Tabla_guias_despachadas_general(datafiltrada);
+            if (filtro_chofer_state == 0) {
+                setfiltro_chofer_state(1);
+                Cargar_Filtro_Choferes(x);
+            }
         });
         setbarra_visible(true);
     }
@@ -195,7 +218,7 @@ function Administrar() {
         }, 500);
         $('#AD_TABLA_DATOS').on('click', 'td.btn_recibir', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
 
             setVisible(true);
             setPedido(data["PEDIDO_INTERNO"]);
@@ -226,7 +249,7 @@ function Administrar() {
         });
         $('#AD_TABLA_DATOS').on('click', 'td.btn_factura', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             setVisible_f(true);
             setPedido(data["PEDIDO_INTERNO"]);
             funciones.Obtener_Parametros(function (x) {
@@ -307,7 +330,7 @@ function Administrar() {
         }
 
         var total = datos.reduce(function (acc, obj) { return acc + (obj.TOTAL_FACTURAS == null ? 0 : parseFloat(obj.TOTAL_FACTURAS)); }, 0);
-        console.log('total: ', total);
+
 
 
         let tabla = `
@@ -441,7 +464,7 @@ function Administrar() {
 
         $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             setVisible(true);
             setPedido(data["PEDIDO_INTERNO"]);
             setNombreCliente(data["CLIENTE"] + " (" + data["CLIENTE_RUC"] + ")");
@@ -465,7 +488,7 @@ function Administrar() {
             }
 
             funciones.Guias_Despachadas_General_detalle(param, function (x) {
-                console.log('x: ', x);
+
 
                 Tabla_guias_despachadas_general_detalle(x)
             })
@@ -473,7 +496,7 @@ function Administrar() {
 
         $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_historial', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             setVisible_h(true);
             setPedido(data["PEDIDO_INTERNO"]);
             setestado_despacho(data["ESTADO_DESPACHO"]);
@@ -482,10 +505,10 @@ function Administrar() {
             let param = {
                 PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
             }
-            console.log('param: ', param);
+
 
             funciones.Guias_Despachadas_Historial(param, function (x) {
-                console.log('x: ', x);
+
                 Tabla_Guias_Despachadas_Historial(x);
             })
 
@@ -493,7 +516,7 @@ function Administrar() {
 
         $('#AD_TABLA_GUIAS_DESPACHADAS_GENERAL').on('click', 'td.btn_factura', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             setVisible_f(true);
             setPedido(data["PEDIDO_INTERNO"]);
             funciones.Obtener_Parametros(function (x) {
@@ -588,11 +611,10 @@ function Administrar() {
                 title: "UBICACION",
                 className: "btn_ubicacion link-success",
                 render: function (x, y, r) {
-                        x = `<button class='btn btn-outline-success fw-bold'>` + x + `</button>
+                    x = `<button class='btn btn-outline-success fw-bold'><i class="bi bi-geo-alt-fill"></i></button>
                         `
                     return x;
                 }
-
             }, {
                 data: "PLACA",
                 title: "PLACA",
@@ -641,14 +663,14 @@ function Administrar() {
         });
         $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL').on('click', 'td.btn_historial', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
             let param = {
                 PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
                 despacho_ID: data["despacho_ID"],
             }
-            console.log('param: ', param);
+
             funciones.Guias_Despachadas_Historial_detalle(param, function (x) {
-                console.log('x: ', x);
+
                 x = x.filter(item => (item.PARCIAL == 1 ? item.CANTIDAD_PARCIAL : item.CANTIDAD_TOTAL) != 0)
                 Tabla_Guias_Despachadas_Historial_detalle(x);
             })
@@ -656,7 +678,7 @@ function Administrar() {
 
         $('#DES_TABLA_GUIAS_DESPACHADAS_HISTORIAL').on('click', 'td.btn_ubicacion', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+
 
             var url = "https://www.google.com/maps/search/?api=1&query=" + data["UBICACION"];
             window.open(url, "_blank");
@@ -722,18 +744,34 @@ function Administrar() {
         });
     }
 
+    function Cargar_Filtro_Choferes(datos) {
+
+        const result = Object.values(
+            datos.reduce((acc, obj) => ({ ...acc, [obj.usuario_id]: obj }), {})
+        );
+        $("#GUI_DES_CHOFERES").empty();
+        $("#GUI_DES_CHOFERES").append('<option value="">Todo</option>');
+        result.map(function (x) {
+
+            $("#GUI_DES_CHOFERES").append(
+                ' <option value="' + x.usuario_id + '">' + x.chofer_nombre + '</option>'
+            )
+        })
+
+    }
+
 
     //********* FACTURAS ******//
 
 
     function Calcular_Valor(item) {
-        console.log('item: ', item.target.value);
+
         let SUBTOTAL_0 = $("#SUBTOTAL_0").val();
         SUBTOTAL_0 = parseFloat(SUBTOTAL_0);
-        console.log('SUBTOTAL_0: ', SUBTOTAL_0);
+
         let SUBTOTAL_12 = $("#SUBTOTAL_12").val();
         SUBTOTAL_12 = parseFloat(SUBTOTAL_12);
-        console.log('SUBTOTAL_12: ', SUBTOTAL_12);
+
 
         if (isNaN(SUBTOTAL_0) || SUBTOTAL_0 < 0) {
             SUBTOTAL_0 = 0;
@@ -751,7 +789,7 @@ function Administrar() {
 
         let total = parseFloat(SUBTOTAL_12) + parseFloat(iva) + parseFloat(SUBTOTAL_0);
         total = parseFloat(total).toFixed(2);
-        console.log('total: ', total);
+
         setF_TOTAL(total);
 
 
@@ -762,7 +800,7 @@ function Administrar() {
             PEDIDO_INTERNO: pedido
         }
         funciones.Cargar_facturas_Pedido(param, function (x) {
-            console.log('x: ', x);
+
             Tabla_Cargar_facturas_Pedido(x);
         })
 
@@ -884,7 +922,7 @@ function Administrar() {
                     IVA: F_IVA,
                     TOTAL: F_TOTAL
                 }
-                console.log('param: ', param);
+
 
                 Swal.fire({
                     title: 'Estas seguro?',
@@ -897,7 +935,7 @@ function Administrar() {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         funciones.Guardar_Factura(param, function (x) {
-                            console.log('x: ', x);
+
                             if (x[0] == 1) {
                                 fun.Mensaje(x[1], "", "success");
                                 Cargar_facturas_Pedido(Pedido);
@@ -994,12 +1032,30 @@ function Administrar() {
                                             </div>
                                         </div>
                                         <div className="tab-pane " id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                            <div className='col-12 mt-5'>
-                                                <div className='table-responsive' id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC'>
-                                                    <table id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL' className='table table-striped'>
-
-                                                    </table>
+                                            <div className='col-12 mt-4'>
+                                                <div className='row'>
+                                                    <div className='col-3'>
+                                                        <label className="required fs-6 fw-semibold mb-1">Estado</label>
+                                                        <select name="" id="GUI_DES_ESTADO" className='form-select'>
+                                                            <option value="">Todo</option>
+                                                            <option value="0">Completo</option>
+                                                            <option value="1">Parcial</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className='col-3'>
+                                                        <label className="required fs-6 fw-semibold mb-1">Chofer</label>
+                                                        <select name="" id="GUI_DES_CHOFERES" className='form-select'>
+                                                        </select>
+                                                    </div>
                                                 </div>
+                                                <div className='col-12 mt-4'>
+                                                    <div className='table-responsive' id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL_SECC'>
+                                                        <table id='AD_TABLA_GUIAS_DESPACHADAS_GENERAL' className='table table-striped'>
+
+                                                        </table>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
                                         <div className="tab-pane " id="contact" role="tabpanel" aria-labelledby="contact-tab">
@@ -1123,7 +1179,7 @@ function Administrar() {
                                     </div>
                                 </div>
 
-                              
+
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible(false)}>

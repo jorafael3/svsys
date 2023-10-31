@@ -7,6 +7,7 @@ import { AppSidebarNav } from './AppSidebarNav'
 
 import { logoNegative } from 'src/assets/brand/logo-negative'
 import { sygnet } from 'src/assets/brand/sygnet'
+import  loim  from '../../src/assets/images/logo2.png'
 
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
@@ -26,12 +27,13 @@ const AppSidebar = () => {
   const [barra_visible, setbarra_visible] = useState([]);
 
 
- 
+
   useEffect(() => {
     men.Cargar_Menu(function (x) {
-      
+      console.log('xff: ', x);
+
       setbarra_visible(x);
-    });  
+    });
   }, []);
 
 
@@ -46,11 +48,11 @@ const AppSidebar = () => {
     >
       <CSidebarBrand className="d-none d-md-flex" to="/">
         {/* <CIcon className="sidebar-brand-full" icon={logoNegative} height={35} /> */}
-        <h2>SvSys</h2>
+        <img src={loim} style={{width:200}} alt="SvSys" />
         <CIcon className="sidebar-brand-narrow" icon={sygnet} height={35} />
       </CSidebarBrand>
-      <CSidebarNav>
-        <SimpleBar>
+      <CSidebarNav style={{backgroundColor:"#17202A"}}>
+        <SimpleBar >
           <AppSidebarNav items={barra_visible} />
         </SimpleBar>
       </CSidebarNav>
