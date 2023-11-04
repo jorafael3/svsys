@@ -67,10 +67,10 @@ function Administrar() {
             Tabla_guias_sin_despachar(x)
         });
         funciones.Guias_Despachadas_General(param, function (x) {
-            console.log('x: ', x);
+            
             let Estado = $("#GUI_DES_ESTADO").val();
             let Chofer = $("#GUI_DES_CHOFERES").val();
-            console.log('Chofer: ', Chofer);
+            
 
             let datafiltrada;
             if (Estado == "") {
@@ -508,7 +508,7 @@ function Administrar() {
 
 
             funciones.Guias_Despachadas_Historial(param, function (x) {
-
+                
                 Tabla_Guias_Despachadas_Historial(x);
             })
 
@@ -525,6 +525,17 @@ function Administrar() {
             })
 
             Cargar_facturas_Pedido(data["PEDIDO_INTERNO"]);
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
+            }
+            funciones.Guias_Despachadas_Historial(param, function (x) {
+                
+                $("#FACT_CLIENTES").empty();
+                $("#FACT_CLIENTES").append("<option value=''>Seleccione</option>");
+                x.map(function (x) {
+                    $("#FACT_CLIENTES").append("<option value='" + x.CLIENTE_ID + "'>" + x.CLIENTE_NOMBRE + "</option>");
+                })
+            })
 
         });
 
@@ -800,7 +811,7 @@ function Administrar() {
             PEDIDO_INTERNO: pedido
         }
         funciones.Cargar_facturas_Pedido(param, function (x) {
-
+            console.log('x: ', x);
             Tabla_Cargar_facturas_Pedido(x);
         })
 
@@ -823,6 +834,7 @@ function Administrar() {
             <tfoot>
                 <tr>
                     <th style="font-size: 16px;" class="font-weight-bolder ">TOTAL</th>
+                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
                     <th style="font-size: 16px;" class="font-weight-bolder "></th>
                     <th style="font-size: 16px;" class="font-weight-bolder "></th>
                     <th style="font-size: 16px;" class="font-weight-bolder "></th>
@@ -858,6 +870,9 @@ function Administrar() {
                 data: "factura_nota",
                 title: "NOTA"
             }, {
+                data: "CLIENTE_NOMBRE",
+                title: "CLIENTE"
+            }, {
                 data: "factura_subtotal_0",
                 title: "SUB 0",
                 render: $.fn.dataTable.render.number(',', '.', 2, "$")
@@ -887,6 +902,7 @@ function Administrar() {
                 $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
                 $('td', row).eq(6).addClass("fw-bold fs-6");
                 $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(8).addClass("fw-bold fs-6");
 
 
             },
@@ -897,6 +913,7 @@ function Administrar() {
         let FECHA = $("#FECHA_FACTURA").val();
         let SECUENCIA = $("#SECUENCIA").val();
         let FACT_NOMBRE = $("#FACT_NOMBRE").val();
+        let FACT_CLIENTES = $("#FACT_CLIENTES").val();
         let NOTA = $("#NOTA").val();
 
         if (FECHA == "") {
@@ -906,6 +923,8 @@ function Administrar() {
 
         } else if (FACT_NOMBRE == "") {
             fun.Mensaje("INGRESE UN NOMBRE", "", "error");
+        } else if (FACT_CLIENTES == "") {
+            fun.Mensaje("SELECCIONE UN CLIENTE", "", "error");
         } else {
 
             if (parseFloat(F_TOTAL) <= 0) {
@@ -920,7 +939,8 @@ function Administrar() {
                     SUBTOTAL_0: F_SUBTOTAL_0,
                     SUBTOTAL_12: F_SUBTOTAL_12,
                     IVA: F_IVA,
-                    TOTAL: F_TOTAL
+                    TOTAL: F_TOTAL,
+                    FACT_CLIENTES: FACT_CLIENTES,
                 }
 
 
@@ -939,6 +959,7 @@ function Administrar() {
                             if (x[0] == 1) {
                                 fun.Mensaje(x[1], "", "success");
                                 Cargar_facturas_Pedido(Pedido);
+                                Cargar_Datos();
                                 $("#SECUENCIA").val("");
                                 $("#FACT_NOMBRE").val("");
                                 $("#NOTA").val();
@@ -1250,6 +1271,11 @@ function Administrar() {
                                             <div className="col-12">
                                                 <label className="form-label fw-bold">FACTURA NOMBRE</label>
                                                 <input type="text" className="form-control" id="FACT_NOMBRE" placeholder="" />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label fw-bold">CLIENTE</label>
+                                                <select name="" id="FACT_CLIENTES" className='form-select'>
+                                                </select>
                                             </div>
                                             <div className="col-12">
                                                 <label className="form-label fw-bold">NOTA</label>

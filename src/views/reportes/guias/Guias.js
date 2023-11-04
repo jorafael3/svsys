@@ -16,6 +16,7 @@ import Clientes from "../../../funciones/reportes/guias/Por_cliente"
 import Chofer from "../../../funciones/reportes/guias/Por_chofer"
 import Destino from "../../../funciones/reportes/guias/Por_Destino"
 import Servicio from "../../../funciones/reportes/guias/Por_Servicio"
+import moment from 'moment';
 
 function Reportes_guias() {
     const [showClientes, setShowClientes] = useState(false);
@@ -36,36 +37,41 @@ function Reportes_guias() {
         if (r_cliente == false && r_chofer == false && r_destino == false && r_servicio == false) {
             ajax.Mensaje("Selecione un tipo de reporte", "", "error");
         } else {
-            let param = {
-                FECHA_INI: FECHA_INI,
-                FECHA_FIN: FECHA_FIN,
+            if (FECHA_INI == "" || FECHA_FIN == "") {
+
+            } else {
+                let param = {
+                    FECHA_INI: FECHA_INI,
+                    FECHA_FIN: FECHA_FIN,
+                }
+                setparametros(param)
+                if (r_cliente) {
+                    setShowClientes(true);
+                    setShowChofer(false);
+                    setshowServicio(false);
+                    setshowDestino(false);
+
+                } else if (r_chofer) {
+                    setShowChofer(true);
+                    setShowClientes(false);
+                    setshowServicio(false);
+                    setshowDestino(false);
+
+                } else if (r_destino) {
+                    setShowChofer(false);
+                    setShowClientes(false);
+                    setshowServicio(false);
+                    setshowDestino(true);
+
+                } else if (r_servicio) {
+                    setShowChofer(false);
+                    setShowClientes(false);
+                    setshowServicio(true);
+                    setshowDestino(false);
+
+                }
             }
-            setparametros(param)
-            if (r_cliente) {
-                setShowClientes(true);
-                setShowChofer(false);
-                setshowServicio(false);
-                setshowDestino(false);
 
-            } else if (r_chofer) {
-                setShowChofer(true);
-                setShowClientes(false);
-                setshowServicio(false);
-                setshowDestino(false);
-
-            } else if (r_destino) {
-                setShowChofer(false);
-                setShowClientes(false);
-                setshowServicio(false);
-                setshowDestino(true);
-
-            } else if (r_servicio) {
-                setShowChofer(false);
-                setShowClientes(false);
-                setshowServicio(true);
-                setshowDestino(false);
-
-            }
 
         }
 
@@ -85,11 +91,11 @@ function Reportes_guias() {
                             <div className="row g-9 mb-8">
                                 <div className="col-md-3 fv-row">
                                     <label className="required fs-6 fw-semibold mb-2">Fecha Inicio</label>
-                                    <input id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
+                                    <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
                                 </div>
                                 <div className="col-md-3 fv-row">
                                     <label className="required fs-6 fw-semibold mb-2">Fecha Fin</label>
-                                    <input id='AD_FECHA_FIN' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
+                                    <input defaultValue={moment().format("YYYY-MM-DD")} id='AD_FECHA_FIN' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
                                 </div>
                                 <div className="col-md-3">
                                 </div>
@@ -147,7 +153,7 @@ function Reportes_guias() {
 
                             </div>
                         </div>
-                        <hr/>
+                        <hr />
                         <div className='col-12 mt-4'>
                             {showClientes && <Clientes param={parametros} />}
                             {showChofer && <Chofer param={parametros} />}
