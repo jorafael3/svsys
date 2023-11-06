@@ -1,0 +1,18 @@
+.block-ui {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999; /* Asegura que esté en la parte superior */
+  }
+  
+  /* Estilos para el contenido de bloqueo */
+  .block-ui p {
+    font-size: 24px;
+    color: #fff;
+  }
