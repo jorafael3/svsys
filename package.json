@@ -38,6 +38,7 @@
     "datatables.net": "^1.13.6",
     "datatables.net-buttons": "^2.4.2",
     "datatables.net-dt": "^1.13.6",
+    "flatpickr": "^4.6.13",
     "jquery": "^3.7.1",
     "jszip": "^3.10.1",
     "moment": "^2.29.4",

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    CFormLabel, CFormInput, CButton, CCard, CCardBody, CCardHeader, CCol, CRow,
-    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter
+    CCard, CCardBody, CCardHeader, CCol, CRow,
 } from '@coreui/react'
 import * as ajax from "../../../config/config";
 import $, { param } from 'jquery';
@@ -11,12 +10,15 @@ import 'datatables.net-buttons';
 import 'datatables.net-buttons/js/buttons.html5.min.js';
 import 'datatables.net-buttons/js/buttons.print.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import Select from 'react-select'
 import Clientes from "../../../funciones/reportes/guias/Por_cliente"
 import Chofer from "../../../funciones/reportes/guias/Por_chofer"
 import Destino from "../../../funciones/reportes/guias/Por_Destino"
 import Servicio from "../../../funciones/reportes/guias/Por_Servicio"
 import moment from 'moment';
+import flatpickr from "flatpickr";
+import 'flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/plugins/monthSelect/style.css'; // Import the plugin styles
+import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect/index.js'; // Import the monthSelect plugin
 
 function Reportes_guias() {
     const [showClientes, setShowClientes] = useState(false);
@@ -24,10 +26,16 @@ function Reportes_guias() {
     const [showDestino, setshowDestino] = useState(false);
     const [showServicio, setshowServicio] = useState(false);
     const [parametros, setparametros] = useState();
+    const [fecha_ini, setfecha_ini] = useState(moment().startOf("month").format("YYYY-MM-DD"));
+    const [fecha_fin, setfecha_fin] = useState(moment().endOf("month").format("YYYY-MM-DD"));
 
     function Cargar_Reporte() {
-        let FECHA_INI = $("#AD_FECHA_INI").val();
-        let FECHA_FIN = $("#AD_FECHA_FIN").val();
+        // let FECHA_INI = $("#AD_FECHA_INI").val();
+        // let FECHA_FIN = $("#AD_FECHA_FIN").val();
+        let FECHA_INI = fecha_ini;
+        let FECHA_FIN = fecha_fin;
+        let FECHA_INI_A = moment(fecha_ini).subtract(1,'months').startOf("month").format("YYYY-MM-DD");
+        let FECHA_FIN_A = moment(fecha_ini).subtract(1,'months').endOf("month").format("YYYY-MM-DD");;
 
         let r_cliente = $("#flexSwitchCheckChecked").is(":checked");
         let r_chofer = $("#flexSwitchCheckChecked2").is(":checked");
@@ -43,6 +51,8 @@ function Reportes_guias() {
                 let param = {
                     FECHA_INI: FECHA_INI,
                     FECHA_FIN: FECHA_FIN,
+                    FECHA_INI_A: FECHA_INI_A,
+                    FECHA_FIN_A: FECHA_FIN_A,
                 }
                 setparametros(param)
                 if (r_cliente) {
@@ -77,7 +87,27 @@ function Reportes_guias() {
 
     }
 
-
+    useEffect(() => {
+        const options = {
+            dateFormat: 'Y-m-d', // Customize the date format
+            onChange: (selectedDates, dateStr) => {
+                let inicio = moment(new Date(selectedDates[0])).startOf("month").format("YYYY-MM-DD");
+                let fin = moment(inicio).endOf("month").format("YYYY-MM-DD");
+                setfecha_ini(inicio);
+                setfecha_fin(fin);
+            },
+            defaultDate: 'today',
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M-Y", //defaults to "F Y"
+                    altFormat: "F Y", //defaults to "F Y"
+                    theme: "dark" // defaults to "light"
+                })
+            ]
+        };
+        flatpickr('#myDatePicker', options);
+    }, []);
 
     return (
         <CRow>
@@ -90,13 +120,14 @@ function Reportes_guias() {
                         <div className='col-12'>
                             <div className="row g-9 mb-8">
                                 <div className="col-md-3 fv-row">
-                                    <label className="required fs-6 fw-semibold mb-2">Fecha Inicio</label>
-                                    <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
+                                    <label className="required fs-6 fw-semibold mb-2">Mes</label>
+                                    {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
+                                    <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
                                 </div>
-                                <div className="col-md-3 fv-row">
+                                {/* <div className="col-md-3 fv-row">
                                     <label className="required fs-6 fw-semibold mb-2">Fecha Fin</label>
                                     <input defaultValue={moment().format("YYYY-MM-DD")} id='AD_FECHA_FIN' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" />
-                                </div>
+                                </div> */}
                                 <div className="col-md-3">
                                 </div>
                             </div>
@@ -125,7 +156,7 @@ function Reportes_guias() {
                                             <label className="form-check-label fw-bold" >Chofer</label>
                                         </div>
                                     </div>
-                                    <div className="col-md-4">
+                                    {/* <div className="col-md-4">
                                         <div className="form-check form-switch ">
                                             <input
                                                 className="form-check-input "
@@ -142,7 +173,7 @@ function Reportes_guias() {
                                                 id="flexSwitchCheckChecked4" />
                                             <label className="form-check-label fw-bold" >Servicio</label>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                             <div className='col-4'>

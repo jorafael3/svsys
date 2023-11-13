@@ -3,42 +3,40 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     CRow,
     CCol,
-    CDropdown,
-    CDropdownMenu,
-    CDropdownItem,
-    CDropdownToggle,
-    CWidgetStatsA,
     CCard,
     CCardBody,
-    CCardFooter,
     CCardHeader,
     CProgress,
-    CTable,
-    CTableBody,
+    CButtonGroup,
+    CButton
 } from '@coreui/react'
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { getStyle } from '@coreui/utils'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilArrowBottom, cilArrowTop, cilOptions } from '@coreui/icons'
 import $, { param } from 'jquery';
-import ReactDOMServer from 'react-dom/server';
 import moment from "moment";
-import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+
+
 
 am4core.useTheme(am4themes_animated);
 
 var URL = "reportes/"
-
+var grafico_dia = []
+var grafico_mes = []
 
 function Cargar_datos(param) {
     param = param.param;
     console.log('param: ', param);
     const [seccion_detalle, setseccion_detalle] = useState(true);
     const [seccion_tabla, setseccion_tabla] = useState(false);
+   
 
     Reporte_Chofer_General();
+
 
     function Reporte_Chofer_General() {
         let url = URL + "Reporte_Chofer_General"
@@ -92,36 +90,89 @@ function Cargar_datos(param) {
             columns: [{
                 data: "CHOFER_NOMBRE",
                 title: "CHOFER",
-                width: 100
+                width: 150
+            }, {
+                data: null,
+                title: "CEMENTO DESPACHADO",
+                render: function (x, t, r) {
+                    let datos = r["DATOS_CODIGOS_DESPACHADOS"];
+                    let d = "SIN REGISTRO"
+                    let cemento = datos.filter(item => item.ESCEMENTO == 1);
+                    if (cemento.length > 0) {
+                        cemento = cemento[0];
+                        d = `
+                        <div class="small text-medium-emphasis">`+ cemento["DESCRIPCION"] + `</div>
+                        <span>TOTAL: `+ cemento["DESPACHADO_CODIGO_TOTAL"] + ` ` + cemento["UNIDAD"] + `</span><br>
+                        <span >ESTE MES: `+ cemento["DESPACHADO_CODIGO_MES"] + ` ` + cemento["UNIDAD"] + `</span>
+                        `
+                    }
+
+                    return d
+                },
+                width: 250
             },
             {
                 data: "PLACA",
                 title: "PLACA",
-                width: 100
+                width: 100,
+                visible: false
             }, {
-                data: "GUIAS_COMPLETAS",
-                title: "DESPACHOS COMPLETOS",
-                className: "text-center"
-            }, {
-                data: "GUIAS_PARCIALES",
-                title: "DESPACHOS PARCIALES",
-                className: "text-center"
+                data: "GUIAS_DESPACHADAS_MES",
+                title: "DESPACHOS MES",
+                // className: "text-center",
+                render: function (x, t, r) {
+                    let datos = r["DATOS_CODIGOS_DESPACHADOS"];
+                    let d = "SIN REGISTRO"
+                    let cemento = datos.filter(item => item.ESCEMENTO == 1);
+                    if (cemento.length > 0) {
+                        cemento = cemento[0];
+                        d = `
+                        <div class="medium text-medium-emphasis">DESPACHO TOTAL: `+ r["GUIAS_DESPACHADAS_MES"] + `</div>
+                        <div class="medium text-medium-emphasis">DESPACHO CEMENTO: `+ cemento["CANTIDAD_DE_DESPACHOS_CODIGO_MES"] + `</div><br>
+                        `
+                    }
+                    return d
+                },
+                width: 250
 
             }, {
-                data: "GUIAS_TOTALES",
+                data: "GUIAS_DESPACHADAS_TOTAL",
                 title: "DESPACHOS TOTAL",
-                className: "text-center",
+                // className: "text-center",
+                render: function (x, t, r) {
+                    let datos = r["DATOS_CODIGOS_DESPACHADOS"];
+                    let d = "SIN REGISTRO"
+                    d = `
+                        <div class="medium text-medium-emphasis">TOTAL DESPACHADAS: `+ r["GUIAS_DESPACHADAS_TOTAL"] + `</div>
+                        <div class="medium text-medium-emphasis">TOTAL CEMENTO: `+ r["CANTIDAD_TOTAL_GUIAS_CEMENTO"] + `</div><br>
+                        `
+                    return d
+                },
+                width: 250
 
             },
             {
                 data: "PROMEDIO_DEMORA_HORAS_TOTAL_MES",
-                title: "PROMEDIO DESPACHO PERIODO",
-                render: $.fn.dataTable.render.number(',', '.', 2, "", ' h')
+                title: "PROM. TIEMPO DESPACHO MES",
+                render: $.fn.dataTable.render.number(',', '.', 2, "", ' h'),
+                visible: false
             },
             {
                 data: "PROMEDIO_DEMORA_HORAS_TOTAL",
-                title: "PROMEDIO DESPACHO GENERAL",
-                render: $.fn.dataTable.render.number(',', '.', 2, "", ' h')
+                title: "TIEMPO DESPACHO",
+                // render: $.fn.dataTable.render.number(',', '.', 2, "", ' h')
+                render: function (x, t, r) {
+                    let datos = r["DATOS_CODIGOS_DESPACHADOS"];
+                    let d = "SIN REGISTRO"
+                    d = `
+                        <div class="medium text-medium-emphasis">
+                            PROMEDIO MES: `+ parseFloat(r["PROMEDIO_DEMORA_HORAS_TOTAL_MES"]).toFixed(2) + ` h</div>
+                        <div class="medium text-medium-emphasis">
+                            PROMEDIO GENERAL: `+ parseFloat(r["PROMEDIO_DEMORA_HORAS_TOTAL"]).toFixed(2) + ` h</div><br>
+                        `
+                    return d
+                },
+                width: 350
             },
             {
                 data: null,
@@ -140,6 +191,15 @@ function Cargar_datos(param) {
                 $('td', row).eq(4).addClass("fw-bold fs-7 bg-info bg-opacity-10");
                 $('td', row).eq(5).addClass("fw-bold fs-7");
                 $('td', row).eq(6).addClass("fw-bold fs-7 bg-danger bg-opacity-10");
+
+                let col1 = `
+                    <div>`+ data["CHOFER_NOMBRE"] + `</div>
+                    <div class="small text-medium-emphasis">
+                        <span>Placa</span> | `+ data["PLACA"] + `
+                    </div>
+                `
+                $('td', row).eq(0).html(col1);
+
 
                 if (data["PROMEDIO_DEMORA_HORAS_TOTAL"] == null) {
                     $('td', row).eq(6).html("<span class='text-danger'>Sin registro</span>");
@@ -163,19 +223,21 @@ function Cargar_datos(param) {
             $("#CHOFER_PLACA").text(" " + data["PLACA"]);
             $("#CHOFER_GUIAS_TOTALES").text(data["GUIAS_TOTALES"]);
             $("#CHOFER_GUIAS_ASIGNADAS_TOTALES").text(data["GUIAS_ASIGNADAS_TOTAL"]);
-            $("#CHOFER_GUIAS_ASIGNADAS_PERIODO").text(data["GUIAS_ASIGNADAS_PERIODO"]);
-            $("#CHOFER_GUIAS_DESPACHADAS_PERIODO").text(data["GUIAS_TOTALES_PERIODO"]);
+            $("#CHOFER_GUIAS_ASIGNADAS_PERIODO").text(data["GUIAS_ASIGNADAS_MES"]);
+            $("#CHOFER_GUIAS_DESPACHADAS_PERIODO").text(data["GUIAS_DESPACHADAS_MES"]);
 
             Tabla_Detalle_Clientes(data["DATOS_CLIENTE"]);
             createChart(data["DATOS_DESTINO"]);
             grafico_(data["DATOS_GRAFICO"]);
+            grafico_dia = (data["DATOS_GRAFICO"]);
+            grafico_mes = (data["DATOS_GRAFICO_MES"]);
+            // Grafico_mes()
+            Tabla_Chofer_Codigos_Despachados(data["DATOS_CODIGOS_DESPACHADOS"])
         });
     }
 
-
     function Tabla_Detalle_Clientes(datos) {
         // $('#TABLA_CLIENTES').empty();
-
         let TABLA_ = $('#TABLA_CLIENTES').DataTable({
             destroy: true,
             data: datos,
@@ -264,6 +326,46 @@ function Cargar_datos(param) {
 
     }
 
+    function Tabla_Chofer_Codigos_Despachados(datos) {
+        let TABLA_ = $('#TABLA_CODIGOS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'frtip',
+            "pageLength": 5,
+            order: [[3, "desc"]],
+            columns: [{
+                data: "DESCRIPCION",
+                title: "DESCRIPCION",
+                width: 200
+            }, {
+                data: "UNIDAD",
+                title: "UNIDAD",
+            },
+            {
+                data: "DESPACHADO_CODIGO_MES",
+                title: "ESTE MES",
+            },
+            {
+                data: "DESPACHADO_CODIGO_TOTAL",
+                title: "GENERAL",
+            }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
+                // $('td', row).eq(4).addClass("fw-bold fs-7 bg-info bg-opacity-10");
+                // $('td', row).eq(5).addClass("fw-bold fs-7");
+                // $('td', row).eq(6).addClass("fw-bold fs-7 bg-danger bg-opacity-10");
+
+            },
+        });
+        setTimeout(function () {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
+        }, 500);
+    }
+
     const createChart = (datos) => {
         // Inicializar gráfico
         let chart = am4core.create("chartdiv", am4charts.PieChart);
@@ -292,175 +394,336 @@ function Cargar_datos(param) {
 
     function grafico_(datos) {
 
-        // Create chart instance
-        var chart = am4core.create("chartdiv2", am4charts.XYChart);
-        chart.padding(10, 10, 10, 10); // Ajusta el espacio para el título
-        let title = chart.titles.create();
-        title.text = "Despachos"; // Contenido del título
-        title.fontSize = 20; // Tamaño de fuente
-        title.marginBottom = 10; // Margen inferior
-        // Add data
-        chart.data = datos
+        am4core.ready(function () {
 
-        // Create axes
-        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-        dateAxis.renderer.grid.template.location = 0;
-        dateAxis.renderer.minGridDistance = 50;
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
 
-        var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-        // valueAxis.logarithmic = true;
-        valueAxis.renderer.minGridDistance = 20;
+            // Create chart instance
+            var chart = am4core.create("chartdiv2", am4charts.XYChart);
 
-        // Create series
-        var series = chart.series.push(new am4charts.LineSeries());
-        series.dataFields.valueY = "cantidad";
-        series.dataFields.dateX = "fecha";
-        series.tooltipText = "Despachos: {cantidad}"
-        series.tensionX = 0.8;
-        series.strokeWidth = 3;
+            // Enable chart cursor
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.lineX.disabled = true;
+            chart.cursor.lineY.disabled = true;
+            chart.numberFormatter.numberFormat = "#,###.##";
+            // Enable scrollbar
+            chart.scrollbarX = new am4core.Scrollbar();
 
-        var bullet = series.bullets.push(new am4charts.CircleBullet());
-        bullet.circle.fill = am4core.color("#fff");
-        bullet.circle.strokeWidth = 3;
+            // Add data
+            chart.data = datos;
 
-        // Add cursor
-        chart.cursor = new am4charts.XYCursor();
-        chart.cursor.fullWidthLineX = true;
-        chart.cursor.xAxis = dateAxis;
-        chart.cursor.lineX.strokeWidth = 0;
-        chart.cursor.lineX.fill = am4core.color("#000");
-        chart.cursor.lineX.fillOpacity = 0.1;
+            // Create axes
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            dateAxis.renderer.grid.template.location = 0.5;
+            // dateAxis.dateFormatter.inputDateFormat = "yyyy-mm-dd";
+            dateAxis.renderer.minGridDistance = 80;
+            // dateAxis.tooltipDateFormat = "yyyy-mm-dd";
+            //dateAxis.dateFormats.setKey("day", "dd");
 
-        // Add scrollbar
-        chart.scrollbarX = new am4core.Scrollbar();
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
 
-        // Add a guide
-        let range = valueAxis.axisRanges.create();
-        range.value = 90.4;
-        range.grid.stroke = am4core.color("#396478");
-        range.grid.strokeWidth = 1;
-        range.grid.strokeOpacity = 1;
-        range.grid.strokeDasharray = "3,3";
-        range.label.inside = true;
-        range.label.text = "Average";
-        range.label.fill = range.grid.stroke;
-        range.label.verticalCenter = "bottom";
+            // Create series
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.tooltipText = "[bold font-size: 16px]{fecha}\n---------------\n[bold font-size: 17px] Despachos: {cantidad}[/]";
+            series.tooltip.pointerOrientation = "vertical";
+            series.tooltip.getFillFromObject = false;
+            series.tooltip.background.fill = am4core.color("#ffffff");
+            series.tooltip.label.fill = am4core.color("#000000");
 
-}
+            series.dataFields.valueY = "cantidad";
+            series.dataFields.dateX = "fecha";
+            //series.strokeDasharray = 3;
+            series.strokeWidth = 3
+            series.stroke = series.fill = am4core.color("#1151C2");
+            series.name = "asdasd"
+            //series.strokeOpacity = 0.3;
+            // series.strokeDasharray = "3,3"
 
-return (
-    <div className="col-12">
-        <h4 className="fw-bold bg-light">Reporte por Chofer</h4>
+            var bullet = series.bullets.push(new am4charts.CircleBullet());
+            bullet.strokeWidth = 2;
+            bullet.stroke = am4core.color("#fff");
+            bullet.setStateOnChildren = true;
+            bullet.propertyFields.fillOpacity = "opacity";
+            bullet.propertyFields.strokeOpacity = "opacity";
 
+            var hoverState = bullet.states.create("hover");
+            hoverState.properties.scale = 1.7;
+
+            function createTrendLine(data) {
+                var trend = chart.series.push(new am4charts.LineSeries());
+                trend.dataFields.valueY = "cantidad";
+                trend.dataFields.dateX = "fecha";
+                trend.strokeWidth = 2
+                trend.strokeDasharray = 3
+                trend.stroke = trend.fill = am4core.color("#E65100");
+                trend.data = data;
+                trend.name = "Linea de tendencia"
+
+                var bullet = trend.bullets.push(new am4charts.CircleBullet());
+                //  bullet.tooltipText = "{date}\n[bold font-size: 17px]value: {valueY}[/]";
+                bullet.strokeWidth = 2;
+                bullet.stroke = am4core.color("#fff")
+                bullet.circle.fill = trend.stroke;
+
+                var hoverState = bullet.states.create("hover");
+                hoverState.properties.scale = 1.7;
+
+                return trend;
+            };
+            // var y = lr.slope * (tamanio) + lr.intercept;
+
+            // createTrendLine([{
+            //     "date": minDate + "-01-01",
+            //     "value": lr.intercept
+            // },
+            // {
+            //     "date": maxDate + "-01-01",
+            //     "value": y
+            // }
+            // ]);
+
+
+            /* var lastTrend = createTrendLine([{
+                     "date": minDate + "-01-01",
+                     "value": lr.intercept
+                 },
+                 {
+                     "date": maxDate + "-01-01",
+                     "value": y
+                 }
+             ]);*/
+
+            chart.legend = new am4charts.Legend();
+            var scrollbarX = new am4charts.XYChartScrollbar();
+            scrollbarX.series.push(series);
+            scrollbarX.background.fill = am4core.color("#1151C2");
+            scrollbarX.background.fillOpacity = 0.2;
+            scrollbarX.minHeight = 30;
+            chart.scrollbarX = scrollbarX;
+
+            chart.scrollbarX.paddingRight = 100;
+            chart.scrollbarX.paddingLeft = 20;
+            // chart.exporting.menu = new am4core.ExportMenu();
+
+            // Initial zoom once chart is ready
+            //  lastTrend.events.once("datavalidated", function() {
+            //     series.xAxis.zoomToDates(new Date(2012, 0, 2), new Date(2012, 0, 13));
+            // });
+
+        }); // end am4core.ready()
+
+    }
+
+    function Grafico_mes(datos) {
+        am4core.ready(function () {
+            // Temas
+            am4core.useTheme(am4themes_animated);
+
+            // Crear instancia del gráfico
+            var chart = am4core.create("chartdiv2", am4charts.XYChart);
+
+            // Obtener los datos de la tabla MySQL y ajustar el formato de las fechas
+            var data = datos
+
+            // Convertir fechas a objetos Date
+            data.forEach(function (item) {
+                item.FECHA_CREADO = new Date(item.FECHA_CREADO);
+                item.FECHA_COMPLETADO = new Date(item.FECHA_COMPLETADO);
+            });
+
+            // Agrupar los datos por mes
+            var groupedData = groupDataByMonth(data);
+
+            // Agregar los datos al gráfico
+            chart.data = groupedData;
+
+            // Crear ejes
+            var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+            categoryAxis.dataFields.category = "monthYear";
+            categoryAxis.title.text = "Mes";
+            categoryAxis.renderer.minGridDistance = 30;
+
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            valueAxis.title.text = "Número de Pedidos";
+
+            // Crear la serie de barras
+            var series = chart.series.push(new am4charts.ColumnSeries());
+            series.dataFields.valueY = "count";
+            series.dataFields.categoryX = "monthYear";
+            series.name = "Pedidos por Mes";
+            series.columns.template.tooltipText = "Mes: {categoryX}\nPedidos: {valueY}";
+
+            // Agregar la leyenda
+            chart.legend = new am4charts.Legend();
+
+            // Función para agrupar los datos por mes
+            function groupDataByMonth(data) {
+                var groupedData = {};
+                data.forEach(function (item) {
+                    var monthYear = item.FECHA_CREADO.getFullYear() + "-" + (item.FECHA_CREADO.getMonth() + 1);
+                    if (!groupedData[monthYear]) {
+                        groupedData[monthYear] = {
+                            monthYear: monthYear,
+                            count: 0
+                        };
+                    }
+                    groupedData[monthYear].count++;
+                });
+
+                // Convertir el objeto en un array
+                var result = Object.keys(groupedData).map(function (key) {
+                    return groupedData[key];
+                });
+
+                return result;
+            }
+        });
+    }
+
+    function CAMBIAR_GRAFICO(t) {
+        console.log('t: ', t);
+        if (t == 1) {
+            grafico_(grafico_dia)
+        } else if (t == 2) {
+            Grafico_mes(grafico_mes)
+        }
+
+    }
+
+
+    return (
         <div className="col-12">
-            <div className="col-12" id="SECC_TABLA">
-                <div className="table-responsive" id="REP_CHOFER_TABLA_SECC">
-                    <table id="REP_CHOFER_TABLA" className="table table-striped" >
+            <h4 className="fw-bold bg-light">Reporte por Chofer</h4>
 
-                    </table>
+            <div className="col-12">
+                <div className="col-12" id="SECC_TABLA">
+                    <div className="table-responsive" id="REP_CHOFER_TABLA_SECC">
+                        <table id="REP_CHOFER_TABLA" className="table table-striped" >
+
+                        </table>
+                    </div>
                 </div>
+
+
+                <div className="col-12 mt-4" id="SECC_DET">
+
+                    <CRow>
+                        <CCol xs>
+                            <CCard className="mb-4">
+                                <CCardHeader>
+                                    <div className="row">
+                                        <div className="col-1">
+                                            <button onClick={() => {
+
+                                                $("#SECC_TABLA").show(100);
+                                                $("#SECC_DET").hide();
+                                            }} className="btn btn-info text-light"><i className="bi bi-backspace-fill fs-6"></i></button>
+                                        </div>
+                                        <div className="col-4 mt-2">
+                                            <h5 className="fw-bold text-muted">Datos por chofer</h5>
+                                        </div>
+                                    </div>
+                                </CCardHeader>
+                                <CCardBody>
+                                    <h5 className="text-muted">Nombre:
+                                        <span id="CHOFER_NOMBRE"></span>
+                                    </h5>
+                                    <h5 className="text-muted">Placa:
+                                        <span id="CHOFER_PLACA"></span>
+                                    </h5>
+                                    <CRow>
+
+                                        <CCol xs={12} md={6} xl={6}>
+
+                                            <CRow>
+                                                <CCol sm={6}>
+                                                    <div className="border-start border-start-4 border-start-info py-1 px-3">
+                                                        <div className="text-medium-emphasis small">Total guias asignadas</div>
+                                                        <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_TOTALES"></div>
+                                                    </div>
+                                                </CCol>
+                                                <CCol sm={6}>
+                                                    <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
+                                                        <div className="text-medium-emphasis small">Guias asignadas Mes</div>
+                                                        <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_PERIODO">78,623</div>
+                                                    </div>
+                                                </CCol>
+
+                                            </CRow>
+
+                                        </CCol>
+
+                                        <CCol xs={12} md={6} xl={6}>
+                                            <CRow>
+                                                <CCol sm={6}>
+                                                    <div className="border-start border-start-4 border-start-danger py-1 px-3">
+                                                        <div className="text-medium-emphasis small">Total guias despachadas</div>
+                                                        <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_TOTALES"></div>
+                                                    </div>
+                                                </CCol>
+                                                <CCol sm={6}>
+                                                    <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
+                                                        <div className="text-medium-emphasis small">Guias despachadas Mes</div>
+                                                        <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_DESPACHADAS_PERIODO">49,123</div>
+                                                    </div>
+                                                </CCol>
+                                            </CRow>
+
+
+                                        </CCol>
+                                    </CRow>
+
+                                    <br />
+                                    <div className="row">
+                                        <div className="col-5">
+                                            <div id="chartdiv" style={{ width: "100%", height: "300px" }}></div>
+                                        </div>
+                                        <div className="col-7">
+                                            <div className="btn-group" role="group" aria-label="Basic example">
+                                                <button onClick={() => CAMBIAR_GRAFICO(1)} type="button" className="btn btn-light">Dia</button>
+                                                <button onClick={() => CAMBIAR_GRAFICO(2)} type="button" className="btn btn-light">Mes</button>
+                                                <button onClick={() => CAMBIAR_GRAFICO(3)} type="button" className="btn btn-light">Año</button>
+                                            </div>
+                                            <div id="chartdiv2" style={{ width: "100%", height: "400px" }}></div>
+                                        </div>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col-5">
+                                        </div>
+                                        <div className="col-7">
+                                            <div className="table-resposive">
+                                                <table id="TABLA_CODIGOS" className="table " style={{ width: "100%" }}>
+                                                    <thead className="table-light">
+
+                                                    </thead>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div className="col-12 mt-3">
+                                        <div className="table-resposive">
+                                            <table id="TABLA_CLIENTES" className="table " style={{ width: "100%" }}>
+                                                <thead className="table-light">
+
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </CCardBody>
+                            </CCard>
+                        </CCol>
+                    </CRow>
+
+                </div>
+
             </div>
-
-
-            <div className="col-12 mt-4" id="SECC_DET">
-
-                <CRow>
-                    <CCol xs>
-                        <CCard className="mb-4">
-                            <CCardHeader>
-                                <div className="row">
-                                    <div className="col-1">
-                                        <button onClick={() => {
-
-                                            $("#SECC_TABLA").show(100);
-                                            $("#SECC_DET").hide();
-                                        }} className="btn btn-info text-light"><i className="bi bi-backspace-fill fs-6"></i></button>
-                                    </div>
-                                    <div className="col-4 mt-2">
-                                        <h5 className="fw-bold text-muted">Datos por chofer</h5>
-                                    </div>
-                                </div>
-                            </CCardHeader>
-                            <CCardBody>
-                                <h5 className="text-muted">Nombre:
-                                    <span id="CHOFER_NOMBRE"></span>
-                                </h5>
-                                <h5 className="text-muted">Placa:
-                                    <span id="CHOFER_PLACA"></span>
-                                </h5>
-                                <CRow>
-
-                                    <CCol xs={12} md={6} xl={6}>
-
-                                        <CRow>
-                                            <CCol sm={6}>
-                                                <div className="border-start border-start-4 border-start-info py-1 px-3">
-                                                    <div className="text-medium-emphasis small">Total guias asignadas</div>
-                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_TOTALES"></div>
-                                                </div>
-                                            </CCol>
-                                            <CCol sm={6}>
-                                                <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
-                                                    <div className="text-medium-emphasis small">Guias asignadas periodo</div>
-                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_PERIODO">78,623</div>
-                                                </div>
-                                            </CCol>
-
-                                        </CRow>
-
-                                    </CCol>
-
-                                    <CCol xs={12} md={6} xl={6}>
-                                        <CRow>
-                                            <CCol sm={6}>
-                                                <div className="border-start border-start-4 border-start-danger py-1 px-3">
-                                                    <div className="text-medium-emphasis small">Total guias despachadas</div>
-                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_TOTALES"></div>
-                                                </div>
-                                            </CCol>
-                                            <CCol sm={6}>
-                                                <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
-                                                    <div className="text-medium-emphasis small">Guias desp. periodo</div>
-                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_DESPACHADAS_PERIODO">49,123</div>
-                                                </div>
-                                            </CCol>
-                                        </CRow>
-
-
-                                    </CCol>
-                                </CRow>
-
-                                <br />
-                                <div className="row">
-                                    <div className="col-5">
-                                        <div id="chartdiv" style={{ width: "100%", height: "300px" }}></div>
-                                    </div>
-                                    <div className="col-7">
-                                        <div id="chartdiv2" style={{ width: "100%", height: "300px" }}></div>
-                                    </div>
-                                </div>
-                               
-
-                                <div className="col-12 mt-3">
-                                    <div className="table-resposive">
-                                        <table id="TABLA_CLIENTES" className="table " style={{ width: "100%" }}>
-                                            <thead className="table-light">
-
-                                            </thead>
-                                        </table>
-                                    </div>
-                                </div>
-
-                            </CCardBody>
-                        </CCard>
-                    </CCol>
-                </CRow>
-
-            </div>
-
         </div>
-    </div>
-)
+    )
 
 }
 
