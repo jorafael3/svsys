@@ -1,0 +1,28 @@
+cuantosa sacos de cemento del mes
+
+cuanto ha sacadao cada placa
+
+mejor chofer 
+
+los sacos despachos
+
+linea promedio
+
+azul mes pasado
+
+verde vigente
+
+proyeccion
+
+nov 30 
+4 domigos
+ 30 - 4 26 laborables
+sabados medio dias
+2 dias
+26 -2 24 laborables
+
+feriados
+restarles los feriados
+
+10 nov 
+(10000 / dias) * dias mes 

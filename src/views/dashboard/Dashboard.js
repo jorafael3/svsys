@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
   CAvatar,
@@ -17,6 +17,7 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CWidgetStatsA
 } from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle, hexToRgba } from '@coreui/utils'
@@ -42,6 +43,8 @@ import {
   cilPeople,
   cilUser,
   cilUserFemale,
+  cilArrowBottom,
+  cilArrowTop
 } from '@coreui/icons'
 
 import avatar1 from 'src/assets/images/avatars/1.jpg'
@@ -53,6 +56,11 @@ import avatar6 from 'src/assets/images/avatars/6.jpg'
 
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
+import * as des from '../../funciones/dashboard/dashboard'
+import moment from 'moment';
+
+
+
 
 const Dashboard = () => {
   const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
@@ -178,9 +186,131 @@ const Dashboard = () => {
     },
   ]
 
+  const [cantidad_cemento_mes, setcantidad_cemento_mes] = useState("");
+  const [cantidad_cemento_mes_pr, setcantidad_cemento_mes_pr] = useState("");
+  const [CM_GR_LABELS, setCM_GR_LABELS] = useState({});
+  const [CM_GR_LABELS_por, setCM_GR_LABELS_por] = useState(0);
+
+
+  function Cargar_Stats(param) {
+
+    des.Cargar_Stats(param, function (x) {
+      console.log('x: ', x);
+      let DA = x[0][0];
+      let gr = x[1];
+      setcantidad_cemento_mes(DA["CANTIDAD_CEMENTO_MES_ACTUAL"] + " " + DA["UNIDAD"])
+      setcantidad_cemento_mes_pr(DA["DESCRIPCION"]);
+      gr.map(function (x) {
+        x.mes = moment(x.AnioMes).format("MMMM");
+        x.mes_numero = moment(x.AnioMes).format("MM");
+      });
+
+      gr.sort(function (a, b) {
+        return a.mes_numero - b.mes_numero;
+      });
+      let GRA_CEMENTO_labels = [];
+      let GRA_CEMENTO_data = [];
+      gr.map(function (x) {
+        GRA_CEMENTO_labels.push(x.mes);
+        GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
+      })
+
+      let t = {
+        labels: GRA_CEMENTO_labels,
+        datasets: [
+          {
+            label: 'Sacos despachados',
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(255,255,255,.55)',
+            pointBackgroundColor: getStyle('--cui-primary'),
+            data: GRA_CEMENTO_data,
+          },
+        ],
+      }
+      setCM_GR_LABELS(t);
+      let por = ((parseFloat(DA["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DA["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DA["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
+      por = por * 100
+      setCM_GR_LABELS_por(por)
+
+    })
+  }
+  useEffect(() => {
+    let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
+    let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
+    let param = {
+      inicio_mes: inicio_mes,
+      fin_mes: fin_mes,
+    }
+    Cargar_Stats(param)
+  }, []);
+
+
   return (
     <>
-      <WidgetsDropdown />
+      {/* <WidgetsDropdown /> */}
+      <CCol sm={6} lg={4}>
+        <CWidgetStatsA
+          className="mb-4"
+          color="primary"
+          value={
+            <>
+              {cantidad_cemento_mes}{' '}
+              <span className="fs-6 fw-normal">
+                ({CM_GR_LABELS_por}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
+              </span>
+            </>
+          }
+          title={cantidad_cemento_mes_pr}
+
+          chart={
+            <CChartLine
+              className="mt-3 mx-3"
+              style={{ height: '70px' }}
+              data={CM_GR_LABELS}
+              options={{
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    grid: {
+                      display: false,
+                      drawBorder: false,
+                    },
+                    ticks: {
+                      display: false,
+                    },
+                  },
+                  y: {
+                    min: -9,
+                    max: 1000,
+                    display: false,
+                    grid: {
+                      display: false,
+                    },
+                    ticks: {
+                      display: false,
+                    },
+                  },
+                },
+                elements: {
+                  line: {
+                    borderWidth: 1,
+                  },
+                  point: {
+                    radius: 4,
+                    hitRadius: 10,
+                    hoverRadius: 4,
+                  },
+                },
+              }}
+            />
+          }
+        />
+      </CCol>
       <CCard className="mb-4">
         <CCardBody>
           <CRow>
