@@ -58,7 +58,9 @@ import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import * as des from '../../funciones/dashboard/dashboard'
 import moment from 'moment';
-
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 
 
@@ -191,55 +193,355 @@ const Dashboard = () => {
   const [CM_GR_LABELS, setCM_GR_LABELS] = useState({});
   const [CM_GR_LABELS_por, setCM_GR_LABELS_por] = useState(0);
 
+  const [STCHOFER_SACOS, setSTC_SACOS] = useState(0);
+  const [STCHOFER_NOMBRE, setSTCHOFER_NOMBRE] = useState("");
+  const [STCHOFER_POR, setSTCHOFER_POR] = useState("");
+  const [STCHOFER_GRAFICO, setSTCHOFER_GRAFICO] = useState({});
+
+
 
   function Cargar_Stats(param) {
 
+
     des.Cargar_Stats(param, function (x) {
-      console.log('x: ', x);
-      let DA = x[0][0];
-      let gr = x[1];
-      setcantidad_cemento_mes(DA["CANTIDAD_CEMENTO_MES_ACTUAL"] + " " + DA["UNIDAD"])
-      setcantidad_cemento_mes_pr(DA["DESCRIPCION"]);
-      gr.map(function (x) {
-        x.mes = moment(x.AnioMes).format("MMMM");
-        x.mes_numero = moment(x.AnioMes).format("MM");
-      });
 
-      gr.sort(function (a, b) {
-        return a.mes_numero - b.mes_numero;
-      });
-      let GRA_CEMENTO_labels = [];
-      let GRA_CEMENTO_data = [];
-      gr.map(function (x) {
-        GRA_CEMENTO_labels.push(x.mes);
-        GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
-      })
-
-      let t = {
-        labels: GRA_CEMENTO_labels,
-        datasets: [
-          {
-            label: 'Sacos despachados',
-            backgroundColor: 'transparent',
-            borderColor: 'rgba(255,255,255,.55)',
-            pointBackgroundColor: getStyle('--cui-primary'),
-            data: GRA_CEMENTO_data,
-          },
-        ],
-      }
-      setCM_GR_LABELS(t);
-      let por = ((parseFloat(DA["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DA["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DA["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
-      por = por * 100
-      setCM_GR_LABELS_por(por)
-
-    })
+      let SACOS = x["SACOS"];
+      let CHOFER = x["CHOFER"];
+      let GUIAS_DESP = x["GUIAS_DESPACHADAS"];
+      STATS_SACOS(SACOS);
+      STATS_CHOFER(CHOFER);
+      GUIAS_DESPACHADAS(GUIAS_DESP);
+    });
   }
+
+  function STATS_SACOS(datos) {
+    let DATOS = datos["DATOS"][0];
+    let gr = datos["GRAFICO"];
+
+    setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"] + " " + DATOS["UNIDAD"])
+    setcantidad_cemento_mes_pr(DATOS["DESCRIPCION"]);
+    let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
+    por = por * 100
+    setCM_GR_LABELS_por(por)
+
+    //*** GRAFICO ***/
+    gr.map(function (x) {
+      x.mes = moment(x.AnioMes).format("MMMM");
+      x.mes_numero = moment(x.AnioMes).format("MM");
+    });
+    gr.sort(function (a, b) {
+      return a.mes_numero - b.mes_numero;
+    });
+
+    let GRA_CEMENTO_labels = [];
+    let GRA_CEMENTO_data = [];
+    gr.map(function (x) {
+      GRA_CEMENTO_labels.push(x.mes);
+      GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
+    })
+
+
+    let t = {
+      labels: GRA_CEMENTO_labels,
+      datasets: [
+        {
+          label: 'SAC',
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(255,255,255,.55)',
+          pointBackgroundColor: getStyle('--cui-primary'),
+          data: GRA_CEMENTO_data,
+        },
+      ],
+    }
+
+    setCM_GR_LABELS(t);
+  }
+
+  function STATS_CHOFER(datos) {
+    let DATOS = datos["DATOS"][0];
+
+    let gr = datos["GRAFICO"];
+
+    let mesant = moment().subtract(1, "month").format("YYYY-MM")
+    setSTCHOFER_NOMBRE(DATOS["Nombre"]);
+    setSTC_SACOS(DATOS["CANT_CEMENTO"]);
+    let DES_MES_ANT = gr.filter(item => item.MES == mesant)[0]["CANTIDAD"];
+
+    let por = ((parseFloat(DATOS["CANT_CEMENTO"]) - parseFloat(DES_MES_ANT)) / parseFloat(DES_MES_ANT))
+    por = por * 100
+    setSTCHOFER_POR(por)
+    //*** GRAFIXCO */
+
+    gr.map(function (x) {
+      x.mes = moment(x.MES).format("MMMM");
+      x.mes_numero = moment(x.MES).format("MM");
+    });
+
+    gr.sort(function (a, b) {
+      return a.mes_numero - b.mes_numero;
+    });
+
+    let GRA_CEMENTO_labels = [];
+    let GRA_CEMENTO_data = [];
+    gr.map(function (x) {
+      GRA_CEMENTO_labels.push(x.mes);
+      GRA_CEMENTO_data.push(x.CANTIDAD);
+    })
+    let t = {
+      labels: GRA_CEMENTO_labels,
+      datasets: [
+        {
+          label: 'SAC',
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(255,255,255,.55)',
+          pointBackgroundColor: getStyle('--cui-primary'),
+          data: GRA_CEMENTO_data,
+        },
+      ],
+    }
+    setSTCHOFER_GRAFICO(t);
+
+
+  }
+
+  function GUIAS_DESPACHADAS(datosPorDia) {
+    let PORDIA = datosPorDia["POR_DIA"]["DATOS"];
+    let PORDIA_MESANT = datosPorDia["POR_DIA_MES_ANT"]["DATOS"];
+
+
+    let ultimodia_mes_actual = moment(PORDIA[0]["FECHA"]).endOf("month").format("DD");
+    console.log('primerdia_mes_actual: ', ultimodia_mes_actual);
+    let con = 1
+    while (con <= parseInt(ultimodia_mes_actual)) {
+      // console.log('con: ', con);
+      let dia = PORDIA.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
+      console.log('dia: ', dia);
+      if (dia.length == 0) {
+        let f = moment(PORDIA[0]["FECHA"]).format("YYYY-MM-") + con;
+        let b = {
+          FECHA: moment(f).format("YYYY-MM-DD"),
+          cantidad: 0,
+        }
+        PORDIA.push(b);
+      }
+      con++;
+    }
+    PORDIA.sort((a, b) => a.FECHA - b.FECHA);
+    console.log('PORDIA: ', PORDIA);
+
+
+    // 
+    GRAFICO_DIARIO(PORDIA.concat(PORDIA_MESANT));
+
+
+
+  }
+
+  function GRAFICO_DIARIO(datos) {
+
+    // am4core.ready(function () {
+    //   // Themes begin
+    //   am4core.useTheme(am4themes_animated);
+    //   // Themes end
+
+    //   // Create chart instance
+    //   var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
+    //   //chart.language.locale = am4lang_es_ES;
+    //   chart.paddingRight = 20;
+    //   chart.dateFormatter.dateFormat = "yyyy-MM-dd";
+
+    //   // Add data
+    //   chart.data = datos;
+    //   /*var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+    //   categoryAxis.dataFields.category = "texto";
+    //   categoryAxis.renderer.minGridDistance = 50;
+    //   categoryAxis.renderer.grid.template.location = 0.5;
+    //   categoryAxis.startLocation = 0.5;
+    //   categoryAxis.endLocation = 0.5;
+    //   categoryAxis.label = "asdasd";*/
+    //   var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    //   dateAxis.renderer.grid.template.location = 0.5;
+    //   dateAxis.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+    //   dateAxis.renderer.minGridDistance = 80;
+    //   dateAxis.tooltipDateFormat = "MMM dd, yyyy";
+
+
+    //   // dateAxis.dateFormats.setKey("month", "MMM");
+    //   // dateAxis.periodChangeDateFormats.setKey("month", "MMM");
+    //   // Create value axis
+    //   var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    //   valueAxis.baseValue = 0;
+
+    //   // Create series
+    //   var series = chart.series.push(new am4charts.LineSeries());
+    //   series.dataFields.valueY = "cantidad";
+    //   series.dataFields.dateX = "FECHA";
+    //   series.strokeWidth = 4;
+    //   series.tensionX = 0.77;
+    //   series.name = "Prediccion";
+    //   series.tooltipText = `[bold]DESPACHADO: {cantidad}`;
+    //   series.tooltip.pointerOrientation = "vertical";
+    //   series.tooltip.getFillFromObject = false;
+    //   series.tooltip.background.fill = am4core.color("#ffffff");
+    //   series.tooltip.label.fill = am4core.color("#000000");
+    //   series.legendSettings.itemValueText = "{valueY}";
+    //   series.stroke = am4core.color("#4680ff");
+    //   var bullet = series.bullets.push(new am4charts.CircleBullet());
+    //   bullet.circle.fill = am4core.color("#4680ff");
+
+    //   var series2 = chart.series.push(new am4charts.LineSeries());
+    //   series2.dataFields.valueY = "CANT_MES_ANT";
+    //   series2.dataFields.dateX = "FECHA";
+    //   series2.strokeWidth = 4;
+    //   series2.tensionX = 0.77;
+    //   series2.name = "Despacho Mes Anterior";
+    //   series2.tooltipText = `
+    //               Mes Anterior
+    //               ---------------------------------------
+    //               [bold]DESPACHADO: {CANT_MES_ANT}`;
+    //   series2.tooltip.pointerOrientation = "vertical";
+    //   series2.tooltip.getFillFromObject = false;
+    //   series2.tooltip.background.fill = am4core.color("#ffffff");
+    //   series2.tooltip.label.fill = am4core.color("#000000");
+    //   series2.legendSettings.itemValueText = "{valueY}";
+    //   series2.stroke = am4core.color("#22941E");
+    //   var bullet = series2.bullets.push(new am4charts.CircleBullet());
+    //   bullet.circle.fill = am4core.color("#22941E");
+    //   // // bullet is added because we add tooltip to a bullet for it to change color
+
+
+    //   var bullet = series.bullets.push(new am4charts.Bullet());
+    //   bullet.tooltipText = "{valueY}";
+
+
+    //   bullet.adapter.add("fill", function (fill, target) {
+    //     if (target.dataItem.valueY < 0) {
+    //       return am4core.color("#22941E");
+    //     }
+    //     return fill;
+    //   })
+    //   var range = valueAxis.createSeriesRange(series);
+    //   range.value = 0;
+    //   range.endValue = -1000;
+    //   range.contents.stroke = am4core.color("#FF0000");
+    //   range.contents.fill = range.contents.stroke;
+
+    //   // Add scrollbar
+    //   var scrollbarX = new am4charts.XYChartScrollbar();
+    //   scrollbarX.series.push(series);
+    //   // scrollbarX.series.push(series2);
+    //   scrollbarX.background.fill = am4core.color("#4680ff");
+    //   scrollbarX.background.fillOpacity = 0.2;
+    //   scrollbarX.minHeight = 50;
+
+    //   chart.scrollbarX = scrollbarX;
+
+    //   chart.cursor = new am4charts.XYCursor();
+
+    //   chart.legend = new am4charts.Legend();
+
+
+    // }); // end am4core.ready()
+
+    am4core.ready(function () {
+
+      // Themes begin
+      am4core.useTheme(am4themes_animated);
+      // Themes end
+
+      // Create chart
+      var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
+
+      // var data = [];
+      // var price1 = 1000, price2 = 1200;
+      // var quantity = 30000;
+      // for (var i = 0; i < 360; i++) {
+      //   price1 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
+      //   data.push({ date1: new Date(2015, 0, i), price1: price1 });
+      // }
+      // for (var i = 0; i < 360; i++) {
+      //   price2 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
+      //   data.push({ date2: new Date(2017, 0, i), price2: price2 });
+      // }
+
+      chart.data = datos;
+      // 
+
+      var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+      dateAxis.renderer.grid.template.location = 0;
+      dateAxis.renderer.labels.template.fill = am4core.color("#4680ff");
+
+      var dateAxis2 = chart.xAxes.push(new am4charts.DateAxis());
+      dateAxis2.renderer.grid.template.location = 0;
+      dateAxis2.renderer.labels.template.fill = am4core.color("#22941E");
+
+      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.tooltip.disabled = true;
+      valueAxis.renderer.labels.template.fill = am4core.color("#4680ff");
+
+      valueAxis.renderer.minWidth = 60;
+
+      var valueAxis2 = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis2.tooltip.disabled = true;
+      valueAxis2.renderer.labels.template.fill = am4core.color("#22941E");
+      valueAxis2.renderer.minWidth = 60;
+      valueAxis2.syncWithAxis = valueAxis;
+
+      var series = chart.series.push(new am4charts.LineSeries());
+      series.name = "MES ACTUAL";
+      series.dataFields.dateX = "FECHA";
+      series.dataFields.valueY = "cantidad";
+      series.tooltipText = "{valueY.value}";
+      series.fill = am4core.color("#e59165");
+      series.stroke = am4core.color("#4680ff");
+      series.strokeWidth = 4;
+      series.tensionX = 0.77;
+      var bullet = series.bullets.push(new am4charts.CircleBullet());
+      bullet.circle.fill = am4core.color("#4680ff");
+
+      var series2 = chart.series.push(new am4charts.LineSeries());
+      series2.name = "MES ANTERIOR";
+      series2.dataFields.dateX = "FECHA_ANT";
+      series2.dataFields.valueY = "cantidad";
+      series2.yAxis = valueAxis2;
+      series2.xAxis = dateAxis2;
+      series2.tooltipText = "{valueY.value}";
+      series2.fill = am4core.color("#dfcc64");
+      series2.stroke = am4core.color("#22941E");
+      series2.strokeWidth = 4;
+      series2.tensionX = 0.77;
+      var bullet = series2.bullets.push(new am4charts.CircleBullet());
+      bullet.circle.fill = am4core.color("#22941E");
+
+      chart.cursor = new am4charts.XYCursor();
+      chart.cursor.xAxis = dateAxis2;
+
+      var scrollbarX = new am4charts.XYChartScrollbar();
+      scrollbarX.series.push(series);
+      chart.scrollbarX = scrollbarX;
+
+      chart.legend = new am4charts.Legend();
+      chart.legend.parent = chart.plotContainer;
+      chart.legend.zIndex = 100;
+
+      valueAxis2.renderer.grid.template.strokeOpacity = 0.07;
+      dateAxis2.renderer.grid.template.strokeOpacity = 0.07;
+      dateAxis.renderer.grid.template.strokeOpacity = 0.07;
+      valueAxis.renderer.grid.template.strokeOpacity = 0.07;
+
+    }); // end am4core.ready()
+  }
+
   useEffect(() => {
     let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
     let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
+    let inicio_mes_a = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+    let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
     let param = {
       inicio_mes: inicio_mes,
       fin_mes: fin_mes,
+      inicio_mes_a: inicio_mes_a,
+      fin_mes_a: fin_mes_a,
     }
     Cargar_Stats(param)
   }, []);
@@ -248,71 +550,144 @@ const Dashboard = () => {
   return (
     <>
       {/* <WidgetsDropdown /> */}
-      <CCol sm={6} lg={4}>
-        <CWidgetStatsA
-          className="mb-4"
-          color="primary"
-          value={
-            <>
-              {cantidad_cemento_mes}{' '}
-              <span className="fs-6 fw-normal">
-                ({CM_GR_LABELS_por}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
-              </span>
-            </>
-          }
-          title={cantidad_cemento_mes_pr}
+      <div className='row'>
+        <CCol sm={6} lg={4}>
+          <CWidgetStatsA
+            className="mb-4"
+            color="primary"
+            value={
+              <>
+                {cantidad_cemento_mes}{' '}
+                <span className="fs-6 fw-bold">
+                  ({parseFloat(CM_GR_LABELS_por).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
+                </span>
+              </>
+            }
+            title={cantidad_cemento_mes_pr}
 
-          chart={
-            <CChartLine
-              className="mt-3 mx-3"
-              style={{ height: '70px' }}
-              data={CM_GR_LABELS}
-              options={{
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-                maintainAspectRatio: false,
-                scales: {
-                  x: {
-                    grid: {
-                      display: false,
-                      drawBorder: false,
-                    },
-                    ticks: {
+            chart={
+              <CChartLine
+                className="mt-3 mx-3"
+                style={{ height: '70px' }}
+                data={CM_GR_LABELS}
+                options={{
+                  plugins: {
+                    legend: {
                       display: false,
                     },
                   },
-                  y: {
-                    min: -9,
-                    max: 1000,
-                    display: false,
-                    grid: {
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: {
+                      grid: {
+                        display: false,
+                        drawBorder: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      min: -9,
+                      max: 100000,
+                      display: false,
+                      grid: {
+                        display: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                  },
+                  elements: {
+                    line: {
+                      borderWidth: 1,
+                    },
+                    point: {
+                      radius: 4,
+                      hitRadius: 10,
+                      hoverRadius: 4,
+                    },
+                  },
+                }}
+              />
+            }
+          />
+        </CCol>
+        <CCol sm={6} lg={4}>
+          <CWidgetStatsA
+            className="mb-4"
+            color="success"
+            value={
+              <>
+                {STCHOFER_SACOS}{' '}
+                <span className="fs-6 fw-bold">
+                  ({parseFloat(STCHOFER_POR).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
+                </span>
+              </>
+            }
+            title={
+              <>
+
+                <span>{STCHOFER_NOMBRE}</span><br />
+                <span>Mas sacos despachados</span>
+              </>
+            }
+
+            chart={
+              <CChartLine
+                className="mt-3 mx-3"
+                style={{ height: '70px' }}
+                data={STCHOFER_GRAFICO}
+                options={{
+                  plugins: {
+                    legend: {
                       display: false,
                     },
-                    ticks: {
+                  },
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: {
+                      grid: {
+                        display: false,
+                        drawBorder: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      min: -9,
+                      max: 10000,
                       display: false,
+                      grid: {
+                        display: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
                     },
                   },
-                },
-                elements: {
-                  line: {
-                    borderWidth: 1,
+                  elements: {
+                    line: {
+                      borderWidth: 1,
+                    },
+                    point: {
+                      radius: 4,
+                      hitRadius: 10,
+                      hoverRadius: 4,
+                    },
                   },
-                  point: {
-                    radius: 4,
-                    hitRadius: 10,
-                    hoverRadius: 4,
-                  },
-                },
-              }}
-            />
-          }
-        />
-      </CCol>
+                }}
+              />
+            }
+          />
+        </CCol>
+      </div>
       <CCard className="mb-4">
         <CCardBody>
+          <div id='GRAFICO_DIARIO' style={{ height: 500 }}></div>
+
           <CRow>
             <CCol sm={5}>
               <h4 id="traffic" className="card-title mb-0">
