@@ -22,18 +22,19 @@ import moment from "moment";
 
 
 
-am4core.useTheme(am4themes_animated);
 
 var URL = "reportes/"
 var grafico_dia = []
 var grafico_mes = []
 
 function Cargar_datos(param) {
+    
+    am4core.useTheme(am4themes_animated);
     param = param.param;
     console.log('param: ', param);
     const [seccion_detalle, setseccion_detalle] = useState(true);
     const [seccion_tabla, setseccion_tabla] = useState(false);
-   
+
 
     Reporte_Chofer_General();
 

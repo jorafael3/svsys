@@ -6,9 +6,15 @@ function Cargar_Stats(param,callback) {
     fun.AjaxSendReceiveData(url, param, function (x) {
         callback(x);
     });
+}
 
+function Cargar_Produts(callback) {
+    let url = URL + "Cargar_Productos"
+    fun.AjaxSendReceiveData(url, [], function (x) {
+        callback(x);
+    });
 }
 
 
 
-export { Cargar_Stats };
+export { Cargar_Stats,Cargar_Produts };

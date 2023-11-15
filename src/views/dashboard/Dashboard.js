@@ -53,6 +53,7 @@ import avatar3 from 'src/assets/images/avatars/3.jpg'
 import avatar4 from 'src/assets/images/avatars/4.jpg'
 import avatar5 from 'src/assets/images/avatars/5.jpg'
 import avatar6 from 'src/assets/images/avatars/6.jpg'
+import $, { param } from 'jquery';
 
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
@@ -61,7 +62,12 @@ import moment from 'moment';
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import { func } from 'prop-types';
 
+import flatpickr from "flatpickr";
+import 'flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/plugins/monthSelect/style.css'; // Import the plugin styles
+import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect/index.js'; // Import the monthSelect plugin
 
 
 const Dashboard = () => {
@@ -198,19 +204,33 @@ const Dashboard = () => {
   const [STCHOFER_POR, setSTCHOFER_POR] = useState("");
   const [STCHOFER_GRAFICO, setSTCHOFER_GRAFICO] = useState({});
 
+  const [DATOS_COMPLETOS, setDATOS_COMPLETOS] = useState([]);
 
+  function Cargar_Productos() {
+    des.Cargar_Produts(function (x) {
+      console.log('x: ', x);
+      $("#SEL_PRODUCTOS").empty();
+      x.map(function (y) {
+        $("#SEL_PRODUCTOS").append("<option value='" + y.CODIGO + "'>" + y.DESCRIPCION + "</option>")
+      });
+
+      $("#SEL_PRODUCTOS").val("10016416").change()
+    })
+  }
 
   function Cargar_Stats(param) {
 
-
     des.Cargar_Stats(param, function (x) {
+      console.log('x: ', x);
 
       let SACOS = x["SACOS"];
       let CHOFER = x["CHOFER"];
       let GUIAS_DESP = x["GUIAS_DESPACHADAS"];
       STATS_SACOS(SACOS);
       STATS_CHOFER(CHOFER);
-      GUIAS_DESPACHADAS(GUIAS_DESP);
+      POR_DIA(GUIAS_DESP);
+      setDATOS_COMPLETOS(GUIAS_DESP);
+      console.log('GUIAS_DESP: ', GUIAS_DESP);
     });
   }
 
@@ -304,144 +324,62 @@ const Dashboard = () => {
 
   }
 
-  function GUIAS_DESPACHADAS(datosPorDia) {
-    let PORDIA = datosPorDia["POR_DIA"]["DATOS"];
-    let PORDIA_MESANT = datosPorDia["POR_DIA_MES_ANT"]["DATOS"];
+  //** POR DIA */
+  function POR_DIA(datos) {
+    let PORDIA = datos["POR_DIA"]["DATOS"];
+    let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
 
-
-    let ultimodia_mes_actual = moment(PORDIA[0]["FECHA"]).endOf("month").format("DD");
-    console.log('primerdia_mes_actual: ', ultimodia_mes_actual);
-    let con = 1
-    while (con <= parseInt(ultimodia_mes_actual)) {
-      // console.log('con: ', con);
-      let dia = PORDIA.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
-      console.log('dia: ', dia);
-      if (dia.length == 0) {
-        let f = moment(PORDIA[0]["FECHA"]).format("YYYY-MM-") + con;
-        let b = {
-          FECHA: moment(f).format("YYYY-MM-DD"),
-          cantidad: 0,
+    if (PORDIA.length > 0) {
+      let ultimodia_mes_actual = moment(PORDIA[0]["FECHA"]).endOf("month").format("DD");
+      let con = 1
+      while (con <= parseInt(ultimodia_mes_actual)) {
+        // 
+        let dia = PORDIA.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
+        if (dia.length == 0) {
+          let f = moment(PORDIA[0]["FECHA"]).format("YYYY-MM-") + con;
+          let b = {
+            FECHA: moment(f).format("YYYY-MM-DD"),
+            cantidad: 0,
+          }
+          PORDIA.push(b);
         }
-        PORDIA.push(b);
+        con++;
       }
-      con++;
+      PORDIA.map(function (x) {
+        x.NUM = parseInt(moment(x.FECHA).format("DD"));
+      })
+      PORDIA.sort((a, b) => a.NUM - b.NUM);
     }
-    PORDIA.sort((a, b) => a.FECHA - b.FECHA);
-    console.log('PORDIA: ', PORDIA);
+
+    if (PORDIA_MESANT.length > 0) {
+      let ultimodia_mes_ant = moment(PORDIA_MESANT[0]["FECHA_ANT"]).endOf("month").format("DD");
+
+      let con2 = 1
+      while (con2 <= parseInt(ultimodia_mes_ant)) {
+        // 
+        let dia = PORDIA_MESANT.filter(item => parseInt(moment(item.FECHA_ANT).format("DD")) == con2);
+        if (dia.length == 0) {
+          let f = moment(PORDIA_MESANT[0]["FECHA_ANT"]).format("YYYY-MM-") + con2;
+          let b = {
+            FECHA_ANT: moment(f).format("YYYY-MM-DD"),
+            cantidad: 0,
+          }
+          PORDIA_MESANT.push(b);
+        }
+        con2++;
+      }
+      PORDIA_MESANT.map(function (x) {
+        x.NUM = parseInt(moment(x.FECHA_ANT).format("DD"));
+      })
+      PORDIA_MESANT.sort((a, b) => a.NUM - b.NUM);
+    }
 
 
-    // 
     GRAFICO_DIARIO(PORDIA.concat(PORDIA_MESANT));
-
-
 
   }
 
   function GRAFICO_DIARIO(datos) {
-
-    // am4core.ready(function () {
-    //   // Themes begin
-    //   am4core.useTheme(am4themes_animated);
-    //   // Themes end
-
-    //   // Create chart instance
-    //   var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
-    //   //chart.language.locale = am4lang_es_ES;
-    //   chart.paddingRight = 20;
-    //   chart.dateFormatter.dateFormat = "yyyy-MM-dd";
-
-    //   // Add data
-    //   chart.data = datos;
-    //   /*var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-    //   categoryAxis.dataFields.category = "texto";
-    //   categoryAxis.renderer.minGridDistance = 50;
-    //   categoryAxis.renderer.grid.template.location = 0.5;
-    //   categoryAxis.startLocation = 0.5;
-    //   categoryAxis.endLocation = 0.5;
-    //   categoryAxis.label = "asdasd";*/
-    //   var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-    //   dateAxis.renderer.grid.template.location = 0.5;
-    //   dateAxis.dateFormatter.inputDateFormat = "yyyy-MM-dd";
-    //   dateAxis.renderer.minGridDistance = 80;
-    //   dateAxis.tooltipDateFormat = "MMM dd, yyyy";
-
-
-    //   // dateAxis.dateFormats.setKey("month", "MMM");
-    //   // dateAxis.periodChangeDateFormats.setKey("month", "MMM");
-    //   // Create value axis
-    //   var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-    //   valueAxis.baseValue = 0;
-
-    //   // Create series
-    //   var series = chart.series.push(new am4charts.LineSeries());
-    //   series.dataFields.valueY = "cantidad";
-    //   series.dataFields.dateX = "FECHA";
-    //   series.strokeWidth = 4;
-    //   series.tensionX = 0.77;
-    //   series.name = "Prediccion";
-    //   series.tooltipText = `[bold]DESPACHADO: {cantidad}`;
-    //   series.tooltip.pointerOrientation = "vertical";
-    //   series.tooltip.getFillFromObject = false;
-    //   series.tooltip.background.fill = am4core.color("#ffffff");
-    //   series.tooltip.label.fill = am4core.color("#000000");
-    //   series.legendSettings.itemValueText = "{valueY}";
-    //   series.stroke = am4core.color("#4680ff");
-    //   var bullet = series.bullets.push(new am4charts.CircleBullet());
-    //   bullet.circle.fill = am4core.color("#4680ff");
-
-    //   var series2 = chart.series.push(new am4charts.LineSeries());
-    //   series2.dataFields.valueY = "CANT_MES_ANT";
-    //   series2.dataFields.dateX = "FECHA";
-    //   series2.strokeWidth = 4;
-    //   series2.tensionX = 0.77;
-    //   series2.name = "Despacho Mes Anterior";
-    //   series2.tooltipText = `
-    //               Mes Anterior
-    //               ---------------------------------------
-    //               [bold]DESPACHADO: {CANT_MES_ANT}`;
-    //   series2.tooltip.pointerOrientation = "vertical";
-    //   series2.tooltip.getFillFromObject = false;
-    //   series2.tooltip.background.fill = am4core.color("#ffffff");
-    //   series2.tooltip.label.fill = am4core.color("#000000");
-    //   series2.legendSettings.itemValueText = "{valueY}";
-    //   series2.stroke = am4core.color("#22941E");
-    //   var bullet = series2.bullets.push(new am4charts.CircleBullet());
-    //   bullet.circle.fill = am4core.color("#22941E");
-    //   // // bullet is added because we add tooltip to a bullet for it to change color
-
-
-    //   var bullet = series.bullets.push(new am4charts.Bullet());
-    //   bullet.tooltipText = "{valueY}";
-
-
-    //   bullet.adapter.add("fill", function (fill, target) {
-    //     if (target.dataItem.valueY < 0) {
-    //       return am4core.color("#22941E");
-    //     }
-    //     return fill;
-    //   })
-    //   var range = valueAxis.createSeriesRange(series);
-    //   range.value = 0;
-    //   range.endValue = -1000;
-    //   range.contents.stroke = am4core.color("#FF0000");
-    //   range.contents.fill = range.contents.stroke;
-
-    //   // Add scrollbar
-    //   var scrollbarX = new am4charts.XYChartScrollbar();
-    //   scrollbarX.series.push(series);
-    //   // scrollbarX.series.push(series2);
-    //   scrollbarX.background.fill = am4core.color("#4680ff");
-    //   scrollbarX.background.fillOpacity = 0.2;
-    //   scrollbarX.minHeight = 50;
-
-    //   chart.scrollbarX = scrollbarX;
-
-    //   chart.cursor = new am4charts.XYCursor();
-
-    //   chart.legend = new am4charts.Legend();
-
-
-    // }); // end am4core.ready()
 
     am4core.ready(function () {
 
@@ -451,18 +389,6 @@ const Dashboard = () => {
 
       // Create chart
       var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
-
-      // var data = [];
-      // var price1 = 1000, price2 = 1200;
-      // var quantity = 30000;
-      // for (var i = 0; i < 360; i++) {
-      //   price1 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
-      //   data.push({ date1: new Date(2015, 0, i), price1: price1 });
-      // }
-      // for (var i = 0; i < 360; i++) {
-      //   price2 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
-      //   data.push({ date2: new Date(2017, 0, i), price2: price2 });
-      // }
 
       chart.data = datos;
       // 
@@ -491,8 +417,10 @@ const Dashboard = () => {
       series.name = "MES ACTUAL";
       series.dataFields.dateX = "FECHA";
       series.dataFields.valueY = "cantidad";
-      series.tooltipText = "{valueY.value}";
-      series.fill = am4core.color("#e59165");
+      series.tooltipText = `Mes Actual
+                  ---------------------------------------
+                  [bold]DESPACHADO: {cantidad}`;
+      series.fill = am4core.color("#4680ff");
       series.stroke = am4core.color("#4680ff");
       series.strokeWidth = 4;
       series.tensionX = 0.77;
@@ -505,8 +433,10 @@ const Dashboard = () => {
       series2.dataFields.valueY = "cantidad";
       series2.yAxis = valueAxis2;
       series2.xAxis = dateAxis2;
-      series2.tooltipText = "{valueY.value}";
-      series2.fill = am4core.color("#dfcc64");
+      series2.tooltipText = `Mes Anterior
+                  ---------------------------------------
+                  [bold]DESPACHADO: {cantidad}`;
+      series2.fill = am4core.color("#22941E");
       series2.stroke = am4core.color("#22941E");
       series2.strokeWidth = 4;
       series2.tensionX = 0.77;
@@ -532,6 +462,174 @@ const Dashboard = () => {
     }); // end am4core.ready()
   }
 
+  //** POR MES */
+  function POR_MES(datos) {
+    let DATOS_MES = datos["POR_MES"]["DATOS"]
+    console.log('DATOS_MES: ', DATOS_MES);
+    DATOS_MES.map(function (x) {
+      x.NUM = parseInt(moment(x.MES).format("MM"));
+    });
+
+    DATOS_MES.sort((a, b) => a.NUM - b.NUM);
+
+
+    GRAFICO_MES(DATOS_MES)
+  }
+
+  function GRAFICO_MES(datos) {
+    am4core.ready(function () {
+
+      // Themes begin
+      am4core.useTheme(am4themes_animated);
+      // Themes end
+
+      // Create chart
+      var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
+
+      chart.data = datos;
+      // 
+
+      var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+      dateAxis.renderer.grid.template.location = 0;
+      dateAxis.renderer.labels.template.fill = am4core.color("#4680ff");
+      dateAxis.dateFormats.setKey("month", "MM-YYYY");
+
+      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.tooltip.disabled = true;
+      valueAxis.renderer.labels.template.fill = am4core.color("#4680ff");
+      valueAxis.renderer.minWidth = 60;
+
+
+      var series = chart.series.push(new am4charts.LineSeries());
+      series.name = "MES ACTUAL";
+      series.dataFields.dateX = "FECHA";
+      series.dataFields.valueY = "cantidad";
+      series.tooltipText = `[bold]DESPACHADO: {cantidad}`;
+      series.fill = am4core.color("#4680ff");
+      series.stroke = am4core.color("#4680ff");
+      series.strokeWidth = 4;
+      series.tensionX = 0.77;
+      var bullet = series.bullets.push(new am4charts.CircleBullet());
+      bullet.circle.fill = am4core.color("#4680ff");
+
+
+      chart.cursor = new am4charts.XYCursor();
+
+      var scrollbarX = new am4charts.XYChartScrollbar();
+      scrollbarX.series.push(series);
+      chart.scrollbarX = scrollbarX;
+
+      chart.legend = new am4charts.Legend();
+      chart.legend.parent = chart.plotContainer;
+      chart.legend.zIndex = 100;
+
+      dateAxis.renderer.grid.template.strokeOpacity = 0.07;
+      valueAxis.renderer.grid.template.strokeOpacity = 0.07;
+
+    }); // end am4core.ready()
+  }
+
+  // ** POR AÑO
+
+  function POR_ANIO(datos) {
+    let DATOS_ANIO = datos["POR_ANIO"]["DATOS"]
+    DATOS_ANIO.sort((a, b) => parseInt(a.FECHA) - parseInt(b.FECHA));
+    let a = [
+      {
+        "CODIGO": "10016416",
+        "PEDIDO_INTERNO": "505695873",
+        "FECHA": "2019",
+        "cantidad": "53455"
+      }, {
+        "CODIGO": "10016416",
+        "PEDIDO_INTERNO": "505695873",
+        "FECHA": "2021",
+        "cantidad": "34523"
+      }, {
+        "CODIGO": "10016416",
+        "PEDIDO_INTERNO": "505695873",
+        "FECHA": "2022",
+        "cantidad": "45004"
+      }, {
+        "CODIGO": "10016416",
+        "PEDIDO_INTERNO": "505695873",
+        "FECHA": "2023",
+        "cantidad": "86000"
+      }
+    ]
+    GRAFICO_ANIO(a)
+  }
+
+  function GRAFICO_ANIO(datos) {
+    am4core.ready(function () {
+
+      // Themes begin
+      am4core.useTheme(am4themes_animated);
+      // Themes end
+
+      // Create chart
+      var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
+
+      chart.data = datos;
+      // 
+
+      var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+      categoryAxis.dataFields.category = "FECHA";
+      categoryAxis.renderer.minGridDistance = 30;
+      categoryAxis.renderer.grid.template.location = 0.5;
+      categoryAxis.startLocation = 0.5;
+      categoryAxis.endLocation = 0.5;
+
+
+      var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.baseValue = 0;
+
+      // Create series
+      var series = chart.series.push(new am4charts.LineSeries());
+      series.dataFields.valueY = "cantidad";
+      series.dataFields.categoryX = "FECHA";
+      series.tooltipText = `[bold]DESPACHADO: {cantidad}`;
+      series.fill = am4core.color("#4680ff");
+      series.stroke = am4core.color("#4680ff");
+      series.strokeWidth = 4;
+      series.tensionX = 0.77;
+      var bullet = series.bullets.push(new am4charts.CircleBullet());
+      bullet.circle.fill = am4core.color("#4680ff");
+
+
+      chart.cursor = new am4charts.XYCursor();
+
+      var scrollbarX = new am4charts.XYChartScrollbar();
+      scrollbarX.series.push(series);
+      chart.scrollbarX = scrollbarX;
+
+      chart.legend = new am4charts.Legend();
+      chart.legend.parent = chart.plotContainer;
+      chart.legend.zIndex = 100;
+
+      // dateAxis.renderer.grid.template.strokeOpacity = 0.07;
+      valueAxis.renderer.grid.template.strokeOpacity = 0.07;
+
+    }); // end am4core.ready()
+  }
+
+  function CAMBIAR_MES() {
+    let mes = $("#myDatePicker").val();
+
+    let inicio_mes = moment(mes).startOf("month").format("YYYY-MM-DD");
+    let fin_mes = moment(mes).endOf("month").format("YYYY-MM-DD");
+    let inicio_mes_a = moment(inicio_mes).subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+    let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+    let param = {
+      inicio_mes: inicio_mes,
+      fin_mes: fin_mes,
+      inicio_mes_a: inicio_mes_a,
+      fin_mes_a: fin_mes_a,
+    }
+    console.log('param: ', param);
+    Cargar_Stats(param)
+  }
+
   useEffect(() => {
     let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
     let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
@@ -543,13 +641,50 @@ const Dashboard = () => {
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
     }
-    Cargar_Stats(param)
+    Cargar_Stats(param);
+    Cargar_Productos();
+    const options = {
+      dateFormat: 'Y-m-d', // Customize the date format
+      onChange: (selectedDates, dateStr) => {
+        // let inicio = moment(new Date(selectedDates[0])).startOf("month").format("YYYY-MM-DD");
+        // let fin = moment(inicio).endOf("month").format("YYYY-MM-DD");
+        // setfecha_ini(inicio);
+        // setfecha_fin(fin);
+        CAMBIAR_MES();
+      },
+      defaultDate: 'today',
+      plugins: [
+        new monthSelectPlugin({
+          shorthand: true, //defaults to false
+          dateFormat: "M-Y", //defaults to "F Y"
+          altFormat: "F Y", //defaults to "F Y"
+          theme: "dark" // defaults to "light"
+        })
+      ]
+    };
+    flatpickr('#myDatePicker', options);
+
   }, []);
 
 
   return (
     <>
       {/* <WidgetsDropdown /> */}
+      <div className='row mb-4'>
+        <div className='col-lg-4 col-sm-6'>
+          <label className="required fs-5 fw-bold mb-2">Mes</label>
+          {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
+          <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
+
+        </div>
+        <div className='col-lg-5 col-sm-6'>
+          <label className="required fs-5 fw-bold mb-2">Producto</label>
+          {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
+          <select id='SEL_PRODUCTOS' className='form-select'>
+          </select>
+
+        </div>
+      </div>
       <div className='row'>
         <CCol sm={6} lg={4}>
           <CWidgetStatsA
@@ -686,7 +821,6 @@ const Dashboard = () => {
       </div>
       <CCard className="mb-4">
         <CCardBody>
-          <div id='GRAFICO_DIARIO' style={{ height: 500 }}></div>
 
           <CRow>
             <CCol sm={5}>
@@ -696,107 +830,36 @@ const Dashboard = () => {
               <div className="small text-medium-emphasis">January - July 2021</div>
             </CCol>
             <CCol sm={7} className="d-none d-md-block">
-              <CButton color="primary" className="float-end">
+              {/* <CButton color="primary" className="float-end">
                 <CIcon icon={cilCloudDownload} />
-              </CButton>
-              <CButtonGroup className="float-end me-3">
-                {['Day', 'Month', 'Year'].map((value) => (
+              </CButton> */}
+              {/* <CButtonGroup className="float-end me-3">
+                {['Dia', 'Mes', 'Año'].map((value) => (
                   <CButton
                     color="outline-secondary"
                     key={value}
                     className="mx-0"
-                    active={value === 'Month'}
+                    active={value === 'Dia'}
                   >
                     {value}
                   </CButton>
                 ))}
-              </CButtonGroup>
+              </CButtonGroup> */}
+              <div className="btn-group float-end" role="group" aria-label="Basic example">
+                <button onClick={() => {
+                  POR_DIA(DATOS_COMPLETOS);
+                }} type="button" className="btn btn-light">Dia</button>
+                <button onClick={() => {
+                  POR_MES(DATOS_COMPLETOS);
+                }} type="button" className="btn btn-light">Mes</button>
+                <button onClick={() => {
+                  POR_ANIO(DATOS_COMPLETOS);
+                }} type="button" className="btn btn-light">Año</button>
+              </div>
             </CCol>
           </CRow>
-          <CChartLine
-            style={{ height: '300px', marginTop: '40px' }}
-            data={{
-              labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-              datasets: [
-                {
-                  label: 'My First dataset',
-                  backgroundColor: hexToRgba(getStyle('--cui-info'), 10),
-                  borderColor: getStyle('--cui-info'),
-                  pointHoverBackgroundColor: getStyle('--cui-info'),
-                  borderWidth: 2,
-                  data: [
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                  ],
-                  fill: true,
-                },
-                {
-                  label: 'My Second dataset',
-                  backgroundColor: 'transparent',
-                  borderColor: getStyle('--cui-success'),
-                  pointHoverBackgroundColor: getStyle('--cui-success'),
-                  borderWidth: 2,
-                  data: [
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                    random(50, 200),
-                  ],
-                },
-                {
-                  label: 'My Third dataset',
-                  backgroundColor: 'transparent',
-                  borderColor: getStyle('--cui-danger'),
-                  pointHoverBackgroundColor: getStyle('--cui-danger'),
-                  borderWidth: 1,
-                  borderDash: [8, 5],
-                  data: [65, 65, 65, 65, 65, 65, 65],
-                },
-              ],
-            }}
-            options={{
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-              },
-              scales: {
-                x: {
-                  grid: {
-                    drawOnChartArea: false,
-                  },
-                },
-                y: {
-                  ticks: {
-                    beginAtZero: true,
-                    maxTicksLimit: 5,
-                    stepSize: Math.ceil(250 / 5),
-                    max: 250,
-                  },
-                },
-              },
-              elements: {
-                line: {
-                  tension: 0.4,
-                },
-                point: {
-                  radius: 0,
-                  hitRadius: 10,
-                  hoverRadius: 4,
-                  hoverBorderWidth: 3,
-                },
-              },
-            }}
-          />
+          <div id='GRAFICO_DIARIO' style={{ height: 500 }}></div>
+
         </CCardBody>
         <CCardFooter>
           <CRow xs={{ cols: 1 }} md={{ cols: 5 }} className="text-center">
