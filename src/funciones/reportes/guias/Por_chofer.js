@@ -593,7 +593,6 @@ function Cargar_datos(param) {
 
     }
 
-
     return (
         <div className="col-12">
             <h4 className="fw-bold bg-light">Reporte por Chofer</h4>
