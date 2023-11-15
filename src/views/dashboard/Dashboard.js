@@ -383,6 +383,11 @@ const Dashboard = () => {
 
     am4core.ready(function () {
 
+      let datos_ant = datos.filter(item => item.TIPO == 1 && item.cantidad > 0);
+      var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
+      totaldolar = totaldolar / datos_ant.length
+      console.log('totaldolar: ', totaldolar);
+
       // Themes begin
       am4core.useTheme(am4themes_animated);
       // Themes end
@@ -454,10 +459,21 @@ const Dashboard = () => {
       chart.legend.parent = chart.plotContainer;
       chart.legend.zIndex = 100;
 
-      valueAxis2.renderer.grid.template.strokeOpacity = 0.07;
-      dateAxis2.renderer.grid.template.strokeOpacity = 0.07;
-      dateAxis.renderer.grid.template.strokeOpacity = 0.07;
-      valueAxis.renderer.grid.template.strokeOpacity = 0.07;
+      let range = valueAxis.axisRanges.create();
+      range.value = parseFloat(totaldolar).toFixed(2);
+      range.grid.stroke = am4core.color("#396478");
+      range.grid.strokeWidth = 3;
+      range.grid.strokeOpacity = 1;
+      range.grid.strokeDasharray = "3,3";
+      range.label.inside = true;
+      range.label.text = "--------- Promedio " +parseFloat(totaldolar).toFixed(2);
+      range.label.fill = range.grid.stroke;
+      range.label.verticalCenter = "bottom";
+
+      // valueAxis2.renderer.grid.template.strokeOpacity = 0.07;
+      // dateAxis2.renderer.grid.template.strokeOpacity = 0.07;
+      // dateAxis.renderer.grid.template.strokeOpacity = 0.07;
+      // valueAxis.renderer.grid.template.strokeOpacity = 0.07;
 
     }); // end am4core.ready()
   }
@@ -477,18 +493,25 @@ const Dashboard = () => {
   }
 
   function GRAFICO_MES(datos) {
-    am4core.ready(function () {
 
+    var totaldolar = datos.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
+    totaldolar = totaldolar / datos.length
+    console.log('totaldolar: ', totaldolar);
+
+    am4core.ready(function () {
       // Themes begin
       am4core.useTheme(am4themes_animated);
       // Themes end
 
-      // Create chart
+
+
+      // Create chart instance
       var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
 
+      // Add data
       chart.data = datos;
-      // 
 
+      // Create axes
       var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
       dateAxis.renderer.grid.template.location = 0;
       dateAxis.renderer.labels.template.fill = am4core.color("#4680ff");
@@ -498,7 +521,7 @@ const Dashboard = () => {
       valueAxis.tooltip.disabled = true;
       valueAxis.renderer.labels.template.fill = am4core.color("#4680ff");
       valueAxis.renderer.minWidth = 60;
-
+      // Create series
 
       var series = chart.series.push(new am4charts.LineSeries());
       series.name = "MES ACTUAL";
@@ -512,20 +535,40 @@ const Dashboard = () => {
       var bullet = series.bullets.push(new am4charts.CircleBullet());
       bullet.circle.fill = am4core.color("#4680ff");
 
+      var bullet = series.bullets.push(new am4charts.CircleBullet());
+      bullet.circle.fill = am4core.color("#fff");
+      bullet.circle.strokeWidth = 3;
 
+      // Add cursor
       chart.cursor = new am4charts.XYCursor();
+      chart.cursor.fullWidthLineX = true;
+      chart.cursor.xAxis = dateAxis;
+      chart.cursor.lineX.strokeWidth = 0;
+      chart.cursor.lineX.fill = am4core.color("#000");
+      chart.cursor.lineX.fillOpacity = 0.1;
 
-      var scrollbarX = new am4charts.XYChartScrollbar();
-      scrollbarX.series.push(series);
-      chart.scrollbarX = scrollbarX;
+      // Add scrollbar
+      chart.scrollbarX = new am4charts.XYChartScrollbar();
+      chart.scrollbarX.series.push(series);
+
+
+      // Add a guide
+      let range = valueAxis.axisRanges.create();
+      range.value = parseFloat(totaldolar).toFixed(2);
+      range.grid.stroke = am4core.color("#396478");
+      range.grid.strokeWidth = 2;
+      range.grid.strokeOpacity = 1;
+      range.grid.strokeDasharray = "3,3";
+      range.label.inside = true;
+      range.label.text = "Promedio " + parseFloat(totaldolar).toFixed(2);
+      range.label.fill = range.grid.stroke;
+      range.label.verticalCenter = "bottom";
+      chart.exporting.menu = new am4core.ExportMenu();
+
 
       chart.legend = new am4charts.Legend();
       chart.legend.parent = chart.plotContainer;
       chart.legend.zIndex = 100;
-
-      dateAxis.renderer.grid.template.strokeOpacity = 0.07;
-      valueAxis.renderer.grid.template.strokeOpacity = 0.07;
-
     }); // end am4core.ready()
   }
 
