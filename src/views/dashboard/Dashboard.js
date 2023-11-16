@@ -198,17 +198,23 @@ const Dashboard = () => {
   const [cantidad_cemento_mes_pr, setcantidad_cemento_mes_pr] = useState("");
   const [CM_GR_LABELS, setCM_GR_LABELS] = useState({});
   const [CM_GR_LABELS_por, setCM_GR_LABELS_por] = useState(0);
+  const [FECHA_INICIO, setFECHA_INICIO] = useState(0);
+  const [FECHA_FIN, setFECHA_FIN] = useState(0);
 
   const [STCHOFER_SACOS, setSTC_SACOS] = useState(0);
-  const [STCHOFER_NOMBRE, setSTCHOFER_NOMBRE] = useState("");
-  const [STCHOFER_POR, setSTCHOFER_POR] = useState("");
+  const [STATS_UNIDAD, setSTATS_UNIDAD] = useState("");
+  const [STCHOFER_NOMBRE, setSTCHOFER_NOMBRE] = useState("Sin registro");
+  const [STCHOFER_POR, setSTCHOFER_POR] = useState(0);
   const [STCHOFER_GRAFICO, setSTCHOFER_GRAFICO] = useState({});
-
+  const [STCHOFER_UNIDAD, setSTCHOFER_UNIDAD] = useState("");
   const [DATOS_COMPLETOS, setDATOS_COMPLETOS] = useState([]);
+
+  const [PROMEDIO_DESPACHO, setPROMEDIO_DESPACHO] = useState(0);
+
 
   function Cargar_Productos() {
     des.Cargar_Produts(function (x) {
-      console.log('x: ', x);
+
       $("#SEL_PRODUCTOS").empty();
       x.map(function (y) {
         $("#SEL_PRODUCTOS").append("<option value='" + y.CODIGO + "'>" + y.DESCRIPCION + "</option>")
@@ -219,9 +225,9 @@ const Dashboard = () => {
   }
 
   function Cargar_Stats(param) {
+    console.log('param: ', param);
 
     des.Cargar_Stats(param, function (x) {
-      console.log('x: ', x);
 
       let SACOS = x["SACOS"];
       let CHOFER = x["CHOFER"];
@@ -230,102 +236,146 @@ const Dashboard = () => {
       STATS_CHOFER(CHOFER);
       POR_DIA(GUIAS_DESP);
       setDATOS_COMPLETOS(GUIAS_DESP);
-      console.log('GUIAS_DESP: ', GUIAS_DESP);
+      CALCULAR_PROYECCION();
     });
   }
 
   function STATS_SACOS(datos) {
+
+
+
     let DATOS = datos["DATOS"][0];
     let gr = datos["GRAFICO"];
 
     setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"] + " " + DATOS["UNIDAD"])
     setcantidad_cemento_mes_pr(DATOS["DESCRIPCION"]);
-    let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
-    por = por * 100
-    setCM_GR_LABELS_por(por)
+    if (parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]) > 0) {
+      let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
+      por = por * 100
 
-    //*** GRAFICO ***/
-    gr.map(function (x) {
-      x.mes = moment(x.AnioMes).format("MMMM");
-      x.mes_numero = moment(x.AnioMes).format("MM");
-    });
-    gr.sort(function (a, b) {
-      return a.mes_numero - b.mes_numero;
-    });
+      setCM_GR_LABELS_por(isNaN(por) ? 0 : por);
+    } else {
+      setCM_GR_LABELS_por(0);
 
-    let GRA_CEMENTO_labels = [];
-    let GRA_CEMENTO_data = [];
-    gr.map(function (x) {
-      GRA_CEMENTO_labels.push(x.mes);
-      GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
-    })
-
-
-    let t = {
-      labels: GRA_CEMENTO_labels,
-      datasets: [
-        {
-          label: 'SAC',
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(255,255,255,.55)',
-          pointBackgroundColor: getStyle('--cui-primary'),
-          data: GRA_CEMENTO_data,
-        },
-      ],
     }
 
-    setCM_GR_LABELS(t);
+    setSTATS_UNIDAD(DATOS["UNIDAD"]);
+
+
+    if (gr.length > 0) {
+      //*** GRAFICO ***/
+      gr.map(function (x) {
+        x.mes = moment(x.AnioMes).format("MMMM");
+        x.mes_numero = moment(x.AnioMes).format("MM");
+      });
+      gr.sort(function (a, b) {
+        return a.mes_numero - b.mes_numero;
+      });
+
+      let GRA_CEMENTO_labels = [];
+      let GRA_CEMENTO_data = [];
+      gr.map(function (x) {
+        GRA_CEMENTO_labels.push(x.mes);
+        GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
+      })
+
+
+      let t = {
+        labels: GRA_CEMENTO_labels,
+        datasets: [
+          {
+            label: 'SAC',
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(255,255,255,.55)',
+            pointBackgroundColor: getStyle('--cui-primary'),
+            data: GRA_CEMENTO_data,
+          },
+        ],
+      }
+      setCM_GR_LABELS(t);
+
+    } else {
+      setCM_GR_LABELS({});
+
+    }
+
+
   }
 
   function STATS_CHOFER(datos) {
-    let DATOS = datos["DATOS"][0];
 
-    let gr = datos["GRAFICO"];
 
-    let mesant = moment().subtract(1, "month").format("YYYY-MM")
-    setSTCHOFER_NOMBRE(DATOS["Nombre"]);
-    setSTC_SACOS(DATOS["CANT_CEMENTO"]);
-    let DES_MES_ANT = gr.filter(item => item.MES == mesant)[0]["CANTIDAD"];
+    var VAL = datos["DATOS"].reduce((sum, value) => (sum + parseFloat(value.CANT_CEMENTO)), 0);
+    if (VAL > 0) {
+      let DATOS = datos["DATOS"][0];
+      let gr = datos["GRAFICO"];
 
-    let por = ((parseFloat(DATOS["CANT_CEMENTO"]) - parseFloat(DES_MES_ANT)) / parseFloat(DES_MES_ANT))
-    por = por * 100
-    setSTCHOFER_POR(por)
+      let mesant = moment().subtract(1, "month").format("YYYY-MM");
+
+      setSTCHOFER_NOMBRE(DATOS["Nombre"]);
+      setSTC_SACOS(DATOS["CANT_CEMENTO"]);
+      setSTCHOFER_UNIDAD("Con más " + STATS_UNIDAD + " despachadas");
+
+      if (gr.length > 0) {
+        let DES_MES_ANT = gr.filter(item => item.MES == mesant)
+
+        if (DES_MES_ANT.length > 0) {
+          DES_MES_ANT = DES_MES_ANT[0]["CANTIDAD"]
+          let por = ((parseFloat(DATOS["CANT_CEMENTO"]) - parseFloat(DES_MES_ANT)) / parseFloat(DES_MES_ANT))
+          por = por * 100
+          setSTCHOFER_POR(por);
+        } else {
+          setSTCHOFER_POR(0);
+
+        }
+
+        gr.map(function (x) {
+          x.mes = moment(x.MES).format("MMMM");
+          x.mes_numero = moment(x.MES).format("MM");
+        });
+
+        gr.sort(function (a, b) {
+          return a.mes_numero - b.mes_numero;
+        });
+
+        let GRA_CEMENTO_labels = [];
+        let GRA_CEMENTO_data = [];
+        gr.map(function (x) {
+          GRA_CEMENTO_labels.push(x.mes);
+          GRA_CEMENTO_data.push(x.CANTIDAD);
+        })
+        let t = {
+          labels: GRA_CEMENTO_labels,
+          datasets: [
+            {
+              label: 'SAC',
+              backgroundColor: 'transparent',
+              borderColor: 'rgba(255,255,255,.55)',
+              pointBackgroundColor: getStyle('--cui-primary'),
+              data: GRA_CEMENTO_data,
+            },
+          ],
+        }
+        setSTCHOFER_GRAFICO(t);
+
+      }
+    } else {
+      setSTCHOFER_POR(0);
+      setSTC_SACOS(0);
+      setSTCHOFER_NOMBRE("Sin registro");
+      setSTCHOFER_GRAFICO({});
+
+    }
+
     //*** GRAFIXCO */
 
-    gr.map(function (x) {
-      x.mes = moment(x.MES).format("MMMM");
-      x.mes_numero = moment(x.MES).format("MM");
-    });
-
-    gr.sort(function (a, b) {
-      return a.mes_numero - b.mes_numero;
-    });
-
-    let GRA_CEMENTO_labels = [];
-    let GRA_CEMENTO_data = [];
-    gr.map(function (x) {
-      GRA_CEMENTO_labels.push(x.mes);
-      GRA_CEMENTO_data.push(x.CANTIDAD);
-    })
-    let t = {
-      labels: GRA_CEMENTO_labels,
-      datasets: [
-        {
-          label: 'SAC',
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(255,255,255,.55)',
-          pointBackgroundColor: getStyle('--cui-primary'),
-          data: GRA_CEMENTO_data,
-        },
-      ],
-    }
-    setSTCHOFER_GRAFICO(t);
 
 
   }
 
   //** POR DIA */
   function POR_DIA(datos) {
+    console.log('datos: ', datos);
     let PORDIA = datos["POR_DIA"]["DATOS"];
     let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
 
@@ -386,7 +436,7 @@ const Dashboard = () => {
       let datos_ant = datos.filter(item => item.TIPO == 1 && item.cantidad > 0);
       var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
       totaldolar = totaldolar / datos_ant.length
-      console.log('totaldolar: ', totaldolar);
+      setPROMEDIO_DESPACHO(totaldolar);
 
       // Themes begin
       am4core.useTheme(am4themes_animated);
@@ -466,7 +516,7 @@ const Dashboard = () => {
       range.grid.strokeOpacity = 1;
       range.grid.strokeDasharray = "3,3";
       range.label.inside = true;
-      range.label.text = "--------- Promedio " +parseFloat(totaldolar).toFixed(2);
+      range.label.text = "--------- Promedio " + parseFloat(totaldolar).toFixed(2);
       range.label.fill = range.grid.stroke;
       range.label.verticalCenter = "bottom";
 
@@ -481,12 +531,13 @@ const Dashboard = () => {
   //** POR MES */
   function POR_MES(datos) {
     let DATOS_MES = datos["POR_MES"]["DATOS"]
-    console.log('DATOS_MES: ', DATOS_MES);
+
     DATOS_MES.map(function (x) {
       x.NUM = parseInt(moment(x.MES).format("MM"));
     });
 
     DATOS_MES.sort((a, b) => a.NUM - b.NUM);
+    console.log('DATOS_MES: ', DATOS_MES);
 
 
     GRAFICO_MES(DATOS_MES)
@@ -496,7 +547,7 @@ const Dashboard = () => {
 
     var totaldolar = datos.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
     totaldolar = totaldolar / datos.length
-    console.log('totaldolar: ', totaldolar);
+
 
     am4core.ready(function () {
       // Themes begin
@@ -577,30 +628,30 @@ const Dashboard = () => {
   function POR_ANIO(datos) {
     let DATOS_ANIO = datos["POR_ANIO"]["DATOS"]
     DATOS_ANIO.sort((a, b) => parseInt(a.FECHA) - parseInt(b.FECHA));
-    let a = [
-      {
-        "CODIGO": "10016416",
-        "PEDIDO_INTERNO": "505695873",
-        "FECHA": "2019",
-        "cantidad": "53455"
-      }, {
-        "CODIGO": "10016416",
-        "PEDIDO_INTERNO": "505695873",
-        "FECHA": "2021",
-        "cantidad": "34523"
-      }, {
-        "CODIGO": "10016416",
-        "PEDIDO_INTERNO": "505695873",
-        "FECHA": "2022",
-        "cantidad": "45004"
-      }, {
-        "CODIGO": "10016416",
-        "PEDIDO_INTERNO": "505695873",
-        "FECHA": "2023",
-        "cantidad": "86000"
-      }
-    ]
-    GRAFICO_ANIO(a)
+    // let a = [
+    //   {
+    //     "CODIGO": "10016416",
+    //     "PEDIDO_INTERNO": "505695873",
+    //     "FECHA": "2019",
+    //     "cantidad": "53455"
+    //   }, {
+    //     "CODIGO": "10016416",
+    //     "PEDIDO_INTERNO": "505695873",
+    //     "FECHA": "2021",
+    //     "cantidad": "34523"
+    //   }, {
+    //     "CODIGO": "10016416",
+    //     "PEDIDO_INTERNO": "505695873",
+    //     "FECHA": "2022",
+    //     "cantidad": "45004"
+    //   }, {
+    //     "CODIGO": "10016416",
+    //     "PEDIDO_INTERNO": "505695873",
+    //     "FECHA": "2023",
+    //     "cantidad": "86000"
+    //   }
+    // ]
+    GRAFICO_ANIO(DATOS_ANIO)
   }
 
   function GRAFICO_ANIO(datos) {
@@ -658,6 +709,7 @@ const Dashboard = () => {
 
   function CAMBIAR_MES() {
     let mes = $("#myDatePicker").val();
+    let prod = $("#SEL_PRODUCTOS").val();
 
     let inicio_mes = moment(mes).startOf("month").format("YYYY-MM-DD");
     let fin_mes = moment(mes).endOf("month").format("YYYY-MM-DD");
@@ -668,9 +720,52 @@ const Dashboard = () => {
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
+      producto: prod.trim()
     }
-    console.log('param: ', param);
+    setFECHA_INICIO(inicio_mes);
+    setFECHA_FIN(fin_mes);
+
     Cargar_Stats(param)
+  }
+
+  function CALCULAR_PROYECCION() {
+
+    function domingosEnMes(anio, mes) {
+      const primerDia = new Date(anio, mes - 1, 1);
+      const ultimoDia = new Date(anio, mes, 0);
+      let domingos = 0;
+      for (let dia = primerDia; dia <= ultimoDia; dia.setDate(dia.getDate() + 1)) {
+        if (dia.getDay() === 0) {
+          domingos++;
+        }
+      }
+      return domingos;
+    }
+
+    function sabadosEnMes(anio, mes) {
+      const primerDia = new Date(anio, mes - 1, 1);
+      const ultimoDia = new Date(anio, mes, 0);
+      let sabados = 0;
+      for (let dia = primerDia; dia <= ultimoDia; dia.setDate(dia.getDate() + 1)) {
+        if (dia.getDay() === 6) {
+          sabados += 0.5;
+        }
+      }
+      return sabados;
+    }
+
+    let m = $("#myDatePicker").val();
+    const anio = moment(m).format("YYYY");
+    const mes = moment(m).format("MM"); // Noviembre
+    const cantidadDomingos = domingosEnMes(anio, mes);
+    const cantidadSabados = sabadosEnMes(anio, mes);
+    let DIAS_ENEL_MES =  moment(m).endOf("month").format("DD");
+    console.log('DIAS_ENEL_MES: ', DIAS_ENEL_MES);
+    let DIAS_LABORABLES = parseInt(DIAS_ENEL_MES) - parseInt(cantidadDomingos) - parseFloat(cantidadSabados)
+    console.log('DIAS_LABORABLES: ', DIAS_LABORABLES);
+    console.log(`El mes de ${mes}/${anio} tiene ${cantidadDomingos} domingos.`);
+    console.log(`El mes de ${mes}/${anio} tiene ${cantidadSabados} Sabados.`);
+
   }
 
   useEffect(() => {
@@ -683,7 +778,10 @@ const Dashboard = () => {
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
+      producto: "10016416"
     }
+    setFECHA_INICIO(inicio_mes);
+    setFECHA_FIN(fin_mes);
     Cargar_Stats(param);
     Cargar_Productos();
     const options = {
@@ -723,7 +821,7 @@ const Dashboard = () => {
         <div className='col-lg-5 col-sm-6'>
           <label className="required fs-5 fw-bold mb-2">Producto</label>
           {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
-          <select id='SEL_PRODUCTOS' className='form-select'>
+          <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
           </select>
 
         </div>
@@ -741,7 +839,12 @@ const Dashboard = () => {
                 </span>
               </>
             }
-            title={cantidad_cemento_mes_pr}
+            title={
+              <>
+                <span className="fs-6 fw-bold">{cantidad_cemento_mes_pr}</span>
+              </>
+
+            }
 
             chart={
               <CChartLine
@@ -798,7 +901,7 @@ const Dashboard = () => {
             color="success"
             value={
               <>
-                {STCHOFER_SACOS}{' '}
+                {STCHOFER_SACOS + " " + STATS_UNIDAD + " "}{'  '}
                 <span className="fs-6 fw-bold">
                   ({parseFloat(STCHOFER_POR).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
                 </span>
@@ -806,9 +909,8 @@ const Dashboard = () => {
             }
             title={
               <>
-
-                <span>{STCHOFER_NOMBRE}</span><br />
-                <span>Mas sacos despachados</span>
+                <span className="fs-6 fw-bold">{STCHOFER_NOMBRE}</span><br />
+                <span className="fs-6 fw-bold">{STCHOFER_SACOS > 0 ? "Con más " + STATS_UNIDAD + " despachad@s" : ""}</span>
               </>
             }
 
@@ -866,13 +968,13 @@ const Dashboard = () => {
         <CCardBody>
 
           <CRow>
-            <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Traffic
-              </h4>
-              <div className="small text-medium-emphasis">January - July 2021</div>
+            <CCol sm={7}>
+              <h5 id="traffic" className="card-title mb-0">
+                {cantidad_cemento_mes_pr}
+              </h5>
+              <div className="small text-medium-emphasis fw-bold">{moment(FECHA_INICIO).format("MMMM DD, YYYY")} - {moment(FECHA_FIN).format("MMMM DD, YYYY")}</div>
             </CCol>
-            <CCol sm={7} className="d-none d-md-block">
+            <CCol sm={5} className="d-none d-md-block">
               {/* <CButton color="primary" className="float-end">
                 <CIcon icon={cilCloudDownload} />
               </CButton> */}
@@ -905,17 +1007,18 @@ const Dashboard = () => {
 
         </CCardBody>
         <CCardFooter>
-          <CRow xs={{ cols: 1 }} md={{ cols: 5 }} className="text-center">
-            {progressExample.map((item, index) => (
-              <CCol className="mb-sm-2 mb-0" key={index}>
-                <div className="text-medium-emphasis">{item.title}</div>
-                <strong>
-                  {item.value} ({item.percent}%)
-                </strong>
-                <CProgress thin className="mt-2" color={item.color} value={item.percent} />
-              </CCol>
-            ))}
+          <CRow xs={{ cols: 1 }} md={{ cols: 4 }} className="text-center">
+            {/* {progressExample.map((item, index) =>({443}%) ( */}
+            <CCol className="mb-sm-2 mb-0" >
+              <div className="fs-7">PROMEDIO DESPACHO</div>
+              <strong className='fs-5'>
+                {PROMEDIO_DESPACHO} {STATS_UNIDAD}
+              </strong>
+              <CProgress thin className="mt-2" color={"danger"} value={2222} />
+            </CCol>
+            {/* ))} */}
           </CRow>
+
         </CCardFooter>
       </CCard>
 
