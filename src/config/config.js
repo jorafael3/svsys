@@ -9,9 +9,9 @@ const host = window.location.hostname;
 const protocol = window.location.protocol;
 const port = ":80";
 
-const URL = protocol + "//" + host + port + "/svsysback/"
+// const URL = protocol + "//" + host + port + "/svsysback/"
 // const URL = "http://192.168.0.104:8080/svsysback/"
-// const URL = "https://salvacero.com.ec/svsysback/"
+const URL = "https://salvacero.com.ec/svsysback/"
 
 // https://lcaimport.com/svsysback/usuarios/Validar_Usuario_movil
 function AjaxSendReceiveData(url, param, callback) {
