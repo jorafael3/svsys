@@ -18,6 +18,7 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { useNavigate, Route, Routes } from 'react-router-dom'
 import * as funciones from '../../../funciones/login/login';
 import $, { param } from 'jquery';
+import  loim  from '../../../../src/assets/images/logo2.png'
 
 const Login = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Login = () => {
               <CCard className="p-4 bg-dark">
                 <CCardBody>
                   <CForm>
-                    <img style={{width:300}} src="https://lh6.googleusercontent.com/Hr85EKX80OGeYHQC_unFqebo4CQ2OJcsyVCglDmpHL8HVNNxpoG3TgvvgWxm9nEwTDmVWKMMbWYZgL42RWEDa1I=w16383" alt="Sal" />
+                    <img style={{width:300}} src={loim} alt="Sal" />
                     <h1 className='text-light'>Inicia sesión</h1>
                     <p className="text-medium-emphasis text-ligth"></p>
                     <CInputGroup className="mb-3">

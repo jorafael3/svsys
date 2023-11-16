@@ -210,6 +210,7 @@ const Dashboard = () => {
   const [DATOS_COMPLETOS, setDATOS_COMPLETOS] = useState([]);
 
   const [PROMEDIO_DESPACHO, setPROMEDIO_DESPACHO] = useState(0);
+  const [PORYECCION_DESPACHO, setPORYECCION_DESPACHO] = useState(0);
 
 
   function Cargar_Productos() {
@@ -225,7 +226,7 @@ const Dashboard = () => {
   }
 
   function Cargar_Stats(param) {
-    console.log('param: ', param);
+
 
     des.Cargar_Stats(param, function (x) {
 
@@ -375,7 +376,7 @@ const Dashboard = () => {
 
   //** POR DIA */
   function POR_DIA(datos) {
-    console.log('datos: ', datos);
+
     let PORDIA = datos["POR_DIA"]["DATOS"];
     let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
 
@@ -437,6 +438,13 @@ const Dashboard = () => {
       var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
       totaldolar = totaldolar / datos_ant.length
       setPROMEDIO_DESPACHO(totaldolar);
+
+      let p = CALCULAR_PROYECCION(totaldolar);
+      console.log('p: ', p);
+      var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
+      let PROYECCION = (total_pr / p[1]) * p[0]
+      console.log('t: ', PROYECCION);
+      setPORYECCION_DESPACHO(PROYECCION);
 
       // Themes begin
       am4core.useTheme(am4themes_animated);
@@ -520,6 +528,33 @@ const Dashboard = () => {
       range.label.fill = range.grid.stroke;
       range.label.verticalCenter = "bottom";
 
+      function createTrendLine(data) {
+        var trend = chart.series.push(new am4charts.LineSeries());
+        trend.dataFields.valueY = "value";
+        trend.dataFields.dateX = "date";
+        trend.strokeWidth = 2
+        trend.stroke = trend.fill = am4core.color("#c00");
+        trend.data = data;
+        trend.name = "PROYECCION"
+
+        var bullet = trend.bullets.push(new am4charts.CircleBullet());
+        bullet.tooltipText = "{date}\n[bold font-size: 17px]value: {valueY}[/]";
+        bullet.strokeWidth = 2;
+        bullet.stroke = am4core.color("#fff")
+        bullet.circle.fill = trend.stroke;
+
+        var hoverState = bullet.states.create("hover");
+        hoverState.properties.scale = 1.7;
+
+        return trend;
+      };
+    let mes = $("#myDatePicker").val();
+
+      createTrendLine([
+        { "date": moment(mes).startOf("month").format("YYYY-MM-DD"), "value": 0 },
+        { "date": moment(mes).endOf("month").format("YYYY-MM-DD"), "value": 21120 },
+      ]);
+
       // valueAxis2.renderer.grid.template.strokeOpacity = 0.07;
       // dateAxis2.renderer.grid.template.strokeOpacity = 0.07;
       // dateAxis.renderer.grid.template.strokeOpacity = 0.07;
@@ -537,7 +572,7 @@ const Dashboard = () => {
     });
 
     DATOS_MES.sort((a, b) => a.NUM - b.NUM);
-    console.log('DATOS_MES: ', DATOS_MES);
+
 
 
     GRAFICO_MES(DATOS_MES)
@@ -728,7 +763,7 @@ const Dashboard = () => {
     Cargar_Stats(param)
   }
 
-  function CALCULAR_PROYECCION() {
+  function CALCULAR_PROYECCION(totaldolar) {
 
     function domingosEnMes(anio, mes) {
       const primerDia = new Date(anio, mes - 1, 1);
@@ -759,13 +794,11 @@ const Dashboard = () => {
     const mes = moment(m).format("MM"); // Noviembre
     const cantidadDomingos = domingosEnMes(anio, mes);
     const cantidadSabados = sabadosEnMes(anio, mes);
-    let DIAS_ENEL_MES =  moment(m).endOf("month").format("DD");
-    console.log('DIAS_ENEL_MES: ', DIAS_ENEL_MES);
-    let DIAS_LABORABLES = parseInt(DIAS_ENEL_MES) - parseInt(cantidadDomingos) - parseFloat(cantidadSabados)
-    console.log('DIAS_LABORABLES: ', DIAS_LABORABLES);
-    console.log(`El mes de ${mes}/${anio} tiene ${cantidadDomingos} domingos.`);
-    console.log(`El mes de ${mes}/${anio} tiene ${cantidadSabados} Sabados.`);
+    let DIAS_ENEL_MES = moment(m).endOf("month").format("DD");
 
+    let DIAS_LABORABLES = parseInt(DIAS_ENEL_MES) - parseInt(cantidadDomingos) - parseFloat(cantidadSabados)
+
+    return [DIAS_LABORABLES, DIAS_ENEL_MES];
   }
 
   useEffect(() => {
@@ -773,6 +806,7 @@ const Dashboard = () => {
     let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
     let inicio_mes_a = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+
     let param = {
       inicio_mes: inicio_mes,
       fin_mes: fin_mes,
@@ -780,10 +814,12 @@ const Dashboard = () => {
       fin_mes_a: fin_mes_a,
       producto: "10016416"
     }
+
     setFECHA_INICIO(inicio_mes);
     setFECHA_FIN(fin_mes);
     Cargar_Stats(param);
     Cargar_Productos();
+
     const options = {
       dateFormat: 'Y-m-d', // Customize the date format
       onChange: (selectedDates, dateStr) => {
@@ -803,6 +839,7 @@ const Dashboard = () => {
         })
       ]
     };
+
     flatpickr('#myDatePicker', options);
 
   }, []);
@@ -1013,6 +1050,13 @@ const Dashboard = () => {
               <div className="fs-7">PROMEDIO DESPACHO</div>
               <strong className='fs-5'>
                 {PROMEDIO_DESPACHO} {STATS_UNIDAD}
+              </strong>
+              <CProgress thin className="mt-2" color={"info"} value={2222} />
+            </CCol>
+            <CCol className="mb-sm-2 mb-0" >
+              <div className="fs-7">PROYECCIÓN DESPACHO</div>
+              <strong className='fs-5'>
+                {PORYECCION_DESPACHO} {STATS_UNIDAD}
               </strong>
               <CProgress thin className="mt-2" color={"danger"} value={2222} />
             </CCol>
