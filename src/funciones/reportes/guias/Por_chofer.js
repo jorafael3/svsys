@@ -607,7 +607,7 @@ function Cargar_datos(param) {
                 </div>
 
 
-                <div className="col-12 mt-4" id="SECC_DET">
+                <div className="col-12 mt-4" id="SECC_DET" style={{display:"none"}}>
 
                     <CRow>
                         <CCol xs>

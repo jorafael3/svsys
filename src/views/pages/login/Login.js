@@ -36,18 +36,19 @@ const Login = () => {
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={4}>
+          <CCol md={6}>
             <CCardGroup>
-              <CCard className="p-4">
+              <CCard className="p-4 bg-dark">
                 <CCardBody>
                   <CForm>
-                    <h1>Login</h1>
-                    <p className="text-medium-emphasis">Sign In to your account</p>
+                    <img style={{width:300}} src="https://lh6.googleusercontent.com/Hr85EKX80OGeYHQC_unFqebo4CQ2OJcsyVCglDmpHL8HVNNxpoG3TgvvgWxm9nEwTDmVWKMMbWYZgL42RWEDa1I=w16383" alt="Sal" />
+                    <h1 className='text-light'>Inicia sesión</h1>
+                    <p className="text-medium-emphasis text-ligth"></p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput id='USUARIO' placeholder="Username" autoComplete="username" />
+                      <CFormInput id='USUARIO' placeholder="Usuario" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -56,20 +57,20 @@ const Login = () => {
                       <CFormInput
                         id='PASS'
                         type="password"
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         autoComplete="current-password"
                       />
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4" onClick={INI}>
-                          Login
+                        <CButton color="danger text-light fw-bold" className="px-4" onClick={INI}>
+                          Ingresar
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
+                        {/* <CButton color="link" className="px-0">
                           Forgot password?
-                        </CButton>
+                        </CButton> */}
                       </CCol>
                     </CRow>
                   </CForm>

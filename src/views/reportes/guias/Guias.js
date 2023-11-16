@@ -188,8 +188,8 @@ function Reportes_guias() {
                         <div className='col-12 mt-4'>
                             {showClientes && <Clientes param={parametros} />}
                             {showChofer && <Chofer param={parametros} />}
-                            {showDestino && <Destino param={parametros} />}
-                            {showServicio && <Servicio param={parametros} />}
+                            {/* {showDestino && <Destino param={parametros} />}
+                            {showServicio && <Servicio param={parametros} />} */}
                         </div>
 
                     </CCardBody>
