@@ -208,6 +208,9 @@ const Dashboard = () => {
   const [STCHOFER_GRAFICO, setSTCHOFER_GRAFICO] = useState({});
   const [STCHOFER_UNIDAD, setSTCHOFER_UNIDAD] = useState("");
   const [DATOS_COMPLETOS, setDATOS_COMPLETOS] = useState([]);
+  const [STVIGENTES, setSTVIGENTES] = useState(0);
+  const [STPROC_DESPACHO, setSTPROC_DESPACHO] = useState(0);
+
 
   const [PROMEDIO_DESPACHO, setPROMEDIO_DESPACHO] = useState(0);
   const [PORYECCION_DESPACHO, setPORYECCION_DESPACHO] = useState(0);
@@ -229,13 +232,18 @@ const Dashboard = () => {
 
 
     des.Cargar_Stats(param, function (x) {
+      console.log('x: ', x);
 
       let SACOS = x["SACOS"];
       let CHOFER = x["CHOFER"];
       let GUIAS_DESP = x["GUIAS_DESPACHADAS"];
+      let GUIAS_VIG = x["GUIAS_VIGENTES"];
+      let GUIAS_EN_PROCESO_DESPACHO = x["GUIAS_EN_PROCESO_DESPACHO"];
       STATS_SACOS(SACOS);
       STATS_CHOFER(CHOFER);
       POR_DIA(GUIAS_DESP);
+      STATS_VIGENTE(GUIAS_VIG);
+      STATS_PROCESO_DESPACHO(GUIAS_EN_PROCESO_DESPACHO);
       setDATOS_COMPLETOS(GUIAS_DESP);
       CALCULAR_PROYECCION();
     });
@@ -244,15 +252,15 @@ const Dashboard = () => {
   function STATS_SACOS(datos) {
 
 
-
     let DATOS = datos["DATOS"][0];
     let gr = datos["GRAFICO"];
 
-    setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"] + " " + DATOS["UNIDAD"])
+    setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"])
     setcantidad_cemento_mes_pr(DATOS["DESCRIPCION"]);
     if (parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]) > 0) {
       let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
       por = por * 100
+
 
       setCM_GR_LABELS_por(isNaN(por) ? 0 : por);
     } else {
@@ -260,7 +268,16 @@ const Dashboard = () => {
 
     }
 
-    setSTATS_UNIDAD(DATOS["UNIDAD"]);
+    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
+    let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
+
+    if (check_producto == "p") {
+      setSTATS_UNIDAD(DATOS["UNIDAD"]);
+    } else {
+      setSTATS_UNIDAD("GUIAS");
+
+    }
+
 
 
     if (gr.length > 0) {
@@ -306,6 +323,7 @@ const Dashboard = () => {
   function STATS_CHOFER(datos) {
 
 
+
     var VAL = datos["DATOS"].reduce((sum, value) => (sum + parseFloat(value.CANT_CEMENTO)), 0);
     if (VAL > 0) {
       let DATOS = datos["DATOS"][0];
@@ -324,6 +342,7 @@ const Dashboard = () => {
           DES_MES_ANT = DES_MES_ANT[0]["CANTIDAD"]
           let por = ((parseFloat(DATOS["CANT_CEMENTO"]) - parseFloat(DES_MES_ANT)) / parseFloat(DES_MES_ANT))
           por = por * 100
+
           setSTCHOFER_POR(por);
         } else {
           setSTCHOFER_POR(0);
@@ -371,6 +390,31 @@ const Dashboard = () => {
     //*** GRAFIXCO */
 
 
+
+  }
+
+  function STATS_VIGENTE(datos) {
+    console.log('datos: ', datos);
+
+    let DATOS = datos["DATOS"]
+    var total = DATOS.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
+    setSTVIGENTES(total);
+
+
+  }
+
+  function STATS_PROCESO_DESPACHO(datos) {
+    console.log('datos: ', datos);
+    let DATOS = datos["DATOS"]
+    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
+    if (check_producto == 0) {
+      setSTPROC_DESPACHO(DATOS.length);
+
+    } else {
+      var total = DATOS.reduce((sum, value) => (sum + parseFloat(value.POR_DESPACHAR)), 0);
+      setSTPROC_DESPACHO(total);
+
+    }
 
   }
 
@@ -440,10 +484,10 @@ const Dashboard = () => {
       setPROMEDIO_DESPACHO(totaldolar);
 
       let p = CALCULAR_PROYECCION(totaldolar);
-      console.log('p: ', p);
+
       var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
       let PROYECCION = (total_pr / p[1]) * p[0]
-      console.log('t: ', PROYECCION);
+
       setPORYECCION_DESPACHO(PROYECCION);
 
       // Themes begin
@@ -548,12 +592,12 @@ const Dashboard = () => {
 
         return trend;
       };
-    let mes = $("#myDatePicker").val();
+      let mes = $("#myDatePicker").val();
 
-      createTrendLine([
-        { "date": moment(mes).startOf("month").format("YYYY-MM-DD"), "value": 0 },
-        { "date": moment(mes).endOf("month").format("YYYY-MM-DD"), "value": 21120 },
-      ]);
+      // createTrendLine([
+      //   { "date": moment(mes).startOf("month").format("YYYY-MM-DD"), "value": 0 },
+      //   { "date": moment(mes).endOf("month").format("YYYY-MM-DD"), "value": 21120 },
+      // ]);
 
       // valueAxis2.renderer.grid.template.strokeOpacity = 0.07;
       // dateAxis2.renderer.grid.template.strokeOpacity = 0.07;
@@ -750,13 +794,19 @@ const Dashboard = () => {
     let fin_mes = moment(mes).endOf("month").format("YYYY-MM-DD");
     let inicio_mes_a = moment(inicio_mes).subtract(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
+    let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
+
     let param = {
       inicio_mes: inicio_mes,
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
-      producto: prod.trim()
+      producto: prod.trim(),
+      tipo: check_producto == 0 ? check_guia : check_producto
     }
+
+
     setFECHA_INICIO(inicio_mes);
     setFECHA_FIN(fin_mes);
 
@@ -806,14 +856,19 @@ const Dashboard = () => {
     let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
     let inicio_mes_a = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
+    let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
+
 
     let param = {
       inicio_mes: inicio_mes,
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
-      producto: "10016416"
+      producto: "10016416",
+      tipo: check_producto
     }
+
 
     setFECHA_INICIO(inicio_mes);
     setFECHA_FIN(fin_mes);
@@ -855,22 +910,41 @@ const Dashboard = () => {
           <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
 
         </div>
-        <div className='col-lg-5 col-sm-6'>
+        <div className='col-lg-4 col-sm-6'>
           <label className="required fs-5 fw-bold mb-2">Producto</label>
           {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
           <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
           </select>
 
         </div>
+        <div className='col-lg-4 col-sm-6'>
+          <label className="required fs-5 fw-bold mb-2">Tipo</label>
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="radio" name='ra' role="switch"
+              id="check_producto" defaultChecked
+              onChange={CAMBIAR_MES} />
+            <label className="form-check-label fw-bold" >Por Producto</label>
+          </div>
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="radio" name='ra' role="switch"
+              id="check_guia"
+              onChange={CAMBIAR_MES} />
+            <label className="form-check-label fw-bold">Por guìas</label>
+          </div>
+
+        </div>
       </div>
       <div className='row'>
-        <CCol sm={6} lg={4}>
+        <CCol sm={6} lg={3}>
           <CWidgetStatsA
             className="mb-4"
             color="primary"
             value={
               <>
-                {cantidad_cemento_mes}{' '}
+                <span className="fs-5 fw-bold">
+                  {cantidad_cemento_mes + " " + STATS_UNIDAD + " "}{' '}
+                </span>
+
                 <span className="fs-6 fw-bold">
                   ({parseFloat(CM_GR_LABELS_por).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
                 </span>
@@ -878,6 +952,7 @@ const Dashboard = () => {
             }
             title={
               <>
+                {/* <span className="fs-6 fw-bold">Producto</span><br /> */}
                 <span className="fs-6 fw-bold">{cantidad_cemento_mes_pr}</span>
               </>
 
@@ -932,10 +1007,10 @@ const Dashboard = () => {
             }
           />
         </CCol>
-        <CCol sm={6} lg={4}>
+        <CCol sm={6} lg={3}>
           <CWidgetStatsA
             className="mb-4"
-            color="success"
+            color="warning"
             value={
               <>
                 {STCHOFER_SACOS + " " + STATS_UNIDAD + " "}{'  '}
@@ -956,6 +1031,136 @@ const Dashboard = () => {
                 className="mt-3 mx-3"
                 style={{ height: '70px' }}
                 data={STCHOFER_GRAFICO}
+                options={{
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: {
+                      grid: {
+                        display: false,
+                        drawBorder: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      min: -9,
+                      max: 10000,
+                      display: false,
+                      grid: {
+                        display: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                  },
+                  elements: {
+                    line: {
+                      borderWidth: 1,
+                    },
+                    point: {
+                      radius: 4,
+                      hitRadius: 10,
+                      hoverRadius: 4,
+                    },
+                  },
+                }}
+              />
+            }
+          />
+        </CCol>
+        <CCol sm={6} lg={3}>
+          <CWidgetStatsA
+            className="mb-4"
+            color="info"
+            value={
+              <>
+                {STVIGENTES + " " + STATS_UNIDAD + " "}{'  '}
+              </>
+            }
+            title={
+              <>
+                <span className="fs-6 fw-bold">VIGENTES DE DESPACHO</span><br />
+                <span className="fs-6 fw-bold">ESTE MES</span><br />
+              </>
+            }
+
+            chart={
+              <CChartLine
+                className="mt-3 mx-3"
+                style={{ height: '70px' }}
+                data={0}
+                options={{
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: {
+                      grid: {
+                        display: false,
+                        drawBorder: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      min: -9,
+                      max: 10000,
+                      display: false,
+                      grid: {
+                        display: false,
+                      },
+                      ticks: {
+                        display: false,
+                      },
+                    },
+                  },
+                  elements: {
+                    line: {
+                      borderWidth: 1,
+                    },
+                    point: {
+                      radius: 4,
+                      hitRadius: 10,
+                      hoverRadius: 4,
+                    },
+                  },
+                }}
+              />
+            }
+          />
+        </CCol>
+        <CCol sm={6} lg={3}>
+          <CWidgetStatsA
+            className="mb-4"
+            color="danger"
+            value={
+              <>
+                {STPROC_DESPACHO + " " + STATS_UNIDAD + " "}{'  '}
+              </>
+            }
+            title={
+              <>
+                <span className="fs-6 fw-bold">PROCESO DE DESPACHO</span><br />
+                <span className="fs-6 fw-bold">{moment().format("YYYY D, MMMM")}</span><br />
+              </>
+            }
+
+            chart={
+              <CChartLine
+                className="mt-3 mx-3"
+                style={{ height: '70px' }}
+                data={0}
                 options={{
                   plugins: {
                     legend: {
@@ -1040,7 +1245,7 @@ const Dashboard = () => {
               </div>
             </CCol>
           </CRow>
-          <div id='GRAFICO_DIARIO' style={{ height: 500 }}></div>
+          <div id='GRAFICO_DIARIO' style={{ height: 600 }}></div>
 
         </CCardBody>
         <CCardFooter>
@@ -1049,14 +1254,14 @@ const Dashboard = () => {
             <CCol className="mb-sm-2 mb-0" >
               <div className="fs-7">PROMEDIO DESPACHO</div>
               <strong className='fs-5'>
-                {PROMEDIO_DESPACHO} {STATS_UNIDAD}
+                {parseFloat((isNaN(PROMEDIO_DESPACHO) ? 0 : PROMEDIO_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
               </strong>
               <CProgress thin className="mt-2" color={"info"} value={2222} />
             </CCol>
             <CCol className="mb-sm-2 mb-0" >
               <div className="fs-7">PROYECCIÓN DESPACHO</div>
               <strong className='fs-5'>
-                {PORYECCION_DESPACHO} {STATS_UNIDAD}
+                {parseFloat((isNaN(PORYECCION_DESPACHO) ? 0 : PORYECCION_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
               </strong>
               <CProgress thin className="mt-2" color={"danger"} value={2222} />
             </CCol>
