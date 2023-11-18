@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, CNav, CNavItem, CNavLink } from 'react';
 import {
     CFormLabel, CFormInput, CButton, CCard, CCardBody, CCardHeader, CCol, CRow,
-    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter
+    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CWidgetStatsA
 } from '@coreui/react'
 import Swal from 'sweetalert2';
 import $, { ajax } from 'jquery';
@@ -18,6 +18,7 @@ import * as fun from "../../../config/config"
 
 function Administrar() {
     const [visible, setVisible] = useState(false);
+    const [visible2, setVisible2] = useState(false);
     const [visible_h, setVisible_h] = useState(false);
     const [visible_f, setVisible_f] = useState(false);
     const [barra_visible, setbarra_visible] = useState(false);
@@ -53,6 +54,9 @@ function Administrar() {
 
     const [filtro_chofer_state, setfiltro_chofer_state] = useState(0);
 
+    //*** EN PROCESO */
+    const [PRO_SACOS_POR_DESP, setPRO_SACOS_POR_DESP] = useState(0);
+
 
     function Cargar_Datos() {
         let FECHA_INI = $("#AD_FECHA_INI").val();
@@ -67,10 +71,10 @@ function Administrar() {
             Tabla_guias_sin_despachar(x)
         });
         funciones.Guias_Despachadas_General(param, function (x) {
-            
+
             let Estado = $("#GUI_DES_ESTADO").val();
             let Chofer = $("#GUI_DES_CHOFERES").val();
-            
+
 
             let datafiltrada;
             if (Estado == "") {
@@ -91,6 +95,13 @@ function Administrar() {
                 Cargar_Filtro_Choferes(x);
             }
         });
+
+        funciones.Guias_En_Proceso(param, function (x) {
+            console.log('x: ', x);
+            Cargar_Guias_Proceso_Despacho(x);
+            var VAL = x.reduce((sum, value) => (sum + parseFloat(value.POR_DESPACHAR)), 0);
+            setPRO_SACOS_POR_DESP(VAL);
+        })
         setbarra_visible(true);
     }
 
@@ -508,7 +519,7 @@ function Administrar() {
 
 
             funciones.Guias_Despachadas_Historial(param, function (x) {
-                
+
                 Tabla_Guias_Despachadas_Historial(x);
             })
 
@@ -529,7 +540,7 @@ function Administrar() {
                 PEDIDO_INTERNO: data["PEDIDO_INTERNO"],
             }
             funciones.Guias_Despachadas_Historial(param, function (x) {
-                
+
                 $("#FACT_CLIENTES").empty();
                 $("#FACT_CLIENTES").append("<option value=''>Seleccione</option>");
                 x.map(function (x) {
@@ -771,6 +782,120 @@ function Administrar() {
 
     }
 
+    //**** GUIAS EN PROCESO DE DESPACHO *****//
+
+    function Cargar_Guias_Proceso_Despacho(datos) {
+
+        $('#AD_TABLA_DATOS_EN_PROCESO_SECC').empty();
+        if ($.fn.dataTable.isDataTable('#AD_TABLA_DATOS_EN_PROCESO')) {
+            $('#AD_TABLA_DATOS_EN_PROCESO').DataTable().destroy();
+            $('#AD_TABLA_DATOS_EN_PROCESO_SECC').empty();
+        }
+
+        let tabla = `
+        <table id='AD_TABLA_DATOS_EN_PROCESO' class=' display table table-striped'>
+        </table>
+        `;
+        $('#AD_TABLA_DATOS_EN_PROCESO_SECC').append(tabla);
+        let TABLA_ = $('#AD_TABLA_DATOS_EN_PROCESO').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'Bfrtip',
+            order: [[0, "desc"]],
+            buttons: [
+                // {
+                //     text: `<span class"fw-bold"><i class="bi bi-arrow-clockwise fs-4"></i></span>`,
+                //     className: 'btn btn-info',
+                //     action: function (e, dt, node, config) {
+                //         Cargar_Datos();
+                //     },
+                // },
+                {
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel fs-4"></i>',
+                    className: 'btn btn-primary',
+                }],
+            columns: [{
+                data: "FECHA_SALE_PLANTA",
+                title: "FECHA SALE PLANTA"
+            },
+            {
+                data: "PEDIDO_INTERNO",
+                title: "PEDIDO INTERNO"
+            },
+            {
+                data: "Nombre",
+                title: "CHOFER"
+            },
+            {
+                data: "placa",
+                title: "PLACA",
+
+            },
+            {
+                data: null,
+                title: "MAS",
+                className: "btn_recibir text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-primary"><i class="bi bi-plus-circle fs-4"></i></button>',
+                orderable: "",
+                width: 20
+            }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-6");
+                $('td', row).eq(5).addClass("fw-bold fs-6");
+                let col1 = `
+                    <div>`+ moment(data["FECHA_SALE_PLANTA"]).format("YYYY-MM-DD") + `</div>
+                    <div class="small text-medium-emphasis">
+                        <span>`+ moment(data["FECHA_SALE_PLANTA"]).format("hh:mm") + `</span>
+                    </div>
+                `;
+                $('td', row).eq(0).html(col1);
+
+            },
+        });
+
+        setTimeout(function () {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
+        }, 500);
+        $('#AD_TABLA_DATOS_EN_PROCESO').on('click', 'td.btn_recibir', function (respuesta) {
+            var data = TABLA_.row(this).data();
+
+
+            setVisible2(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            // setNombreCliente(data["CLIENTE"] + " (" + data["CLIENTE_RUC"] + ")");
+            // setFecha(data["FECHA_DE_EMISION"]);
+            // setsolicitante(data["SOLICITANTE"]);
+            // setdireccion(data["DIRECCION_1"]);
+            // setpartida(data["PTO_DE_PARTIDA"]);
+            // setllegada(data["PTO_DE_LLEGADA"]);
+            // setdireccion2(data["DIRECCION_2"]);
+            // setfactura(data["FACTURA"]);
+            // settelefono(data["TELEFONO"]);
+            // setvalidez(data["FECHA_VALIDEZ"]);
+            // setentrega(data["TIPO_DE_ENTREGA"]);
+            // setcompra(data["PED_COMPRA"]);
+            // setvigente(data["VENCIDO"] == 1 ? "VIGENTE" : "VENCIDA");
+            // setplaca(data["placa"] != null ? data["placa"] : "SIN ASIGNAR");
+            // setchofer(data["chofer_nombre"] ? data["chofer_nombre"] : "SIN ASIGNAR");
+
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
+            }
+
+            funciones.Cargar_Guias_Sin_Despachar_detalle(param, function (x) {
+
+                Tabla_guias_sin_despachar_detalles(x)
+            })
+        });
+
+    }
+
 
     //********* FACTURAS ******//
 
@@ -811,7 +936,7 @@ function Administrar() {
             PEDIDO_INTERNO: pedido
         }
         funciones.Cargar_facturas_Pedido(param, function (x) {
-            console.log('x: ', x);
+
             Tabla_Cargar_facturas_Pedido(x);
         })
 
@@ -1033,14 +1158,15 @@ function Administrar() {
                                 <div className='col-12 mt-3'>
                                     <ul className="nav nav-tabs" id="myTab" role="tablist">
                                         <li className="nav-item" role="presentation">
-                                            <a onClick={(item) => ajustar(item)} className="nav-link active fs-6 fw-bold" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">SIN DESPACHAR</a>
+                                            <a onClick={(item) => ajustar(item)} className="nav-link active fs-6 fw-bold" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">VIGENTES</a>
+                                        </li>
+                                        <li className="nav-item" role="presentation">
+                                            <a onClick={(item) => ajustar(item)} className="nav-link fs-6 fw-bold text-danger" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">EN PROCESO DE DESPACHO</a>
                                         </li>
                                         <li className="nav-item" role="presentation">
                                             <a className="nav-link fs-6 fw-bold" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">DESPACHADAS</a>
                                         </li>
-                                        {/* <li className="nav-item" role="presentation">
-                                            <a className="nav-link fs-6 fw-bold" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
-                                        </li> */}
+
                                     </ul>
                                     <div className="tab-content" id="myTabContent">
                                         <div className="tab-pane  show active" id="home" role="tabpanel" aria-labelledby="home-tab">
@@ -1080,6 +1206,40 @@ function Administrar() {
                                             </div>
                                         </div>
                                         <div className="tab-pane " id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                                            <div className='col-12 p-2 mt-3'>
+
+                                                <CCol sm={6} lg={4}>
+                                                    <CWidgetStatsA
+                                                        className="mb-5 p-2"
+                                                        color="info"
+                                                        value={
+                                                            <>
+                                                                <span className="fs-5 fw-bold">
+                                                                    SAC por despachar
+                                                                </span>
+
+                                                            </>
+                                                        }
+                                                        title={
+                                                            <>
+                                                                {/* <span className="fs-6 fw-bold">Producto</span><br /> */}
+                                                                <span className="fs-4 fw-bold">{PRO_SACOS_POR_DESP}</span>
+                                                                <span className="fs-6 fw-bold"></span>
+                                                            </>
+                                                        }
+
+
+                                                    />
+                                                </CCol>
+
+                                                <div className='col-12 mt-5'>
+                                                    <div className='table-responsive' id='AD_TABLA_DATOS_EN_PROCESO_SECC'>
+                                                        <table id='AD_TABLA_DATOS_EN_PROCESO' className='table table-striped'>
+
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
 
                                         </div>
                                     </div>
@@ -1204,6 +1364,35 @@ function Administrar() {
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={() => setVisible(false)}>
+                                    Cerrar
+                                </CButton>
+                                {/* <CButton color="primary">Guardar Cambios</CButton> */}
+                            </CModalFooter>
+                        </CModal>
+                        <CModal size="xl" id='AD_MODAL_DETALLES2' backdrop="static" visible={visible2} onClose={() => setVisible2(false)}>
+                            <CModalHeader>
+                                <CModalTitle>DETALLES</CModalTitle>
+                            </CModalHeader>
+                            <CModalBody>
+                                <div className='row'>
+                                    <h4 className="mb-2 mb-3">Pedido Interno #
+                                        <span className="text-gray-700" id="ORDEN_NUM">{Pedido}</span>
+                                    </h4>
+
+                                    <div className='col-12' >
+                                        <div className='table-responsive'>
+                                            <table id='DES_TABLA_GUIAS_DETALLE' className='display table table-striped'>
+
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                            </CModalBody>
+                            <CModalFooter>
+                                <CButton color="secondary" onClick={() => setVisible2(false)}>
                                     Cerrar
                                 </CButton>
                                 {/* <CButton color="primary">Guardar Cambios</CButton> */}

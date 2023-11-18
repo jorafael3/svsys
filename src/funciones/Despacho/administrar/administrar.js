@@ -54,6 +54,17 @@ function Guias_Despachadas_Historial_detalle(param, callback) {
     });
 }
 
+///*** GUIAS EN PROCESO */
+
+function Guias_En_Proceso(param, callback) {
+    let url = URL + 'Guias_En_Proceso_Despacho'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        callback(x);
+    });
+}
+
+//*** FACTURAS */
+
 function Obtener_Parametros(callback) {
     let url = URL + 'Obtener_Parametros'
     fun.AjaxSendReceiveData(url, [], function (x) {
@@ -87,5 +98,6 @@ export {
     Guias_Despachadas_Historial_detalle,
     Obtener_Parametros,
     Guardar_Factura,
-    Cargar_facturas_Pedido
+    Cargar_facturas_Pedido,
+    Guias_En_Proceso
 };
