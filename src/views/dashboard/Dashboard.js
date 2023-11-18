@@ -486,7 +486,7 @@ const Dashboard = () => {
       let p = CALCULAR_PROYECCION(totaldolar);
 
       var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
-      let PROYECCION = (total_pr / p[1]) * p[0]
+      let PROYECCION = (total_pr / p[0]) * p[1]
 
       setPORYECCION_DESPACHO(PROYECCION);
 

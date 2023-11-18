@@ -14,6 +14,7 @@ import Clientes from "../../../funciones/reportes/guias/Por_cliente"
 import Chofer from "../../../funciones/reportes/guias/Por_chofer"
 import Destino from "../../../funciones/reportes/guias/Por_Destino"
 import Servicio from "../../../funciones/reportes/guias/Por_Servicio"
+import Guias from "../../../funciones/reportes/guias/Por_Guia"
 import moment from 'moment';
 import flatpickr from "flatpickr";
 import 'flatpickr/dist/flatpickr.min.css';
@@ -23,6 +24,7 @@ import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect/index.js'; // 
 function Reportes_guias() {
     const [showClientes, setShowClientes] = useState(false);
     const [showChofer, setShowChofer] = useState(false);
+    const [showGuias, setshowGuias] = useState(false);
     const [showDestino, setshowDestino] = useState(false);
     const [showServicio, setshowServicio] = useState(false);
     const [parametros, setparametros] = useState();
@@ -34,15 +36,17 @@ function Reportes_guias() {
         // let FECHA_FIN = $("#AD_FECHA_FIN").val();
         let FECHA_INI = fecha_ini;
         let FECHA_FIN = fecha_fin;
-        let FECHA_INI_A = moment(fecha_ini).subtract(1,'months').startOf("month").format("YYYY-MM-DD");
-        let FECHA_FIN_A = moment(fecha_ini).subtract(1,'months').endOf("month").format("YYYY-MM-DD");;
+        let FECHA_INI_A = moment(fecha_ini).subtract(1, 'months').startOf("month").format("YYYY-MM-DD");
+        let FECHA_FIN_A = moment(fecha_ini).subtract(1, 'months').endOf("month").format("YYYY-MM-DD");;
 
         let r_cliente = $("#flexSwitchCheckChecked").is(":checked");
         let r_chofer = $("#flexSwitchCheckChecked2").is(":checked");
         let r_destino = $("#flexSwitchCheckChecked3").is(":checked");
         let r_servicio = $("#flexSwitchCheckChecked4").is(":checked");
+        let r_guias = $("#flexSwitchCheckChecked5").is(":checked");
 
-        if (r_cliente == false && r_chofer == false && r_destino == false && r_servicio == false) {
+        if (r_cliente == false && r_chofer == false && r_destino == false && r_servicio == false
+            && r_guias == false) {
             ajax.Mensaje("Selecione un tipo de reporte", "", "error");
         } else {
             if (FECHA_INI == "" || FECHA_FIN == "") {
@@ -60,11 +64,13 @@ function Reportes_guias() {
                     setShowChofer(false);
                     setshowServicio(false);
                     setshowDestino(false);
+                    setshowGuias(false);
 
                 } else if (r_chofer) {
                     setShowChofer(true);
                     setShowClientes(false);
                     setshowServicio(false);
+                    setshowGuias(false);
                     setshowDestino(false);
 
                 } else if (r_destino) {
@@ -72,12 +78,21 @@ function Reportes_guias() {
                     setShowClientes(false);
                     setshowServicio(false);
                     setshowDestino(true);
+                    setshowGuias(false);
 
                 } else if (r_servicio) {
                     setShowChofer(false);
                     setShowClientes(false);
                     setshowServicio(true);
                     setshowDestino(false);
+                    setshowGuias(false);
+
+                } else if (r_guias) {
+                    setShowChofer(false);
+                    setShowClientes(false);
+                    setshowServicio(false);
+                    setshowDestino(false);
+                    setshowGuias(true);
 
                 }
             }
@@ -136,7 +151,7 @@ function Reportes_guias() {
                         <div className='row'>
                             <div className='col-3'>
                                 <div className="g-9 p-2 mt-2">
-                                    <div className="col-md-4">
+                                    {/* <div className="col-md-4">
                                         <div className="form-check form-switch">
                                             <input
                                                 className="form-check-input"
@@ -145,7 +160,7 @@ function Reportes_guias() {
                                             />
                                             <label className="form-check-label fw-bold" >Cliente</label>
                                         </div>
-                                    </div>
+                                    </div> */}
                                     <div className="col-md-4">
                                         <div className="form-check form-switch">
                                             <input
@@ -156,6 +171,16 @@ function Reportes_guias() {
                                             <label className="form-check-label fw-bold" >Chofer</label>
                                         </div>
                                     </div>
+                                    {/* <div className="col-md-4">
+                                        <div className="form-check form-switch">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio" name='s'
+                                                id="flexSwitchCheckChecked5"
+                                            />
+                                            <label className="form-check-label fw-bold" >Guias</label>
+                                        </div>
+                                    </div> */}
                                     {/* <div className="col-md-4">
                                         <div className="form-check form-switch ">
                                             <input
@@ -188,6 +213,7 @@ function Reportes_guias() {
                         <div className='col-12 mt-4'>
                             {showClientes && <Clientes param={parametros} />}
                             {showChofer && <Chofer param={parametros} />}
+                            {showGuias && <Guias param={parametros} />}
                             {/* {showDestino && <Destino param={parametros} />}
                             {showServicio && <Servicio param={parametros} />} */}
                         </div>

@@ -12,6 +12,8 @@ import {
 } from '@coreui/react'
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
+import * as am4plugins_timeline from "@amcharts/amcharts4/plugins/timeline";
+import * as am4plugins_bullets from "@amcharts/amcharts4/plugins/bullets";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { getStyle } from '@coreui/utils'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
@@ -28,10 +30,11 @@ var grafico_dia = []
 var grafico_mes = []
 
 function Cargar_datos(param) {
-    
+
     am4core.useTheme(am4themes_animated);
     param = param.param;
     console.log('param: ', param);
+
     const [seccion_detalle, setseccion_detalle] = useState(true);
     const [seccion_tabla, setseccion_tabla] = useState(false);
 
@@ -42,10 +45,11 @@ function Cargar_datos(param) {
     function Reporte_Chofer_General() {
         let url = URL + "Reporte_Chofer_General"
         fun.AjaxSendReceiveData(url, param, function (res) {
-            console.log('res: ', res);
+
             Tabla_Reporte_Clientes_General(res);
             $("#SECC_TABLA").show();
             $("#SECC_DET").hide();
+            GRAFICO_PISTA(res);
         });
     }
 
@@ -217,6 +221,7 @@ function Cargar_datos(param) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
 
+
             $("#SECC_TABLA").hide();
             $("#SECC_DET").show(200);
 
@@ -226,6 +231,8 @@ function Cargar_datos(param) {
             $("#CHOFER_GUIAS_ASIGNADAS_TOTALES").text(data["GUIAS_ASIGNADAS_TOTAL"]);
             $("#CHOFER_GUIAS_ASIGNADAS_PERIODO").text(data["GUIAS_ASIGNADAS_MES"]);
             $("#CHOFER_GUIAS_DESPACHADAS_PERIODO").text(data["GUIAS_DESPACHADAS_MES"]);
+            $("#CH_PROM_H_MES").text(parseFloat(data["PROMEDIO_DEMORA_HORAS_TOTAL_MES"]).toFixed(2));
+            $("#CH_PROM_H_GEN").text(parseFloat(data["PROMEDIO_DEMORA_HORAS_TOTAL"]).toFixed(2));
 
             Tabla_Detalle_Clientes(data["DATOS_CLIENTE"]);
             createChart(data["DATOS_DESTINO"]);
@@ -584,7 +591,7 @@ function Cargar_datos(param) {
     }
 
     function CAMBIAR_GRAFICO(t) {
-        console.log('t: ', t);
+
         if (t == 1) {
             grafico_(grafico_dia)
         } else if (t == 2) {
@@ -593,12 +600,201 @@ function Cargar_datos(param) {
 
     }
 
+    function GRAFICO_PISTA(datos) {
+        let ARRAY = [];
+        datos.map(function (x, i) {
+            let datos = x["DATOS_CODIGOS_DESPACHADOS"];
+            let d = "SIN REGISTRO"
+            let cemento = datos.filter(item => item.ESCEMENTO == 1);
+            if (cemento.length > 0) {
+                cemento = cemento[0];
+            }
+            let b = {
+                track: i + 1,
+                "name": x["CHOFER_NOMBRE"],
+                value: cemento["DESPACHADO_CODIGO_MES"]
+            }
+            ARRAY.push(b);
+        })
+
+        console.log('ARRAY: ', ARRAY);
+
+        am4core.ready(function () {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+            var insterfaceColors = new am4core.InterfaceColorSet();
+            var lineColor = insterfaceColors.getFor("background");
+
+            var chart = am4core.create("GRAFICO_PISTA", am4plugins_timeline.CurveChart);
+            chart.curveContainer.padding(20, 20, 20, 20);
+
+            chart.data = ARRAY;
+
+            var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+            categoryAxis.dataFields.category = "name";
+            categoryAxis.renderer.minGridDistance = 10;
+            categoryAxis.renderer.innerRadius = 5;
+            categoryAxis.renderer.radius = 145;
+            categoryAxis.renderer.line.stroke = lineColor;
+            categoryAxis.renderer.line.strokeWidth = 5;
+            categoryAxis.renderer.line.strokeOpacity = 1;
+
+            var labelTemplate = categoryAxis.renderer.labels.template;
+            labelTemplate.fill = lineColor;
+            labelTemplate.fontWeight = 600;
+            labelTemplate.fontSize = 11;
+
+            var gridTemplate = categoryAxis.renderer.grid.template;
+            gridTemplate.strokeWidth = 1;
+            gridTemplate.strokeOpacity = 1;
+            gridTemplate.stroke = lineColor;
+            gridTemplate.location = 0;
+            gridTemplate.above = true;
+
+            var fillTemplate = categoryAxis.renderer.axisFills.template;
+            fillTemplate.disabled = false;
+            fillTemplate.fill = am4core.color("#b84f49");
+            fillTemplate.fillOpacity = 1;
+
+            categoryAxis.fillRule = function (dataItem) {
+                dataItem.axisFill.__disabled = false;
+                dataItem.axisFill.opacity = 1;
+            }
+
+            var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
+            valueAxis.min = 0;
+            valueAxis.max = 20000;
+            valueAxis.renderer.points = [{ x: 0, y: -100 }, { x: 200, y: -100 }, { x: 200, y: 100 }, { x: 0, y: 100 }, { x: -200, y: 100 }, { x: -200, y: -100 }, { x: 0, y: -100 }];
+            valueAxis.renderer.polyspline.tensionX = 0.4;
+            valueAxis.renderer.line.strokeOpacity = 0.1;
+            valueAxis.renderer.line.strokeWidth = 10;
+            valueAxis.renderer.maxLabelPosition = 0.98;
+            valueAxis.renderer.minLabelPosition = 0.02;
+
+            // Flag bullet
+            var flagRange = valueAxis.axisRanges.create();
+            flagRange.value = 0;
+            var flagBullet = new am4plugins_bullets.FlagBullet();
+            flagBullet.label.text = "START";
+            flagRange.bullet = flagBullet;
+            //flagBullet.dy = -145;
+            flagBullet.adapter.add("dy", function (dy, target) {
+                return -categoryAxis.renderer.radius;
+            })
+
+            var valueLabelTemplate = valueAxis.renderer.labels.template;
+            valueLabelTemplate.fill = lineColor;
+            valueLabelTemplate.fontSize = 12;
+            valueLabelTemplate.fontWeight = 600;
+            valueLabelTemplate.fillOpacity = 1;
+            valueLabelTemplate.horizontalCenter = "right";
+            valueLabelTemplate.verticalCenter = "bottom";
+            valueLabelTemplate.padding(0, 6, 0, 0);
+            valueLabelTemplate.adapter.add("rotation", function (rotation, target) {
+                var value = target.dataItem.value;
+                var position = valueAxis.valueToPosition(value);
+
+                var angle = valueAxis.renderer.positionToAngle(position);
+                return angle;
+            })
+
+            var valueGridTemplate = valueAxis.renderer.grid.template;
+            valueGridTemplate.strokeOpacity = 0.3;
+            valueGridTemplate.stroke = lineColor;
+
+
+            // SERIES
+            var series = chart.series.push(new am4plugins_timeline.CurveColumnSeries());
+            series.dataFields.categoryY = "name";
+            series.stroke = lineColor;
+            series.fill = lineColor;
+            series.dataFields.valueX = "value";
+            series.defaultState.transitionDuration = 4000;
+
+            var columnTemplate = series.columns.template;
+            columnTemplate.fill = lineColor;
+            columnTemplate.strokeOpacity = 0;
+            columnTemplate.fillOpacity = 0.3;
+            columnTemplate.height = am4core.percent(100);
+
+            var hoverState = columnTemplate.states.create("hover");
+            hoverState.properties.fillOpacity = 0.9;
+
+            var bullet = series.bullets.push(new am4charts.CircleBullet())
+            bullet.fill = lineColor;
+
+            // LEGEND
+            chart.legend = new am4charts.Legend();
+            chart.legend.data = chart.data;
+            chart.legend.parent = chart.curveContainer;
+            chart.legend.width = 360;
+            chart.legend.horizontalCenter = "middle";
+            chart.legend.verticalCenter = "middle";
+
+            var markerTemplate = chart.legend.markers.template;
+            markerTemplate.width = 30;
+            markerTemplate.height = 30;
+
+            chart.legend.itemContainers.template.events.on("over", function (event) {
+                series.dataItems.each(function (dataItem) {
+                    if (dataItem.dataContext == event.target.dataItem.dataContext) {
+                        dataItem.column.isHover = true;
+                    }
+                    else {
+                        dataItem.column.isHover = false;
+                    }
+                })
+            })
+
+            chart.legend.itemContainers.template.events.on("hit", function (event) {
+                series.dataItems.each(function (dataItem) {
+                    if (dataItem.dataContext == event.target.dataItem.dataContext) {
+                        if (dataItem.visible) {
+                            dataItem.hide(1000, 0, 0, ["valueX"]);
+                        }
+                        else {
+                            dataItem.show(1000, 0, ["valueX"]);
+                        }
+                    }
+                })
+            })
+
+            var rect = markerTemplate.children.getIndex(0);
+            rect.cornerRadius(20, 20, 20, 20);
+
+            var as = markerTemplate.states.create("active");
+            as.properties.opacity = 0.5;
+
+            // var image = markerTemplate.createChild(am4core.Image)
+            // image.propertyFields.href = "file";
+            // image.width = 30;
+            // image.height = 30;
+            // image.filters.push(new am4core.DesaturateFilter());
+
+            // image.events.on("inited", function (event) {
+            //     var image = event.target;
+            //     var parent = image.parent;
+            //     image.mask = parent.children.getIndex(0);
+            // })
+
+        }); // end am4core.ready()
+    }
+
     return (
         <div className="col-12">
             <h4 className="fw-bold bg-light">Reporte por Chofer</h4>
 
             <div className="col-12">
                 <div className="col-12" id="SECC_TABLA">
+
+                    <div className="p-3">
+                        <div id="GRAFICO_PISTA" style={{ width: "100%", height: 600 }}></div>
+                    </div>
+
+
                     <div className="table-responsive" id="REP_CHOFER_TABLA_SECC">
                         <table id="REP_CHOFER_TABLA" className="table table-striped" >
 
@@ -607,7 +803,7 @@ function Cargar_datos(param) {
                 </div>
 
 
-                <div className="col-12 mt-4" id="SECC_DET" style={{display:"none"}}>
+                <div className="col-12 mt-4" id="SECC_DET" style={{ display: "none" }}>
 
                     <CRow>
                         <CCol xs>
@@ -691,6 +887,19 @@ function Cargar_datos(param) {
                                     </div>
                                     <div className="row">
                                         <div className="col-5">
+                                            <div className="fw-bold fs-4"> Tiempo promedio de despacho</div>
+                                            <div className="small text-medium-emphasis">
+                                                <span className="fs-5 fw-bold text-muted">MES {moment(param.FECHA_INI).format("MMM YYYY")} | </span>
+                                                <span id="CH_PROM_H_MES" className="fs-5 fw-bold text-muted">
+
+                                                </span>
+                                            </div>
+                                            <div className="small text-medium-emphasis">
+                                                <span className="fs-5 fw-bold text-muted">GENERAL     | </span>
+                                                <span id="CH_PROM_H_GEN" className="fs-5 fw-bold text-muted">
+
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className="col-7">
                                             <div className="table-resposive">
