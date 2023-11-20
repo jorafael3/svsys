@@ -896,10 +896,7 @@ function Administrar() {
 
     }
 
-
     //********* FACTURAS ******//
-
-
     function Calcular_Valor(item) {
 
         let SUBTOTAL_0 = $("#SUBTOTAL_0").val();
