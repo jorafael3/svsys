@@ -1,0 +1,74 @@
+cuantosa sacos de cemento del mes
+
+cuanto ha sacadao cada placa
+
+mejor chofer 
+
+los sacos despachos
+
+linea promedio
+
+azul mes pasado
+
+verde vigente
+
+proyeccion
+
+nov 30 
+4 domigos
+30 - 4  = 26 laborables
+sabados_en_el_mes = medio dias
+2 dias
+26 -2  = 24 laborables
+
+feriados
+restarles los feriados
+
+10 nov 
+(10000 / dias) * dias mes 
+
+guias depachadas total
+guia en el dia
+para ver diferencia
+
+cuanto se compro, cuanto se saco, cuanto esta pendiente
+
+cuando sale de planta marcar como retirados
+
+// CHOFER
+mismo cuadro datos por sacos y por guia
+
+//record diario
+dias con mas despachos total
+
+semaforo (POR GUIA)
+hasta las 12 - 2 guias
+hasta las 15 - 3
+hasta las 17 - 4 guias
+
+en aplicacion mostrar por chofer
+en web mostrar la suma de choferes
+
+//  grafico velocimetro
+con la proyeccion
+vs el objetivo
+
+// modulo feriados
+
+
+// AGREGAR A CLIENTEs
+tpo de cliente
+B2B
+B2C
+b2D
+
+// SUGERENCIA DE VENTA A CLIENTE
+
+// chofer del mes en app
+
+// rutas
+asignar a chofer un cliente
+aparesca solo clientes que se le asigno la ruta en app
+
+// UBICAION DE ENTREGA APP
+Asignar a cliente ubicaciones de entrega 
