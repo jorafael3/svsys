@@ -1269,7 +1269,7 @@ const Dashboard = () => {
         </CCol>
       </div>
       <div className='row'>
-        <div className='col-4'>
+        <div className='col-xl-4 col-sm-12'>
           <div className="card mb-4">
             <div className="card-body">
               <div className="row">
@@ -1306,7 +1306,7 @@ const Dashboard = () => {
                   <hr className="my-1 border-dashed" />
 
                   <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">EMITIDAS MES TOTAL</div>
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">COMPRADAS</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
                       <span className="text-gray-900 fw-semibold fs-6">154</span>
                     </div>
@@ -1332,9 +1332,9 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className='col-8'>
+        <div className='col-xl-8 col-sm-12'>
           <div className='row'>
-            <div className="col-6">
+            <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
                   <div className="row">
@@ -1343,24 +1343,25 @@ const Dashboard = () => {
                       <span className="h2 font-weight-bold mb-0">54</span>
                     </div>
                     <div className="col-auto">
-                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
-
+                      <i className="bi bi-person-vcard fs-1"></i>
                     </div>
                   </div>
-                  <p className="mt-3 mb-0 text-muted text-sm">
+                  <p className="mb-0 text-muted ">Cemento Holcim Fuerte Tipo GU 50Kg</p>
+                  <p className="mb-0 text-muted ">123 SAC</p>
+                  <p className="mb-0 text-muted text-sm">
                     <span className="text-nowrap fw-bold">CHOFER 2 </span>
                     <span className="text-nowrap">(GBO-7758)</span>
                   </p>
                 </div>
               </div>
             </div>
-            <div className="col-6">
+            <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
-                      <span className="h2 font-weight-bold mb-0">180</span>
+                      <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
+                      <span className="h2 font-weight-bold mb-0">123</span>
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-file-earmark-text-fill fs-3"></i>
