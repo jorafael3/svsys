@@ -935,6 +935,68 @@ const Dashboard = () => {
         </div>
       </div>
       <div className='row'>
+        <div className="col-xl-4 col-lg-6">
+          <div className="card card-stats mb-4 mb-xl-0">
+            <div className="card-body">
+              <div className="row">
+                <div className="col-12">
+                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                  <span className="h2 font-weight-bold mb-0">180</span>
+                </div>
+                <div className="col-12">
+                  <span className="card-title text-uppercase text-muted mb-0">RETIRADAS</span>
+                  <span className="h2 font-weight-bold mb-0">180</span>
+                </div>
+
+              </div>
+              <p className="mt-3 mb-0 text-muted text-sm">
+                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                <span className="text-nowrap">Since last week</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="col-xl-4 col-lg-6">
+          <div className="card card-stats mb-4 mb-xl-0">
+            <div className="card-body">
+              <div className="row">
+                <div className="col">
+                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                  <span className="h2 font-weight-bold mb-0">180</span>
+                </div>
+                <div className="col-auto">
+                  <i className="bi bi-file-earmark-text-fill fs-3"></i>
+                </div>
+              </div>
+              <p className="mt-3 mb-0 text-muted text-sm">
+                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                <span className="text-nowrap">Since last week</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="col-xl-4 col-lg-6">
+          <div className="card card-stats mb-4 mb-xl-0">
+            <div className="card-body">
+              <div className="row">
+                <div className="col">
+                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                  <span className="h2 font-weight-bold mb-0">180</span>
+                </div>
+                <div className="col-auto">
+                  <i className="bi bi-file-earmark-text-fill fs-3"></i>
+
+                </div>
+              </div>
+              <p className="mt-3 mb-0 text-muted text-sm">
+                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                <span className="text-nowrap">Since last week</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+
         <CCol sm={6} lg={3}>
           <CWidgetStatsA
             className="mb-4"
@@ -1206,6 +1268,162 @@ const Dashboard = () => {
           />
         </CCol>
       </div>
+      <div className='row'>
+        <div className='col-4'>
+          <div className="card mb-4">
+            <div className="card-body">
+              <div className="row">
+                <div className="col">
+                  <h5 className="card-title text-uppercase text-muted mb-2">GUIAS RETIRADAS</h5>
+                  <span className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2">127</span><br />
+                  <p className="mt-3 mb-0 text-muted text-sm">
+                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                    <span className="text-nowrap"> Del mes pasado</span>
+                  </p>
+                </div>
+                <div className="col-auto">
+                  <i className="bi bi-truck fs-1"></i>
+                </div>
+              </div>
+              <div className="row mt-3">
+                <div className="card-body">
+
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">RETIRADAS DEL MES ANTERIOR</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span className="text-gray-900 fw-semibold fs-6">1</span>
+                    </div>
+                  </div>
+                  <hr className="my-1 border-dashed" />
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-8 small text-medium-emphasis fw-bold me-2">RETIRADAS ESTE MES</div>
+                    <div className="col-3 text-gray-700 fw-semibold fs-6 text-end">
+                      <span className="text-gray-900 fw-semibold fs-6">126</span>
+                    </div>
+                  </div>
+                  <hr className="my-1 border-dashed" />
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">EMITIDAS MES TOTAL</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span className="text-gray-900 fw-semibold fs-6">154</span>
+                    </div>
+                  </div>
+                  <hr className="my-1 border-dashed" />
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span className="text-gray-900 fw-semibold fs-6 text-danger">28</span>
+                    </div>
+                  </div>
+
+                  <hr className="my-1 border-dashed" />
+                  {/* <div className="d-flex flex-stack">
+                  <div className="col-6 text-gray-700 fw-semibold fs-6 me-2">RETIRADA SGTE MES</div>
+                  <div className="col-5 text-gray-700 fw-semibold fs-6 text-end">
+                    <span className="text-gray-900 fw-bolder fs-6">0</span>
+                  </div>
+                </div> */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className='col-8'>
+          <div className='row'>
+            <div className="col-6">
+              <div className="card card-stats mb-4 mb-xl-0">
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col">
+                      <h5 className="card-title text-uppercase text-muted mb-0">CHOFER MAS RETIROS</h5>
+                      <span className="h2 font-weight-bold mb-0">54</span>
+                    </div>
+                    <div className="col-auto">
+                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
+
+                    </div>
+                  </div>
+                  <p className="mt-3 mb-0 text-muted text-sm">
+                    <span className="text-nowrap fw-bold">CHOFER 2 </span>
+                    <span className="text-nowrap">(GBO-7758)</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="card card-stats mb-4 mb-xl-0">
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col">
+                      <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                      <span className="h2 font-weight-bold mb-0">180</span>
+                    </div>
+                    <div className="col-auto">
+                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
+
+                    </div>
+                  </div>
+                  <p className="mt-3 mb-0 text-muted text-sm">
+                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                    <span className="text-nowrap">Since last week</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className='row mt-4'>
+            <div className="col-6">
+              <div className="card card-stats mb-4 mb-xl-0">
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col">
+                      <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                      <span className="h2 font-weight-bold mb-0">180</span>
+                    </div>
+                    <div className="col-auto">
+                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
+
+                    </div>
+                  </div>
+                  <p className="mt-3 mb-0 text-muted text-sm">
+                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                    <span className="text-nowrap">Since last week</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="card card-stats mb-4 mb-xl-0">
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col">
+                      <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
+                      <span className="h2 font-weight-bold mb-0">180</span>
+                    </div>
+                    <div className="col-auto">
+                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
+
+                    </div>
+                  </div>
+                  <p className="mt-3 mb-0 text-muted text-sm">
+                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
+                    <span className="text-nowrap">Since last week</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
       <CCard className="mb-4">
         <CCardBody>
 
