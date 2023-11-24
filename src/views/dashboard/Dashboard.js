@@ -220,102 +220,105 @@ const Dashboard = () => {
     des.Cargar_Produts(function (x) {
 
       $("#SEL_PRODUCTOS").empty();
+      $("#SEL_PRODUCTOS").append("<option value='TODO'>TODO</option>")
       x.map(function (y) {
         $("#SEL_PRODUCTOS").append("<option value='" + y.CODIGO + "'>" + y.DESCRIPCION + "</option>")
       });
 
-      $("#SEL_PRODUCTOS").val("10016416").change()
+      // $("#SEL_PRODUCTOS").val("10016416").change()
     })
   }
 
   function Cargar_Stats(param) {
 
 
-    des.Cargar_Stats(param, function (x) {
-      console.log('x: ', x);
 
-      let SACOS = x["SACOS"];
-      let CHOFER = x["CHOFER"];
-      let GUIAS_DESP = x["GUIAS_DESPACHADAS"];
-      let GUIAS_VIG = x["GUIAS_VIGENTES"];
-      let GUIAS_EN_PROCESO_DESPACHO = x["GUIAS_EN_PROCESO_DESPACHO"];
-      STATS_SACOS(SACOS);
-      STATS_CHOFER(CHOFER);
-      POR_DIA(GUIAS_DESP);
-      STATS_VIGENTE(GUIAS_VIG);
-      STATS_PROCESO_DESPACHO(GUIAS_EN_PROCESO_DESPACHO);
-      setDATOS_COMPLETOS(GUIAS_DESP);
-      CALCULAR_PROYECCION();
+    des.Cargar_Stats(param, function (x) {
+
+      let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
+      let CARD_CHOFER_MAS_RET = x["CARD_CHOFER_MAS_RETIROS"];
+      let CARD_DIA_RECOR = x["CARD_DIA_RECORD"];
+      let GUIAS_RETIRADAS_POR_DIA = x["GUIAS_RETIRADAS_POR_DIA"];
+
+      // let SACOS = x["SACOS"];
+      // let CHOFER = x["CHOFER"];
+      // let GUIAS_DESP = x["GUIAS_DESPACHADAS"];
+      // let GUIAS_VIG = x["GUIAS_VIGENTES"];
+      // let GUIAS_EN_PROCESO_DESPACHO = x["GUIAS_EN_PROCESO_DESPACHO"];
+      // STATS_SACOS(SACOS);
+      // STATS_CHOFER(CHOFER);
+      // POR_DIA(GUIAS_DESP);
+      // STATS_VIGENTE(GUIAS_VIG);
+      // STATS_PROCESO_DESPACHO(GUIAS_EN_PROCESO_DESPACHO);
+      // setDATOS_COMPLETOS(GUIAS_DESP);
+      // CALCULAR_PROYECCION();
+      CARD_GUIAS_TOTALES(CARD_GUIAS_TOT)
+      CARD_CHOFER_MAS_RETIROS(CARD_CHOFER_MAS_RET)
+      CARD_DIA_RECORD(CARD_DIA_RECOR)
+      POR_DIA(GUIAS_RETIRADAS_POR_DIA)
     });
   }
 
-  function STATS_SACOS(datos) {
+  function CARD_GUIAS_TOTALES(datos) {
+    let DATOS = datos["DATOS"];
+
+    let RETIRADAS_ESTE_MES = DATOS[0];
+    let CORRESPONDEN_AL_MES_PASADO = DATOS[1];
+    let FUE_RETIRADA_MES_SGT = DATOS[2];
+    let GUIAS_EMITIDAS_MES_TOTAL = DATOS[3];
+    let RESTANTE_DE_RETIRAR = DATOS[4];
+
+    $("#CARD_GT_TOTAL").text(parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]));
+    $("#CARD_GT_RETIRADAS_MES_ANT").text(CORRESPONDEN_AL_MES_PASADO["cantidad"]);
+    $("#CARD_GT_RETIRADAS_ESTE_MES").text(RETIRADAS_ESTE_MES["cantidad"]);
+    $("#CARD_GT_COMPRADAS").text(GUIAS_EMITIDAS_MES_TOTAL["cantidad"]);
+    $("#CARD_GT_POR_RETIRAR").text(RESTANTE_DE_RETIRAR["cantidad"]);
 
 
-    let DATOS = datos["DATOS"][0];
-    let gr = datos["GRAFICO"];
+    // let gr = datos["GRAFICO"];
 
-    setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"])
-    setcantidad_cemento_mes_pr(DATOS["DESCRIPCION"]);
-    if (parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]) > 0) {
-      let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
-      por = por * 100
-
-
-      setCM_GR_LABELS_por(isNaN(por) ? 0 : por);
-    } else {
-      setCM_GR_LABELS_por(0);
-
-    }
-
-    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
-    let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
-
-    if (check_producto == "p") {
-      setSTATS_UNIDAD(DATOS["UNIDAD"]);
-    } else {
-      setSTATS_UNIDAD("GUIAS");
-
-    }
+    // setcantidad_cemento_mes(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"])
+    // setcantidad_cemento_mes_pr(DATOS["DESCRIPCION"]);
+    // if (parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]) > 0) {
+    //   let por = ((parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ACTUAL"]) - parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"])) / parseFloat(DATOS["CANTIDAD_CEMENTO_MES_ANTERIOR"]))
+    //   por = por * 100
 
 
+    //   setCM_GR_LABELS_por(isNaN(por) ? 0 : por);
+    // } else {
+    //   setCM_GR_LABELS_por(0);
 
-    if (gr.length > 0) {
-      //*** GRAFICO ***/
-      gr.map(function (x) {
-        x.mes = moment(x.AnioMes).format("MMMM");
-        x.mes_numero = moment(x.AnioMes).format("MM");
-      });
-      gr.sort(function (a, b) {
-        return a.mes_numero - b.mes_numero;
-      });
+    // }
 
-      let GRA_CEMENTO_labels = [];
-      let GRA_CEMENTO_data = [];
-      gr.map(function (x) {
-        GRA_CEMENTO_labels.push(x.mes);
-        GRA_CEMENTO_data.push(x.CantidadTotalDespachada);
-      })
+    // let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
+    // let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
+
+    // if (check_producto == "p") {
+    //   setSTATS_UNIDAD(DATOS["UNIDAD"]);
+    // } else {
+    //   setSTATS_UNIDAD("GUIAS");
+
+    // }
 
 
-      let t = {
-        labels: GRA_CEMENTO_labels,
-        datasets: [
-          {
-            label: 'SAC',
-            backgroundColor: 'transparent',
-            borderColor: 'rgba(255,255,255,.55)',
-            pointBackgroundColor: getStyle('--cui-primary'),
-            data: GRA_CEMENTO_data,
-          },
-        ],
-      }
-      setCM_GR_LABELS(t);
+  }
 
-    } else {
-      setCM_GR_LABELS({});
+  function CARD_CHOFER_MAS_RETIROS(datos) {
+    let DATOS = datos["DATOS"];
 
-    }
+
+    $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
+    $("#CARD_CHOFER_SACOS").text(DATOS[0]["SACOS_CEMENTO"]);
+    $("#CARD_CHOFER_NOMBRE").text(DATOS[0]["Nombre"]);
+    $("#CARD_CHOFER_PLACA").text(" (" + DATOS[0]["placa"] + ")");
+
+  }
+
+  function CARD_DIA_RECORD(datos) {
+    let DATOS = datos["DATOS"];
+
+    $("#CD_RECORD_TOTAL").text(DATOS[0]["cantidad"]);
+    $("#CD_RECORD_DIA_TOTAL").text(moment(DATOS[0]["fecha"]).format("MMMM DD, YYYY"));
 
 
   }
@@ -394,7 +397,7 @@ const Dashboard = () => {
   }
 
   function STATS_VIGENTE(datos) {
-    console.log('datos: ', datos);
+
 
     let DATOS = datos["DATOS"]
     var total = DATOS.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
@@ -404,7 +407,7 @@ const Dashboard = () => {
   }
 
   function STATS_PROCESO_DESPACHO(datos) {
-    console.log('datos: ', datos);
+
     let DATOS = datos["DATOS"]
     let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
     if (check_producto == 0) {
@@ -420,57 +423,79 @@ const Dashboard = () => {
 
   //** POR DIA */
   function POR_DIA(datos) {
+    console.log('datos: ', datos);
+    let MES_ACTUAL = datos["DATOS"].filter(item => item.MES == "MES_ACT");
+    let MES_ANTERIOR = datos["DATOS"].filter(item => item.MES == "MES_ANT");
+    console.log('MES_ANTERIOR: ', MES_ANTERIOR);
+    console.log('MES_ACTUAL: ', MES_ACTUAL);
 
-    let PORDIA = datos["POR_DIA"]["DATOS"];
-    let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
+    let ARRAY_ANT = []
+    MES_ANTERIOR.map(function (x) {
+      let b = {
+        FECHA_ANT: x.FECHA,
+        cantidad: x.cantidad,
+        MES: x.MES
+      }
+      ARRAY_ANT.push(b);
+    })
 
-    if (PORDIA.length > 0) {
-      let ultimodia_mes_actual = moment(PORDIA[0]["FECHA"]).endOf("month").format("DD");
+    console.log('ARRAY_ANT: ', ARRAY_ANT);
+
+    // let PORDIA = datos["POR_DIA"]["DATOS"];
+    // let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
+
+    if (MES_ACTUAL.length > 0) {
+      let ultimodia_mes_actual = moment(MES_ACTUAL[0]["FECHA"]).endOf("month").format("DD");
       let con = 1
       while (con <= parseInt(ultimodia_mes_actual)) {
         // 
-        let dia = PORDIA.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
+        let dia = MES_ACTUAL.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
         if (dia.length == 0) {
-          let f = moment(PORDIA[0]["FECHA"]).format("YYYY-MM-") + con;
+          let f = moment(MES_ACTUAL[0]["FECHA"]).format("YYYY-MM-") + con;
           let b = {
             FECHA: moment(f).format("YYYY-MM-DD"),
             cantidad: 0,
+            MES:"MES_ACT"
           }
-          PORDIA.push(b);
+          MES_ACTUAL.push(b);
         }
         con++;
       }
-      PORDIA.map(function (x) {
+      MES_ACTUAL.map(function (x) {
         x.NUM = parseInt(moment(x.FECHA).format("DD"));
       })
-      PORDIA.sort((a, b) => a.NUM - b.NUM);
+      MES_ACTUAL.sort((a, b) => a.NUM - b.NUM);
     }
 
-    if (PORDIA_MESANT.length > 0) {
-      let ultimodia_mes_ant = moment(PORDIA_MESANT[0]["FECHA_ANT"]).endOf("month").format("DD");
+    if (ARRAY_ANT.length > 0) {
+      let ultimodia_mes_ant = moment(ARRAY_ANT[0]["FECHA_ANT"]).endOf("month").format("DD");
 
       let con2 = 1
       while (con2 <= parseInt(ultimodia_mes_ant)) {
         // 
-        let dia = PORDIA_MESANT.filter(item => parseInt(moment(item.FECHA_ANT).format("DD")) == con2);
+        let dia = ARRAY_ANT.filter(item => parseInt(moment(item.FECHA_ANT).format("DD")) == con2);
         if (dia.length == 0) {
-          let f = moment(PORDIA_MESANT[0]["FECHA_ANT"]).format("YYYY-MM-") + con2;
+          let f = moment(ARRAY_ANT[0]["FECHA_ANT"]).format("YYYY-MM-") + con2;
           let b = {
             FECHA_ANT: moment(f).format("YYYY-MM-DD"),
             cantidad: 0,
           }
-          PORDIA_MESANT.push(b);
+          ARRAY_ANT.push(b);
         }
         con2++;
       }
-      PORDIA_MESANT.map(function (x) {
+      ARRAY_ANT.map(function (x) {
         x.NUM = parseInt(moment(x.FECHA_ANT).format("DD"));
+        // x.FECHA_ANT = x.FECHA
       })
-      PORDIA_MESANT.sort((a, b) => a.NUM - b.NUM);
+      ARRAY_ANT.sort((a, b) => a.NUM - b.NUM);
+
+    
     }
 
+    // console.log('ARRAY_ANT: ', ARRAY_ANT);
 
-    GRAFICO_DIARIO(PORDIA.concat(PORDIA_MESANT));
+    GRAFICO_DIARIO(MES_ACTUAL.concat(ARRAY_ANT));
 
   }
 
@@ -478,7 +503,7 @@ const Dashboard = () => {
 
     am4core.ready(function () {
 
-      let datos_ant = datos.filter(item => item.TIPO == 1 && item.cantidad > 0);
+      let datos_ant = datos.filter(item => item.MES == "MES_ACT" && item.cantidad > 0);
       var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
       totaldolar = totaldolar / datos_ant.length
       setPROMEDIO_DESPACHO(totaldolar);
@@ -794,6 +819,8 @@ const Dashboard = () => {
     let fin_mes = moment(mes).endOf("month").format("YYYY-MM-DD");
     let inicio_mes_a = moment(inicio_mes).subtract(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+    let inicio_mes_s = moment().add(1, "month").startOf("month").format("YYYY-MM-DD");
+    let fin_mes_s = moment(inicio_mes_s).endOf("month").format("YYYY-MM-DD");
     let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
     let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
 
@@ -802,6 +829,8 @@ const Dashboard = () => {
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
+      inicio_mes_s: inicio_mes_s,
+      fin_mes_s: fin_mes_s,
       producto: prod.trim(),
       tipo: check_producto == 0 ? check_guia : check_producto
     }
@@ -856,6 +885,8 @@ const Dashboard = () => {
     let fin_mes = moment().endOf("month").format("YYYY-MM-DD");
     let inicio_mes_a = moment().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
+    let inicio_mes_s = moment().add(1, "month").startOf("month").format("YYYY-MM-DD");
+    let fin_mes_s = moment(inicio_mes_s).endOf("month").format("YYYY-MM-DD");
     let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
     let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
 
@@ -865,6 +896,8 @@ const Dashboard = () => {
       fin_mes: fin_mes,
       inicio_mes_a: inicio_mes_a,
       fin_mes_a: fin_mes_a,
+      inicio_mes_s: inicio_mes_s,
+      fin_mes_s: fin_mes_s,
       producto: "10016416",
       tipo: check_producto
     }
@@ -935,347 +968,292 @@ const Dashboard = () => {
         </div>
       </div>
       <div className='row'>
-        <div className="col-xl-4 col-lg-6">
-          <div className="card card-stats mb-4 mb-xl-0">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-12">
-                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
-                  <span className="h2 font-weight-bold mb-0">180</span>
-                </div>
-                <div className="col-12">
-                  <span className="card-title text-uppercase text-muted mb-0">RETIRADAS</span>
-                  <span className="h2 font-weight-bold mb-0">180</span>
-                </div>
 
-              </div>
-              <p className="mt-3 mb-0 text-muted text-sm">
-                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                <span className="text-nowrap">Since last week</span>
-              </p>
-            </div>
-          </div>
+
+        <div className='d-none'>
+          <CCol sm={6} lg={3}>
+            <CWidgetStatsA
+              className="mb-4"
+              color="primary"
+              value={
+                <>
+                  <span className="fs-5 fw-bold">
+                    {cantidad_cemento_mes + " " + STATS_UNIDAD + " "}{' '}
+                  </span>
+
+                  <span className="fs-6 fw-bold">
+                    ({parseFloat(CM_GR_LABELS_por).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
+                  </span>
+                </>
+              }
+              title={
+                <>
+                  {/* <span className="fs-6 fw-bold">Producto</span><br /> */}
+                  <span className="fs-6 fw-bold">{cantidad_cemento_mes_pr}</span>
+                </>
+
+              }
+
+              chart={
+                <CChartLine
+                  className="mt-3 mx-3"
+                  style={{ height: '70px' }}
+                  data={CM_GR_LABELS}
+                  options={{
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                          drawBorder: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                      y: {
+                        min: -9,
+                        max: 100000,
+                        display: false,
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                    },
+                    elements: {
+                      line: {
+                        borderWidth: 1,
+                      },
+                      point: {
+                        radius: 4,
+                        hitRadius: 10,
+                        hoverRadius: 4,
+                      },
+                    },
+                  }}
+                />
+              }
+            />
+          </CCol>
+          <CCol sm={6} lg={3}>
+            <CWidgetStatsA
+              className="mb-4"
+              color="warning"
+              value={
+                <>
+                  {STCHOFER_SACOS + " " + STATS_UNIDAD + " "}{'  '}
+                  <span className="fs-6 fw-bold">
+                    ({parseFloat(STCHOFER_POR).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
+                  </span>
+                </>
+              }
+              title={
+                <>
+                  <span className="fs-6 fw-bold">{STCHOFER_NOMBRE}</span><br />
+                  <span className="fs-6 fw-bold">{STCHOFER_SACOS > 0 ? "Con más " + STATS_UNIDAD + " despachad@s" : ""}</span>
+                </>
+              }
+
+              chart={
+                <CChartLine
+                  className="mt-3 mx-3"
+                  style={{ height: '70px' }}
+                  data={STCHOFER_GRAFICO}
+                  options={{
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                          drawBorder: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                      y: {
+                        min: -9,
+                        max: 10000,
+                        display: false,
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                    },
+                    elements: {
+                      line: {
+                        borderWidth: 1,
+                      },
+                      point: {
+                        radius: 4,
+                        hitRadius: 10,
+                        hoverRadius: 4,
+                      },
+                    },
+                  }}
+                />
+              }
+            />
+          </CCol>
+          <CCol sm={6} lg={3}>
+            <CWidgetStatsA
+              className="mb-4"
+              color="info"
+              value={
+                <>
+                  {STVIGENTES + " " + STATS_UNIDAD + " "}{'  '}
+                </>
+              }
+              title={
+                <>
+                  <span className="fs-6 fw-bold">VIGENTES DE DESPACHO</span><br />
+                  <span className="fs-6 fw-bold">ESTE MES</span><br />
+                </>
+              }
+
+              chart={
+                <CChartLine
+                  className="mt-3 mx-3"
+                  style={{ height: '70px' }}
+                  data={0}
+                  options={{
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                          drawBorder: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                      y: {
+                        min: -9,
+                        max: 10000,
+                        display: false,
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                    },
+                    elements: {
+                      line: {
+                        borderWidth: 1,
+                      },
+                      point: {
+                        radius: 4,
+                        hitRadius: 10,
+                        hoverRadius: 4,
+                      },
+                    },
+                  }}
+                />
+              }
+            />
+          </CCol>
+          <CCol sm={6} lg={3}>
+            <CWidgetStatsA
+              className="mb-4"
+              color="danger"
+              value={
+                <>
+                  {STPROC_DESPACHO + " " + STATS_UNIDAD + " "}{'  '}
+                </>
+              }
+              title={
+                <>
+                  <span className="fs-6 fw-bold">PROCESO DE DESPACHO</span><br />
+                  <span className="fs-6 fw-bold">{moment().format("YYYY D, MMMM")}</span><br />
+                </>
+              }
+
+              chart={
+                <CChartLine
+                  className="mt-3 mx-3"
+                  style={{ height: '70px' }}
+                  data={0}
+                  options={{
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                          drawBorder: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                      y: {
+                        min: -9,
+                        max: 10000,
+                        display: false,
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          display: false,
+                        },
+                      },
+                    },
+                    elements: {
+                      line: {
+                        borderWidth: 1,
+                      },
+                      point: {
+                        radius: 4,
+                        hitRadius: 10,
+                        hoverRadius: 4,
+                      },
+                    },
+                  }}
+                />
+              }
+            />
+          </CCol>
         </div>
-        <div className="col-xl-4 col-lg-6">
-          <div className="card card-stats mb-4 mb-xl-0">
-            <div className="card-body">
-              <div className="row">
-                <div className="col">
-                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
-                  <span className="h2 font-weight-bold mb-0">180</span>
-                </div>
-                <div className="col-auto">
-                  <i className="bi bi-file-earmark-text-fill fs-3"></i>
-                </div>
-              </div>
-              <p className="mt-3 mb-0 text-muted text-sm">
-                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                <span className="text-nowrap">Since last week</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-4 col-lg-6">
-          <div className="card card-stats mb-4 mb-xl-0">
-            <div className="card-body">
-              <div className="row">
-                <div className="col">
-                  <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
-                  <span className="h2 font-weight-bold mb-0">180</span>
-                </div>
-                <div className="col-auto">
-                  <i className="bi bi-file-earmark-text-fill fs-3"></i>
-
-                </div>
-              </div>
-              <p className="mt-3 mb-0 text-muted text-sm">
-                <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                <span className="text-nowrap">Since last week</span>
-              </p>
-            </div>
-          </div>
-        </div>
 
 
-        <CCol sm={6} lg={3}>
-          <CWidgetStatsA
-            className="mb-4"
-            color="primary"
-            value={
-              <>
-                <span className="fs-5 fw-bold">
-                  {cantidad_cemento_mes + " " + STATS_UNIDAD + " "}{' '}
-                </span>
-
-                <span className="fs-6 fw-bold">
-                  ({parseFloat(CM_GR_LABELS_por).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
-                </span>
-              </>
-            }
-            title={
-              <>
-                {/* <span className="fs-6 fw-bold">Producto</span><br /> */}
-                <span className="fs-6 fw-bold">{cantidad_cemento_mes_pr}</span>
-              </>
-
-            }
-
-            chart={
-              <CChartLine
-                className="mt-3 mx-3"
-                style={{ height: '70px' }}
-                data={CM_GR_LABELS}
-                options={{
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      grid: {
-                        display: false,
-                        drawBorder: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                    y: {
-                      min: -9,
-                      max: 100000,
-                      display: false,
-                      grid: {
-                        display: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 1,
-                    },
-                    point: {
-                      radius: 4,
-                      hitRadius: 10,
-                      hoverRadius: 4,
-                    },
-                  },
-                }}
-              />
-            }
-          />
-        </CCol>
-        <CCol sm={6} lg={3}>
-          <CWidgetStatsA
-            className="mb-4"
-            color="warning"
-            value={
-              <>
-                {STCHOFER_SACOS + " " + STATS_UNIDAD + " "}{'  '}
-                <span className="fs-6 fw-bold">
-                  ({parseFloat(STCHOFER_POR).toFixed(2)}% <CIcon icon={CM_GR_LABELS_por > 0 ? cilArrowTop : cilArrowBottom} />)
-                </span>
-              </>
-            }
-            title={
-              <>
-                <span className="fs-6 fw-bold">{STCHOFER_NOMBRE}</span><br />
-                <span className="fs-6 fw-bold">{STCHOFER_SACOS > 0 ? "Con más " + STATS_UNIDAD + " despachad@s" : ""}</span>
-              </>
-            }
-
-            chart={
-              <CChartLine
-                className="mt-3 mx-3"
-                style={{ height: '70px' }}
-                data={STCHOFER_GRAFICO}
-                options={{
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      grid: {
-                        display: false,
-                        drawBorder: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                    y: {
-                      min: -9,
-                      max: 10000,
-                      display: false,
-                      grid: {
-                        display: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 1,
-                    },
-                    point: {
-                      radius: 4,
-                      hitRadius: 10,
-                      hoverRadius: 4,
-                    },
-                  },
-                }}
-              />
-            }
-          />
-        </CCol>
-        <CCol sm={6} lg={3}>
-          <CWidgetStatsA
-            className="mb-4"
-            color="info"
-            value={
-              <>
-                {STVIGENTES + " " + STATS_UNIDAD + " "}{'  '}
-              </>
-            }
-            title={
-              <>
-                <span className="fs-6 fw-bold">VIGENTES DE DESPACHO</span><br />
-                <span className="fs-6 fw-bold">ESTE MES</span><br />
-              </>
-            }
-
-            chart={
-              <CChartLine
-                className="mt-3 mx-3"
-                style={{ height: '70px' }}
-                data={0}
-                options={{
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      grid: {
-                        display: false,
-                        drawBorder: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                    y: {
-                      min: -9,
-                      max: 10000,
-                      display: false,
-                      grid: {
-                        display: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 1,
-                    },
-                    point: {
-                      radius: 4,
-                      hitRadius: 10,
-                      hoverRadius: 4,
-                    },
-                  },
-                }}
-              />
-            }
-          />
-        </CCol>
-        <CCol sm={6} lg={3}>
-          <CWidgetStatsA
-            className="mb-4"
-            color="danger"
-            value={
-              <>
-                {STPROC_DESPACHO + " " + STATS_UNIDAD + " "}{'  '}
-              </>
-            }
-            title={
-              <>
-                <span className="fs-6 fw-bold">PROCESO DE DESPACHO</span><br />
-                <span className="fs-6 fw-bold">{moment().format("YYYY D, MMMM")}</span><br />
-              </>
-            }
-
-            chart={
-              <CChartLine
-                className="mt-3 mx-3"
-                style={{ height: '70px' }}
-                data={0}
-                options={{
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: {
-                      grid: {
-                        display: false,
-                        drawBorder: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                    y: {
-                      min: -9,
-                      max: 10000,
-                      display: false,
-                      grid: {
-                        display: false,
-                      },
-                      ticks: {
-                        display: false,
-                      },
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 1,
-                    },
-                    point: {
-                      radius: 4,
-                      hitRadius: 10,
-                      hoverRadius: 4,
-                    },
-                  },
-                }}
-              />
-            }
-          />
-        </CCol>
       </div>
       <div className='row'>
+
         <div className='col-xl-4 col-sm-12'>
           <div className="card mb-4">
             <div className="card-body">
               <div className="row">
                 <div className="col">
                   <h5 className="card-title text-uppercase text-muted mb-2">GUIAS RETIRADAS</h5>
-                  <span className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2">127</span><br />
+                  <span id='CARD_GT_TOTAL' className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2"></span><br />
                   <p className="mt-3 mb-0 text-muted text-sm">
                     <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
                     <span className="text-nowrap"> Del mes pasado</span>
@@ -1292,7 +1270,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">RETIRADAS DEL MES ANTERIOR</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span className="text-gray-900 fw-semibold fs-6">1</span>
+                      <span id='CARD_GT_RETIRADAS_MES_ANT' className="text-gray-900 fw-semibold fs-6"></span>
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
@@ -1300,7 +1278,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-8 small text-medium-emphasis fw-bold me-2">RETIRADAS ESTE MES</div>
                     <div className="col-3 text-gray-700 fw-semibold fs-6 text-end">
-                      <span className="text-gray-900 fw-semibold fs-6">126</span>
+                      <span id='CARD_GT_RETIRADAS_ESTE_MES' className="text-gray-900 fw-semibold fs-6"></span>
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
@@ -1308,7 +1286,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">COMPRADAS</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span className="text-gray-900 fw-semibold fs-6">154</span>
+                      <span id='CARD_GT_COMPRADAS' className="text-gray-900 fw-semibold fs-6"></span>
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
@@ -1316,7 +1294,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span className="text-gray-900 fw-semibold fs-6 text-danger">28</span>
+                      <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-semibold fs-6 text-danger"></span>
                     </div>
                   </div>
 
@@ -1332,6 +1310,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
         <div className='col-xl-8 col-sm-12'>
           <div className='row'>
             <div className="col-xl-6 col-sm-12">
@@ -1340,28 +1319,46 @@ const Dashboard = () => {
                   <div className="row">
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">CHOFER MAS RETIROS</h5>
-                      <span className="h2 font-weight-bold mb-0">54</span>
+                      <span id='CARD_CHOFER_TOTAL' className="h2 font-weight-bold mb-0"></span>
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-person-vcard fs-1"></i>
                     </div>
                   </div>
-                  <p className="mb-0 text-muted ">Cemento Holcim Fuerte Tipo GU 50Kg</p>
-                  <p className="mb-0 text-muted ">123 SAC</p>
+
+                  <p className="mb-0 fw-bold">Cemento Holcim Fuerte Tipo GU 50Kg</p>
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">SAC</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_CHOFER_SACOS' className="text-gray-900 fw-semibold fs-6">0</span>
+                    </div>
+                  </div>
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">GUIAS</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_CHOFER_PR_GUIAS' className="text-gray-900 fw-semibold fs-6">0</span>
+                    </div>
+                  </div>
+                  <hr className="my-1 border-dashed" />
+
                   <p className="mb-0 text-muted text-sm">
-                    <span className="text-nowrap fw-bold">CHOFER 2 </span>
-                    <span className="text-nowrap">(GBO-7758)</span>
+                    <span id='CARD_CHOFER_NOMBRE' className="text-nowrap fw-bold">CHOFER 2 </span>
+                    <span id='CARD_CHOFER_PLACA' className="text-nowrap">(GBO-7758)</span>
                   </p>
                 </div>
               </div>
             </div>
+
+          </div>
+          <div className='row mt-4'>
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
-                      <span className="h2 font-weight-bold mb-0">123</span>
+                      <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"></span>
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-file-earmark-text-fill fs-3"></i>
@@ -1369,30 +1366,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                    <span className="text-nowrap">Since last week</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className='row mt-4'>
-            <div className="col-6">
-              <div className="card card-stats mb-4 mb-xl-0">
-                <div className="card-body">
-                  <div className="row">
-                    <div className="col">
-                      <h5 className="card-title text-uppercase text-muted mb-0">GUIA EMITIDAS ESTE MES</h5>
-                      <span className="h2 font-weight-bold mb-0">180</span>
-                    </div>
-                    <div className="col-auto">
-                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
-
-                    </div>
-                  </div>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                    <span className="text-nowrap">Since last week</span>
+                    <span id='CD_RECORD_DIA_TOTAL' className="text-nowrap"></span>
                   </p>
                 </div>
               </div>
