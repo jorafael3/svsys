@@ -234,11 +234,16 @@ const Dashboard = () => {
 
 
     des.Cargar_Stats(param, function (x) {
+      console.log('x: ', x);
+      
+      
+
 
       let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
       let CARD_CHOFER_MAS_RET = x["CARD_CHOFER_MAS_RETIROS"];
       let CARD_DIA_RECOR = x["CARD_DIA_RECORD"];
       let GUIAS_RETIRADAS_POR_DIA = x["GUIAS_RETIRADAS_POR_DIA"];
+      let GUIAS_RETIRADAS_POR_MES = x["GUIAS_RETIRADAS_POR_MES"];
 
       // let SACOS = x["SACOS"];
       // let CHOFER = x["CHOFER"];
@@ -255,24 +260,36 @@ const Dashboard = () => {
       CARD_GUIAS_TOTALES(CARD_GUIAS_TOT)
       CARD_CHOFER_MAS_RETIROS(CARD_CHOFER_MAS_RET)
       CARD_DIA_RECORD(CARD_DIA_RECOR)
-      POR_DIA(GUIAS_RETIRADAS_POR_DIA)
+      POR_DIA(GUIAS_RETIRADAS_POR_DIA);
+      setDATOS_GR_MES(GUIAS_RETIRADAS_POR_MES);
     });
   }
 
+  const [CAR_GT_PORCENTAJE, setCAR_GT_PORCENTAJE] = useState(0);
+
+
   function CARD_GUIAS_TOTALES(datos) {
     let DATOS = datos["DATOS"];
-
+    
     let RETIRADAS_ESTE_MES = DATOS[0];
     let CORRESPONDEN_AL_MES_PASADO = DATOS[1];
     let FUE_RETIRADA_MES_SGT = DATOS[2];
     let GUIAS_EMITIDAS_MES_TOTAL = DATOS[3];
     let RESTANTE_DE_RETIRAR = DATOS[4];
+    let RETIRADAS_MES_ANTERIOR = DATOS[5];
+    let GUIAS_RETIRADAS_NO_INGRESADAS = DATOS[6];
 
-    $("#CARD_GT_TOTAL").text(parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]));
+    $("#CARD_GT_TOTAL").text(parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]) + parseInt(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"]));
     $("#CARD_GT_RETIRADAS_MES_ANT").text(CORRESPONDEN_AL_MES_PASADO["cantidad"]);
     $("#CARD_GT_RETIRADAS_ESTE_MES").text(RETIRADAS_ESTE_MES["cantidad"]);
     $("#CARD_GT_COMPRADAS").text(GUIAS_EMITIDAS_MES_TOTAL["cantidad"]);
     $("#CARD_GT_POR_RETIRAR").text(RESTANTE_DE_RETIRAR["cantidad"]);
+    $("#CARD_GT_RETIRADAS_NO_INGRESADAS").text(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"]);
+
+    let por = ((parseFloat(RETIRADAS_ESTE_MES["cantidad"]) - parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])) / parseFloat(parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])))
+    por = por * 100
+
+    setCAR_GT_PORCENTAJE(parseFloat(por).toFixed(2));
 
 
     // let gr = datos["GRAFICO"];
@@ -305,20 +322,30 @@ const Dashboard = () => {
 
   function CARD_CHOFER_MAS_RETIROS(datos) {
     let DATOS = datos["DATOS"];
-
+    
 
     $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
     $("#CARD_CHOFER_SACOS").text(DATOS[0]["SACOS_CEMENTO"]);
     $("#CARD_CHOFER_NOMBRE").text(DATOS[0]["Nombre"]);
     $("#CARD_CHOFER_PLACA").text(" (" + DATOS[0]["placa"] + ")");
+    $("#CARD_CHOFER_PR_GUIAS").text(DATOS[0]["SACOS_CEMENTO_GUIAS"]);
 
   }
 
+  const [CAR_DR_F_GEN, setCAR_DR_F_GEN] = useState('');
+  const [CAR_DR_F_MES, setCAR_DR_F_MES] = useState('');
+
+
   function CARD_DIA_RECORD(datos) {
     let DATOS = datos["DATOS"];
+    
 
     $("#CD_RECORD_TOTAL").text(DATOS[0]["cantidad"]);
     $("#CD_RECORD_DIA_TOTAL").text(moment(DATOS[0]["fecha"]).format("MMMM DD, YYYY"));
+    $("#CARD_DIAR_GENERAL").text(DATOS[2]["cantidad"]);
+    $("#CARD_DIAR_MES").text(DATOS[3]["cantidad"]);
+    setCAR_DR_F_GEN(moment(DATOS[2]["fecha"]).format("MMMM DD, YYYY"));
+    setCAR_DR_F_MES(moment(DATOS[3]["fecha"]).format("MMMM DD, YYYY"));
 
 
   }
@@ -422,12 +449,16 @@ const Dashboard = () => {
   }
 
   //** POR DIA */
+  const [DATOS_GR_DIA, setDATOS_GR_DIA] = useState([]);
+
+
   function POR_DIA(datos) {
-    console.log('datos: ', datos);
+    
     let MES_ACTUAL = datos["DATOS"].filter(item => item.MES == "MES_ACT");
     let MES_ANTERIOR = datos["DATOS"].filter(item => item.MES == "MES_ANT");
-    console.log('MES_ANTERIOR: ', MES_ANTERIOR);
-    console.log('MES_ACTUAL: ', MES_ACTUAL);
+    setDATOS_GR_DIA(datos);
+
+
 
     let ARRAY_ANT = []
     MES_ANTERIOR.map(function (x) {
@@ -439,7 +470,7 @@ const Dashboard = () => {
       ARRAY_ANT.push(b);
     })
 
-    console.log('ARRAY_ANT: ', ARRAY_ANT);
+
 
     // let PORDIA = datos["POR_DIA"]["DATOS"];
     // let PORDIA_MESANT = datos["POR_DIA_MES_ANT"]["DATOS"];
@@ -455,7 +486,7 @@ const Dashboard = () => {
           let b = {
             FECHA: moment(f).format("YYYY-MM-DD"),
             cantidad: 0,
-            MES:"MES_ACT"
+            MES: "MES_ACT"
           }
           MES_ACTUAL.push(b);
         }
@@ -490,10 +521,10 @@ const Dashboard = () => {
       })
       ARRAY_ANT.sort((a, b) => a.NUM - b.NUM);
 
-    
+
     }
 
-    // console.log('ARRAY_ANT: ', ARRAY_ANT);
+    // 
 
     GRAFICO_DIARIO(MES_ACTUAL.concat(ARRAY_ANT));
 
@@ -633,8 +664,12 @@ const Dashboard = () => {
   }
 
   //** POR MES */
+
+  const [DATOS_GR_MES, setDATOS_GR_MES] = useState([]);
+
+
   function POR_MES(datos) {
-    let DATOS_MES = datos["POR_MES"]["DATOS"]
+    let DATOS_MES = datos["DATOS"]
 
     DATOS_MES.map(function (x) {
       x.NUM = parseInt(moment(x.MES).format("MM"));
@@ -646,7 +681,7 @@ const Dashboard = () => {
 
     GRAFICO_MES(DATOS_MES)
   }
-
+  
   function GRAFICO_MES(datos) {
 
     var totaldolar = datos.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
@@ -834,6 +869,7 @@ const Dashboard = () => {
       producto: prod.trim(),
       tipo: check_producto == 0 ? check_guia : check_producto
     }
+    console.log('param: ', param);
 
 
     setFECHA_INICIO(inicio_mes);
@@ -898,7 +934,7 @@ const Dashboard = () => {
       fin_mes_a: fin_mes_a,
       inicio_mes_s: inicio_mes_s,
       fin_mes_s: fin_mes_s,
-      producto: "10016416",
+      producto: "TODO",
       tipo: check_producto
     }
 
@@ -943,30 +979,10 @@ const Dashboard = () => {
           <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
 
         </div>
-        <div className='col-lg-4 col-sm-6'>
-          <label className="required fs-5 fw-bold mb-2">Producto</label>
-          {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
-          <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
-          </select>
 
-        </div>
-        <div className='col-lg-4 col-sm-6'>
-          <label className="required fs-5 fw-bold mb-2">Tipo</label>
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="radio" name='ra' role="switch"
-              id="check_producto" defaultChecked
-              onChange={CAMBIAR_MES} />
-            <label className="form-check-label fw-bold" >Por Producto</label>
-          </div>
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="radio" name='ra' role="switch"
-              id="check_guia"
-              onChange={CAMBIAR_MES} />
-            <label className="form-check-label fw-bold">Por guìas</label>
-          </div>
 
-        </div>
       </div>
+
       <div className='row'>
 
 
@@ -1245,26 +1261,41 @@ const Dashboard = () => {
 
 
       </div>
-      <div className='row'>
 
-        <div className='col-xl-4 col-sm-12'>
-          <div className="card mb-4">
-            <div className="card-body">
+      <div className='row g-4 g-xl-10'>
+
+        <div className='col-xl-4 mb-xl-10'>
+          <div className="card card-flush h-xl-100">
+            <div className="card-body mt-n20">
+
               <div className="row">
                 <div className="col">
                   <h5 className="card-title text-uppercase text-muted mb-2">GUIAS RETIRADAS</h5>
                   <span id='CARD_GT_TOTAL' className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2"></span><br />
                   <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-danger mr-2"><i className="fas fa-arrow-down"></i> 3.48%</span>
-                    <span className="text-nowrap"> Del mes pasado</span>
+                    <span className={CAR_GT_PORCENTAJE > 0 ? "text-success mr-2 fw-bold" : "text-danger mr-2 fw-bold"}>
+                      <CIcon icon={CAR_GT_PORCENTAJE > 0 ? cilArrowTop : cilArrowBottom} />
+                      {parseFloat(CAR_GT_PORCENTAJE).toFixed(2)}%
+                    </span>
+                    <span className="text-nowrap fs-5"> Del mes pasado</span>
                   </p>
                 </div>
                 <div className="col-auto">
                   <i className="bi bi-truck fs-1"></i>
                 </div>
               </div>
+
               <div className="row mt-3">
                 <div className="card-body">
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9  small fw-bold me-2 text-danger">RETIRADAS NO INGRESADAS !</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_GT_RETIRADAS_NO_INGRESADAS' className="text-gray-900 fw-semibold fs-6 text-danger"></span>
+                    </div>
+                  </div>
+
+                  <hr className="my-1 border-dashed" />
 
 
                   <div className="d-flex flex-stack">
@@ -1274,6 +1305,8 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
+
+
 
                   <div className="d-flex flex-stack">
                     <div className="col-8 small text-medium-emphasis fw-bold me-2">RETIRADAS ESTE MES</div>
@@ -1294,7 +1327,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-semibold fs-6 text-danger"></span>
+                      <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-bold fs-6 text-success"></span>
                     </div>
                   </div>
 
@@ -1307,12 +1340,15 @@ const Dashboard = () => {
                 </div> */}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
 
-        <div className='col-xl-8 col-sm-12'>
-          <div className='row'>
+        <div className='col-xl-8 mb-5 mb-xl-10'>
+
+          <div className='row g-xl-10'>
+
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
@@ -1350,8 +1386,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-          </div>
-          <div className='row mt-4'>
+
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
@@ -1361,8 +1396,49 @@ const Dashboard = () => {
                       <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"></span>
                     </div>
                     <div className="col-auto">
-                      <i className="bi bi-file-earmark-text-fill fs-3"></i>
+                      <i className="bi bi-calendar2-week fs-1"></i>
 
+                    </div>
+                  </div>
+                  <p id='CD_RECORD_DIA_TOTAL' className="mb-0 fw-bold"></p>
+
+                  <p className="mb-0 fw-bold mt-2">Cemento Holcim Fuerte Tipo GU 50Kg</p>
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">RECORD GENERAL {CAR_DR_F_GEN}</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_DIAR_GENERAL' className="text-gray-900 fw-semibold fs-6">0</span>
+                    </div>
+                  </div>
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">RECORD MES {CAR_DR_F_MES}</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_DIAR_MES' className="text-gray-900 fw-semibold fs-6">0</span>
+                    </div>
+                  </div>
+
+
+                </div>
+              </div>
+            </div>
+
+
+
+          </div>
+
+          <div className='row mt-4'>
+
+
+            <div className="col-xl-6 col-sm-12">
+              <div className="card card-stats mb-4 mb-xl-0">
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col">
+                      <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
+                      <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"></span>
+                    </div>
+                    <div className="col-auto">
+                      <i className="bi bi-calendar2-week fs-3"></i>
                     </div>
                   </div>
                   <p className="mt-3 mb-0 text-muted text-sm">
@@ -1371,6 +1447,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
             <div className="col-6">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
@@ -1391,29 +1468,65 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
           </div>
+
         </div>
+
       </div>
 
+      <div className='row'>
+        <div className='col-xl-3 col-sm-12'>
+          <CCard className="mb-4">
+            <CCardBody>
 
+              <div className='col-lg-12 col-sm-12'>
+                <label className="required fs-6 fw-bold mb-2">Producto</label>
+                {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
+                <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
+                </select>
 
+              </div>
+              
+              <div className='col-lg-12 col-sm-6'>
+                <label className="required fs-6 fw-bold mb-2">Tipo</label>
+                <div className="form-check form-switch">
+                  <input className="form-check-input" type="radio" name='ra' role="switch"
+                    id="check_guia" defaultChecked
+                    onChange={CAMBIAR_MES} />
+                  <label className="form-check-label fw-bold">Por guías</label>
+                </div>
+                <div className="form-check form-switch">
+                  <input className="form-check-input" type="radio" name='ra' role="switch"
+                    id="check_producto" 
+                    onChange={CAMBIAR_MES} />
+                  <label className="form-check-label fw-bold" >Por cantidad</label>
+                </div>
+               
 
+              </div>
 
-      <CCard className="mb-4">
-        <CCardBody>
+            </CCardBody>
+          </CCard>
 
-          <CRow>
-            <CCol sm={7}>
-              <h5 id="traffic" className="card-title mb-0">
-                {cantidad_cemento_mes_pr}
-              </h5>
-              <div className="small text-medium-emphasis fw-bold">{moment(FECHA_INICIO).format("MMMM DD, YYYY")} - {moment(FECHA_FIN).format("MMMM DD, YYYY")}</div>
-            </CCol>
-            <CCol sm={5} className="d-none d-md-block">
-              {/* <CButton color="primary" className="float-end">
+        </div>
+
+        <div className='col-xl-9 col-sm-12'>
+          <CCard className="mb-4">
+            <CCardBody>
+
+              <CRow>
+                <CCol sm={7}>
+                  <h5 id="traffic" className="card-title mb-0">
+                    {cantidad_cemento_mes_pr}
+                  </h5>
+                  <div className="small text-medium-emphasis fw-bold">{moment(FECHA_INICIO).format("MMMM DD, YYYY")} - {moment(FECHA_FIN).format("MMMM DD, YYYY")}</div>
+                </CCol>
+                <CCol sm={5} className="d-none d-md-block">
+                  {/* <CButton color="primary" className="float-end">
                 <CIcon icon={cilCloudDownload} />
               </CButton> */}
-              {/* <CButtonGroup className="float-end me-3">
+                  {/* <CButtonGroup className="float-end me-3">
                 {['Dia', 'Mes', 'Año'].map((value) => (
                   <CButton
                     color="outline-secondary"
@@ -1425,44 +1538,48 @@ const Dashboard = () => {
                   </CButton>
                 ))}
               </CButtonGroup> */}
-              <div className="btn-group float-end" role="group" aria-label="Basic example">
-                <button onClick={() => {
-                  POR_DIA(DATOS_COMPLETOS);
-                }} type="button" className="btn btn-light">Dia</button>
-                <button onClick={() => {
-                  POR_MES(DATOS_COMPLETOS);
-                }} type="button" className="btn btn-light">Mes</button>
-                <button onClick={() => {
-                  POR_ANIO(DATOS_COMPLETOS);
-                }} type="button" className="btn btn-light">Año</button>
-              </div>
-            </CCol>
-          </CRow>
-          <div id='GRAFICO_DIARIO' style={{ height: 600 }}></div>
+                  <div className="btn-group float-end" role="group" aria-label="Basic example">
+                    <button onClick={() => {
+                      POR_DIA(DATOS_GR_DIA);
+                    }} type="button" className="btn btn-light">Dia</button>
+                    <button onClick={() => {
+                      POR_MES(DATOS_GR_MES);
+                    }} type="button" className="btn btn-light">Mes</button>
+                    <button onClick={() => {
+                      POR_ANIO(DATOS_COMPLETOS);
+                    }} type="button" className="btn btn-light">Año</button>
+                  </div>
+                </CCol>
+              </CRow>
+              <div id='GRAFICO_DIARIO' style={{ height: 450 }}></div>
 
-        </CCardBody>
-        <CCardFooter>
-          <CRow xs={{ cols: 1 }} md={{ cols: 4 }} className="text-center">
-            {/* {progressExample.map((item, index) =>({443}%) ( */}
-            <CCol className="mb-sm-2 mb-0" >
-              <div className="fs-7">PROMEDIO DESPACHO</div>
-              <strong className='fs-5'>
-                {parseFloat((isNaN(PROMEDIO_DESPACHO) ? 0 : PROMEDIO_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
-              </strong>
-              <CProgress thin className="mt-2" color={"info"} value={2222} />
-            </CCol>
-            <CCol className="mb-sm-2 mb-0" >
-              <div className="fs-7">PROYECCIÓN DESPACHO</div>
-              <strong className='fs-5'>
-                {parseFloat((isNaN(PORYECCION_DESPACHO) ? 0 : PORYECCION_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
-              </strong>
-              <CProgress thin className="mt-2" color={"danger"} value={2222} />
-            </CCol>
-            {/* ))} */}
-          </CRow>
+            </CCardBody>
+            <CCardFooter>
+              <CRow xs={{ cols: 3 }} md={{ cols: 3 }} className="text-center">
+                {/* {progressExample.map((item, index) =>({443}%) ( */}
+                <CCol className="mb-sm-2 mb-0" >
+                  <div className="fs-7">PROMEDIO DESPACHO</div>
+                  <strong className='fs-5'>
+                    {parseFloat((isNaN(PROMEDIO_DESPACHO) ? 0 : PROMEDIO_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
+                  </strong>
+                  <CProgress thin className="mt-2" color={"info"} value={2222} />
+                </CCol>
+                <CCol className="mb-sm-2 mb-0" >
+                  <div className="fs-7">PROYECCIÓN DESPACHO</div>
+                  <strong className='fs-5'>
+                    {parseFloat((isNaN(PORYECCION_DESPACHO) ? 0 : PORYECCION_DESPACHO)).toFixed(0)} {STATS_UNIDAD}
+                  </strong>
+                  <CProgress thin className="mt-2" color={"danger"} value={2222} />
+                </CCol>
+                {/* ))} */}
+              </CRow>
 
-        </CCardFooter>
-      </CCard>
+            </CCardFooter>
+          </CCard>
+        </div>
+
+      </div>
+
 
       {/* <WidgetsBrand withCharts /> */}
 
