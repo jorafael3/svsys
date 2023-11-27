@@ -220,12 +220,12 @@ const Dashboard = () => {
     des.Cargar_Produts(function (x) {
 
       $("#SEL_PRODUCTOS").empty();
-      $("#SEL_PRODUCTOS").append("<option value='TODO'>TODO</option>")
+      // $("#SEL_PRODUCTOS").append("<option value='TODO'>TODO</option>")
       x.map(function (y) {
         $("#SEL_PRODUCTOS").append("<option value='" + y.CODIGO + "'>" + y.DESCRIPCION + "</option>")
       });
 
-      // $("#SEL_PRODUCTOS").val("10016416").change()
+      $("#SEL_PRODUCTOS").val("10016416").change()
     })
   }
 
@@ -234,9 +234,6 @@ const Dashboard = () => {
 
 
     des.Cargar_Stats(param, function (x) {
-      console.log('x: ', x);
-      
-      
 
 
       let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
@@ -244,6 +241,7 @@ const Dashboard = () => {
       let CARD_DIA_RECOR = x["CARD_DIA_RECORD"];
       let GUIAS_RETIRADAS_POR_DIA = x["GUIAS_RETIRADAS_POR_DIA"];
       let GUIAS_RETIRADAS_POR_MES = x["GUIAS_RETIRADAS_POR_MES"];
+      let GR_CAR_1 = x["GR_CARD_1"];
 
       // let SACOS = x["SACOS"];
       // let CHOFER = x["CHOFER"];
@@ -262,6 +260,7 @@ const Dashboard = () => {
       CARD_DIA_RECORD(CARD_DIA_RECOR)
       POR_DIA(GUIAS_RETIRADAS_POR_DIA);
       setDATOS_GR_MES(GUIAS_RETIRADAS_POR_MES);
+      GR_CARD_1(GR_CAR_1)
     });
   }
 
@@ -270,7 +269,7 @@ const Dashboard = () => {
 
   function CARD_GUIAS_TOTALES(datos) {
     let DATOS = datos["DATOS"];
-    
+
     let RETIRADAS_ESTE_MES = DATOS[0];
     let CORRESPONDEN_AL_MES_PASADO = DATOS[1];
     let FUE_RETIRADA_MES_SGT = DATOS[2];
@@ -278,6 +277,8 @@ const Dashboard = () => {
     let RESTANTE_DE_RETIRAR = DATOS[4];
     let RETIRADAS_MES_ANTERIOR = DATOS[5];
     let GUIAS_RETIRADAS_NO_INGRESADAS = DATOS[6];
+    let POR_RETIRAR_CEMENTO = DATOS[7];
+    let POR_RETIRAR_OTROS = DATOS[8];
 
     $("#CARD_GT_TOTAL").text(parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]) + parseInt(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"]));
     $("#CARD_GT_RETIRADAS_MES_ANT").text(CORRESPONDEN_AL_MES_PASADO["cantidad"]);
@@ -285,12 +286,21 @@ const Dashboard = () => {
     $("#CARD_GT_COMPRADAS").text(GUIAS_EMITIDAS_MES_TOTAL["cantidad"]);
     $("#CARD_GT_POR_RETIRAR").text(RESTANTE_DE_RETIRAR["cantidad"]);
     $("#CARD_GT_RETIRADAS_NO_INGRESADAS").text(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"]);
+    $("#CARD_GT_POR_RETIRAR_CEMENTO").text(POR_RETIRAR_CEMENTO["cantidad"]);
+    $("#CARD_GT_POR_RETIRAR_OTROS").text(POR_RETIRAR_OTROS["cantidad"]);
 
     let por = ((parseFloat(RETIRADAS_ESTE_MES["cantidad"]) - parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])) / parseFloat(parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])))
     por = por * 100
 
     setCAR_GT_PORCENTAJE(parseFloat(por).toFixed(2));
+    let total_pr = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"])
+    console.log('total_pr: ', total_pr);
+    let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion_g");
+    console.log('p: ', p);
+    setTimeout(() => {
+      $("#CD_RECORD_PROYECCION").text(p);
 
+    }, 500);
 
     // let gr = datos["GRAFICO"];
 
@@ -322,7 +332,7 @@ const Dashboard = () => {
 
   function CARD_CHOFER_MAS_RETIROS(datos) {
     let DATOS = datos["DATOS"];
-    
+
 
     $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
     $("#CARD_CHOFER_SACOS").text(DATOS[0]["SACOS_CEMENTO"]);
@@ -338,7 +348,7 @@ const Dashboard = () => {
 
   function CARD_DIA_RECORD(datos) {
     let DATOS = datos["DATOS"];
-    
+
 
     $("#CD_RECORD_TOTAL").text(DATOS[0]["cantidad"]);
     $("#CD_RECORD_DIA_TOTAL").text(moment(DATOS[0]["fecha"]).format("MMMM DD, YYYY"));
@@ -453,7 +463,7 @@ const Dashboard = () => {
 
 
   function POR_DIA(datos) {
-    
+
     let MES_ACTUAL = datos["DATOS"].filter(item => item.MES == "MES_ACT");
     let MES_ANTERIOR = datos["DATOS"].filter(item => item.MES == "MES_ANT");
     setDATOS_GR_DIA(datos);
@@ -482,13 +492,16 @@ const Dashboard = () => {
         // 
         let dia = MES_ACTUAL.filter(item => parseInt(moment(item.FECHA).format("DD")) == con);
         if (dia.length == 0) {
+
           let f = moment(MES_ACTUAL[0]["FECHA"]).format("YYYY-MM-") + con;
+
           let b = {
             FECHA: moment(f).format("YYYY-MM-DD"),
             cantidad: 0,
             MES: "MES_ACT"
           }
           MES_ACTUAL.push(b);
+
         }
         con++;
       }
@@ -508,7 +521,7 @@ const Dashboard = () => {
         if (dia.length == 0) {
           let f = moment(ARRAY_ANT[0]["FECHA_ANT"]).format("YYYY-MM-") + con2;
           let b = {
-            FECHA_ANT: moment(f).format("YYYY-MM-DD"),
+            FECHA_ANT: moment(new Date(f)).format("YYYY-MM-DD"),
             cantidad: 0,
           }
           ARRAY_ANT.push(b);
@@ -528,23 +541,28 @@ const Dashboard = () => {
 
     GRAFICO_DIARIO(MES_ACTUAL.concat(ARRAY_ANT));
 
+
   }
 
   function GRAFICO_DIARIO(datos) {
+
+
 
     am4core.ready(function () {
 
       let datos_ant = datos.filter(item => item.MES == "MES_ACT" && item.cantidad > 0);
       var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
+      let valor_completo = totaldolar
       totaldolar = totaldolar / datos_ant.length
       setPROMEDIO_DESPACHO(totaldolar);
 
-      let p = CALCULAR_PROYECCION(totaldolar);
 
       var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
-      let PROYECCION = (total_pr / p[0]) * p[1]
+      
+      let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion");
+      
 
-      setPORYECCION_DESPACHO(PROYECCION);
+
 
       // Themes begin
       am4core.useTheme(am4themes_animated);
@@ -681,7 +699,7 @@ const Dashboard = () => {
 
     GRAFICO_MES(DATOS_MES)
   }
-  
+
   function GRAFICO_MES(datos) {
 
     var totaldolar = datos.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
@@ -846,9 +864,19 @@ const Dashboard = () => {
     }); // end am4core.ready()
   }
 
+  const [TIPO_ESTADO, setTIPO_ESTADO] = useState(true);
+
   function CAMBIAR_MES() {
     let mes = $("#myDatePicker").val();
     let prod = $("#SEL_PRODUCTOS").val();
+
+    if (prod == "TODO") {
+      setTIPO_ESTADO(true);
+      $("#check_producto").prop("disabled", true);
+    } else {
+      $("#check_producto").prop("disabled", false);
+      // $("#check_guia").prop("checked", false);
+    }
 
     let inicio_mes = moment(mes).startOf("month").format("YYYY-MM-DD");
     let fin_mes = moment(mes).endOf("month").format("YYYY-MM-DD");
@@ -869,7 +897,8 @@ const Dashboard = () => {
       producto: prod.trim(),
       tipo: check_producto == 0 ? check_guia : check_producto
     }
-    console.log('param: ', param);
+
+
 
 
     setFECHA_INICIO(inicio_mes);
@@ -878,7 +907,9 @@ const Dashboard = () => {
     Cargar_Stats(param)
   }
 
-  function CALCULAR_PROYECCION(totaldolar) {
+  function CALCULAR_PROYECCION(totalret, label) {
+
+
 
     function domingosEnMes(anio, mes) {
       const primerDia = new Date(anio, mes - 1, 1);
@@ -910,10 +941,141 @@ const Dashboard = () => {
     const cantidadDomingos = domingosEnMes(anio, mes);
     const cantidadSabados = sabadosEnMes(anio, mes);
     let DIAS_ENEL_MES = moment(m).endOf("month").format("DD");
-
     let DIAS_LABORABLES = parseInt(DIAS_ENEL_MES) - parseInt(cantidadDomingos) - parseFloat(cantidadSabados)
 
-    return [DIAS_LABORABLES, DIAS_ENEL_MES];
+    let PROYECCION = (totalret / DIAS_LABORABLES) * DIAS_ENEL_MES
+    let porc = (totalret / PROYECCION) * 100
+
+
+
+    setPORYECCION_DESPACHO(PROYECCION);
+
+    am4core.ready(function () {
+
+
+      var chart = am4core.create(label, am4charts.GaugeChart);
+      chart.hiddenState.properties.opacity = 0; // this makes initial fade in effect
+
+      chart.innerRadius = -40;
+
+      var axis = chart.xAxes.push(new am4charts.ValueAxis());
+      axis.min = 0;
+      axis.max = 100;
+      axis.strictMinMax = true;
+      axis.renderer.grid.template.stroke = new am4core.InterfaceColorSet().getFor("background");
+      axis.renderer.grid.template.strokeOpacity = 0.3;
+      axis.renderer.radius = am4core.percent(80);
+
+      var colorSet = new am4core.ColorSet();
+
+      var range0 = axis.axisRanges.create();
+      range0.value = 0;
+      range0.endValue = 25;
+      range0.axisFill.fillOpacity = 1;
+      range0.axisFill.fill = colorSet.getIndex(0);
+      range0.axisFill.zIndex = - 1;
+      range0.axisFill.fill = am4core.color("#E74C3C");
+
+
+      var range1 = axis.axisRanges.create();
+      range1.value = 25;
+      range1.endValue = 50;
+      range1.axisFill.fillOpacity = 1;
+      range1.axisFill.fill = colorSet.getIndex(2);
+      range1.axisFill.zIndex = -1;
+      range1.axisFill.fill = am4core.color("#E67E22");
+
+      var range2 = axis.axisRanges.create();
+      range2.value = 50;
+      range2.endValue = 75;
+      range2.axisFill.fillOpacity = 1;
+      range2.axisFill.fill = colorSet.getIndex(4);
+      range2.axisFill.zIndex = -1;
+      range2.axisFill.fill = am4core.color("#F4D03F");
+
+      var range3 = axis.axisRanges.create();
+      range3.value = 75;
+      range3.endValue = 100;
+      range3.axisFill.fillOpacity = 1;
+      range3.axisFill.fill = colorSet.getIndex(4);
+      range3.axisFill.zIndex = -1;
+      range3.axisFill.fill = am4core.color("#2ECC71");
+
+      var hand = chart.hands.push(new am4charts.ClockHand());
+      hand.axis = axis;
+      hand.innerRadius = am4core.percent(55);
+      hand.startWidth = 8;
+      hand.pin.disabled = true;
+      hand.value = "34";
+      hand.fill = am4core.color("#444");
+      hand.stroke = am4core.color("#000");
+      // using chart.setTimeout method as the timeout will be disposed together with a chart
+      chart.setTimeout(randomValue, 2000);
+
+      // var label = chart.radarContainer.createChild(am4core.Label);
+      // label.isMeasured = false;
+      // label.fontSize = "3em";
+      // label.x = am4core.percent(50);
+      // label.paddingBottom = 30;
+      // label.horizontalCenter = "middle";
+      // label.verticalCenter = "bottom";
+      // //label.dataItem = data;
+      // label.text = PROYECCION;
+
+      // var label2 = chart.radarContainer.createChild(am4core.Label);
+      // label2.isMeasured = false;
+      // label2.fontSize = "2em";
+      // label2.horizontalCenter = "middle";
+      // label2.verticalCenter = "bottom";
+      // label2.text = GR_CARD_1_UNIDAD;
+      // label2.fill = am4core.color(matchingGrade.color);
+
+      //label.text = "{score}";
+      // label.fill = am4core.color(matchingGrade.color);
+
+      function randomValue() {
+        hand.showValue(porc, 1000, am4core.ease.cubicOut);
+        chart.setTimeout(randomValue, 2000);
+      }
+
+    }); // end am4core.ready()
+
+    return PROYECCION;
+  }
+
+
+  //**** GR CARD 1 */
+
+  const [GR_CARD_1_UNIDAD, setGR_CARD_1_UNIDAD] = useState('');
+  const [GR_CARD_1_PORCENTAJE, setGR_CARD_1_PORCENTAJE] = useState('');
+  const [GR_CARD_1_PORCENTAJE_MES_A, setGR_CARD_1_PORCENTAJE_MES_A] = useState('');
+
+
+  function GR_CARD_1(d) {
+
+    let datos = d["DATOS"]
+    let ESTE_ME_TOTAL_RETIRADAS = datos[0];
+    let ESTE_MES_COMPRADAS = datos[1];
+    let ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR = datos[2];
+    let MES_PASADO_TOTAL_RETIRADAS = datos[3];
+    let MES_PASADO_COMPRADAS = datos[4];
+    let MES_PASADO_RETIRADAS_COMPRADAS_MES_ANTERIOR = datos[5];
+
+    setGR_CARD_1_UNIDAD(ESTE_ME_TOTAL_RETIRADAS["UNIDAD"]);
+    $("#GR_CARD_1_TOTAL_MES").text(ESTE_ME_TOTAL_RETIRADAS["cantidad"] + " ");
+    $("#GR_CARD_1_TOTAL_MES_COMPRADO").text(ESTE_MES_COMPRADAS["cantidad"] + " ");
+    $("#GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT").text(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"] + " ");
+
+    let porc = ((parseFloat(ESTE_MES_COMPRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"]))
+      / (parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]))
+    ) * 100;
+    setGR_CARD_1_PORCENTAJE(parseFloat(isNaN(porc) ? 0 : porc).toFixed(2));
+
+    let porc_mes_a = (parseFloat(ESTE_MES_COMPRADAS["cantidad"]) - parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]) / parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]))
+    setGR_CARD_1_PORCENTAJE_MES_A(isNaN(porc_mes_a) ? 0 : porc_mes_a);
+
+
+
   }
 
   useEffect(() => {
@@ -923,9 +1085,9 @@ const Dashboard = () => {
     let fin_mes_a = moment(inicio_mes_a).endOf("month").format("YYYY-MM-DD");
     let inicio_mes_s = moment().add(1, "month").startOf("month").format("YYYY-MM-DD");
     let fin_mes_s = moment(inicio_mes_s).endOf("month").format("YYYY-MM-DD");
-    let check_producto = $("#check_producto").is(":checked") == false ? 0 : "p";
-    let check_guia = $("#check_guia").is(":checked") == false ? 0 : "g";
 
+    let check_producto = $("#check_producto").is(":checked") ? "p" : "TODO";
+    let check_guia = $("#check_guia").is(":checked") ? "g" : 0;
 
     let param = {
       inicio_mes: inicio_mes,
@@ -934,10 +1096,11 @@ const Dashboard = () => {
       fin_mes_a: fin_mes_a,
       inicio_mes_s: inicio_mes_s,
       fin_mes_s: fin_mes_s,
-      producto: "TODO",
-      tipo: check_producto
-    }
+      producto: "10016416",
+      tipo: check_guia
+    };
 
+    // $("#SEL_PRODUCTOS").val("10016416").change();
 
     setFECHA_INICIO(inicio_mes);
     setFECHA_FIN(fin_mes);
@@ -1261,8 +1424,8 @@ const Dashboard = () => {
 
 
       </div>
-
-      <div className='row g-4 g-xl-10'>
+      {/*  CARR GUIAS RETIRADAS */}
+      <div className='row g-4 g-xl-10 mb-3'>
 
         <div className='col-xl-4 mb-xl-10'>
           <div className="card card-flush h-xl-100">
@@ -1325,13 +1488,33 @@ const Dashboard = () => {
                   <hr className="my-1 border-dashed" />
 
                   <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR</div>
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR TOTAL</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
                       <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-bold fs-6 text-success"></span>
                     </div>
                   </div>
 
                   <hr className="my-1 border-dashed" />
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR CEMENTO</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_GT_POR_RETIRAR_CEMENTO' className="text-gray-900 fw-bold fs-6 "></span>
+                    </div>
+                  </div>
+
+                  <hr className="my-1 border-dashed" />
+
+                  <div className="d-flex flex-stack">
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR OTROS</div>
+                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                      <span id='CARD_GT_POR_RETIRAR_OTROS' className="text-gray-900 fw-bold fs-6 "></span>
+                    </div>
+                  </div>
+
+                  <hr className="my-1 border-dashed" />
+
+
                   {/* <div className="d-flex flex-stack">
                   <div className="col-6 text-gray-700 fw-semibold fs-6 me-2">RETIRADA SGTE MES</div>
                   <div className="col-5 text-gray-700 fw-semibold fs-6 text-end">
@@ -1386,7 +1569,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
@@ -1422,33 +1604,29 @@ const Dashboard = () => {
               </div>
             </div>
 
-
-
           </div>
 
           <div className='row mt-4'>
-
 
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
-                      <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"></span>
+                      <h5 className="card-title text-uppercase text-muted mb-0">PROYECCION</h5>
+                      <span id='CD_RECORD_PROYECCION' className="h2 font-weight-bold mb-0">0</span>
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-calendar2-week fs-3"></i>
                     </div>
                   </div>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span id='CD_RECORD_DIA_TOTAL' className="text-nowrap"></span>
-                  </p>
+                  <div id='chartdiv_proyeccion_g' style={{ height: 110, width: "100%" }}></div>
+
                 </div>
               </div>
             </div>
 
-            <div className="col-6">
+            <div className="col-6 d-none">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
                   <div className="row">
@@ -1476,35 +1654,111 @@ const Dashboard = () => {
       </div>
 
       <div className='row'>
+
+        {/* CARTTILLA PRODUCTO */}
+
         <div className='col-xl-3 col-sm-12'>
           <CCard className="mb-4">
             <CCardBody>
-
               <div className='col-lg-12 col-sm-12'>
                 <label className="required fs-6 fw-bold mb-2">Producto</label>
                 {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
                 <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
                 </select>
-
               </div>
-              
               <div className='col-lg-12 col-sm-6'>
                 <label className="required fs-6 fw-bold mb-2">Tipo</label>
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="radio" name='ra' role="switch"
-                    id="check_guia" defaultChecked
+                    id="check_guia" defaultChecked={TIPO_ESTADO}
                     onChange={CAMBIAR_MES} />
                   <label className="form-check-label fw-bold">Por guías</label>
                 </div>
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="radio" name='ra' role="switch"
-                    id="check_producto" 
+                    id="check_producto"
                     onChange={CAMBIAR_MES} />
                   <label className="form-check-label fw-bold" >Por cantidad</label>
                 </div>
-               
+              </div>
+              <hr className="my-1 border-dashed" />
+
+              <div className='col-12 mt-3 mb-3'>
+                <h6 className='card-title text-uppercase text-muted mb-2'>Retirado en el mes</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_TOTAL_MES'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+
+                <h6 className='card-title text-uppercase text-muted mb-2'>COMPRADO EN EL MES</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_TOTAL_MES_COMPRADO'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+
+                <h6 className='card-title text-uppercase text-muted mb-2'>COMPRADAS MES ANTERIOR</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+
+
+
+                <div className="clearfix">
+                  <div className="float-start">
+                    <strong>{GR_CARD_1_PORCENTAJE}%
+                    </strong>
+                  </div>
+                  <div className="float-end">
+                    <span className={GR_CARD_1_PORCENTAJE_MES_A > 0 ? "fs-6 fw-bold text-success" : "fs-6 fw-bold text-danger"}>
+                      {parseFloat(GR_CARD_1_PORCENTAJE_MES_A).toFixed(2)}%<CIcon icon={GR_CARD_1_PORCENTAJE_MES_A > 0 ? cilArrowTop : cilArrowBottom} />
+                    </span>
+                  </div>
+                </div>
+                <div className="progress progress-thin" role="progressbar" aria-valuenow="10"
+                  aria-valuemin="0" aria-valuemax="100">
+                  <div className="progress-bar bg-success" style={{ width: GR_CARD_1_PORCENTAJE + '%' }}>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="my-1 border-dashed" />
+
+              <div className='col-12 mt-3'>
+                <h6 className='card-title text-uppercase text-muted mb-2'>Promedio de retiros</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_PROMEDIO'>
+                    {parseFloat((isNaN(PROMEDIO_DESPACHO) ? 0 : PROMEDIO_DESPACHO)).toFixed(0)}
+                  </span>
+                  <span className='text-muted fs-6'>
+                    {' '}{GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
 
               </div>
+
+              <hr className="my-1 border-dashed" />
+
+              <div className='col-12 mt-3'>
+                <h6 className='card-title text-uppercase text-muted mb-2'>Proyeccion</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_PROMEDIO'>
+                    {parseFloat((isNaN(PORYECCION_DESPACHO) ? 0 : PORYECCION_DESPACHO)).toFixed(0)}
+                  </span>
+                  <span className='text-muted fs-6'>
+                    {' '}{GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+                <div id='chartdiv_proyeccion' style={{ height: 142 }}></div>
+
+              </div>
+
 
             </CCardBody>
           </CCard>
@@ -1523,21 +1777,6 @@ const Dashboard = () => {
                   <div className="small text-medium-emphasis fw-bold">{moment(FECHA_INICIO).format("MMMM DD, YYYY")} - {moment(FECHA_FIN).format("MMMM DD, YYYY")}</div>
                 </CCol>
                 <CCol sm={5} className="d-none d-md-block">
-                  {/* <CButton color="primary" className="float-end">
-                <CIcon icon={cilCloudDownload} />
-              </CButton> */}
-                  {/* <CButtonGroup className="float-end me-3">
-                {['Dia', 'Mes', 'Año'].map((value) => (
-                  <CButton
-                    color="outline-secondary"
-                    key={value}
-                    className="mx-0"
-                    active={value === 'Dia'}
-                  >
-                    {value}
-                  </CButton>
-                ))}
-              </CButtonGroup> */}
                   <div className="btn-group float-end" role="group" aria-label="Basic example">
                     <button onClick={() => {
                       POR_DIA(DATOS_GR_DIA);
@@ -1551,11 +1790,11 @@ const Dashboard = () => {
                   </div>
                 </CCol>
               </CRow>
-              <div id='GRAFICO_DIARIO' style={{ height: 450 }}></div>
+              <div id='GRAFICO_DIARIO' style={{ height: 650 }}></div>
 
             </CCardBody>
-            <CCardFooter>
-              <CRow xs={{ cols: 3 }} md={{ cols: 3 }} className="text-center">
+            <CCardFooter className="d-none">
+              <CRow xs={{ cols: 3 }} md={{ cols: 3 }} className="text-center d-non">
                 {/* {progressExample.map((item, index) =>({443}%) ( */}
                 <CCol className="mb-sm-2 mb-0" >
                   <div className="fs-7">PROMEDIO DESPACHO</div>
