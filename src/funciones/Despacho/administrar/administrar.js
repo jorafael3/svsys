@@ -1,4 +1,7 @@
 import * as fun from "../../../config/config"
+import $, { ajax } from 'jquery';
+import moment from 'moment';
+
 var URL = "despacho/"
 
 
@@ -86,6 +89,31 @@ function Guardar_Factura(param, callback) {
     });
 }
 
+/// GUIAS RETIRADAS
+
+function Cargar_Guias_Retiradas_Vigentes(param, callback) {
+    let url = URL + 'Cargar_Guias_retiradas_Vigentes'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        console.log('x: ', x);
+        callback(x);
+    });
+}
+function Cargar_Guias_retiradas_Entregas(param, callback) {
+    let url = URL + 'Cargar_Guias_retiradas_Entregas'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        console.log('x: ', x);
+        callback(x);
+    });
+}
+
+function Cargar_Guias_retiradas_No_Ingresadas(param, callback) {
+    let url = URL + 'Cargar_Guias_retiradas_No_Ingresadas'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        console.log('x: ', x);
+        callback(x);
+    });
+}
+
 
 
 export {
@@ -99,5 +127,8 @@ export {
     Obtener_Parametros,
     Guardar_Factura,
     Cargar_facturas_Pedido,
-    Guias_En_Proceso
+    Guias_En_Proceso,
+    Cargar_Guias_Retiradas_Vigentes,
+    Cargar_Guias_retiradas_Entregas,
+    Cargar_Guias_retiradas_No_Ingresadas,
 };

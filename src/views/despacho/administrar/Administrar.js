@@ -22,6 +22,7 @@ function Administrar() {
     const [visible_h, setVisible_h] = useState(false);
     const [visible_f, setVisible_f] = useState(false);
     const [barra_visible, setbarra_visible] = useState(false);
+    const [Guias_Retiradas_Form, setGuias_Retiradas_Form] = useState(true);
 
 
     //*********** DATOS DETALLE*/
@@ -61,48 +62,60 @@ function Administrar() {
     function Cargar_Datos() {
         let FECHA_INI = $("#AD_FECHA_INI").val();
         let FECHA_FIN = $("#AD_FECHA_FIN").val();
+        let POR_RETIRO = $("#flexSwitchCheckDefault").is(":checked") == true ? 1 : 0;
+        console.log('POR_RETIRO: ', POR_RETIRO);
+
         // let ESTADO = $("#SEL_ESTADO_PEDIDO").val();
         let param = {
             FECHA_INI: moment(FECHA_INI).format("YYYYMMDD"),
             FECHA_FIN: moment(FECHA_FIN).format("YYYYMMDD")
         }
 
-        let DATOS = funciones.Cargar_Guias_Sin_Despachar(param, function (x) {
-            Tabla_guias_sin_despachar(x)
-        });
-        funciones.Guias_Despachadas_General(param, function (x) {
+        if (POR_RETIRO == 0) {
+            let DATOS = funciones.Cargar_Guias_Sin_Despachar(param, function (x) {
+                Tabla_guias_sin_despachar(x)
+            });
+            funciones.Guias_Despachadas_General(param, function (x) {
 
-            let Estado = $("#GUI_DES_ESTADO").val();
-            let Chofer = $("#GUI_DES_CHOFERES").val();
+                let Estado = $("#GUI_DES_ESTADO").val();
+                let Chofer = $("#GUI_DES_CHOFERES").val();
 
 
-            let datafiltrada;
-            if (Estado == "") {
-                datafiltrada = x
-            } else {
-                datafiltrada = x.filter(item => item.ESTADO_DESPACHO == Estado);
-            }
+                let datafiltrada;
+                if (Estado == "") {
+                    datafiltrada = x
+                } else {
+                    datafiltrada = x.filter(item => item.ESTADO_DESPACHO == Estado);
+                }
 
-            if (Chofer == "" || Chofer == null) {
+                if (Chofer == "" || Chofer == null) {
 
-            } else {
-                datafiltrada = datafiltrada.filter(item => item.usuario_id == Chofer);
-            }
+                } else {
+                    datafiltrada = datafiltrada.filter(item => item.usuario_id == Chofer);
+                }
 
-            Tabla_guias_despachadas_general(datafiltrada);
-            if (filtro_chofer_state == 0) {
-                setfiltro_chofer_state(1);
-                Cargar_Filtro_Choferes(x);
-            }
-        });
+                Tabla_guias_despachadas_general(datafiltrada);
+                if (filtro_chofer_state == 0) {
+                    setfiltro_chofer_state(1);
+                    Cargar_Filtro_Choferes(x);
+                }
+            });
 
-        funciones.Guias_En_Proceso(param, function (x) {
-            console.log('x: ', x);
-            Cargar_Guias_Proceso_Despacho(x);
-            var VAL = x.reduce((sum, value) => (sum + parseFloat(value.POR_DESPACHAR)), 0);
-            setPRO_SACOS_POR_DESP(VAL);
-        })
-        setbarra_visible(true);
+            funciones.Guias_En_Proceso(param, function (x) {
+                console.log('x: ', x);
+                Cargar_Guias_Proceso_Despacho(x);
+                var VAL = x.reduce((sum, value) => (sum + parseFloat(value.POR_DESPACHAR)), 0);
+                setPRO_SACOS_POR_DESP(VAL);
+            })
+            setGuias_Retiradas_Form(false);
+            setbarra_visible(true);
+        } else {
+            setbarra_visible(false);
+            setGuias_Retiradas_Form(true);
+            Cargar_Guias_Retiradas();
+        }
+
+
     }
 
     //****** GUIAS SIN DESPACHAR ******/
@@ -952,22 +965,22 @@ function Administrar() {
         var total = datos.reduce(function (acc, obj) { return acc + parseFloat(obj.factura_total); }, 0);
 
         let tabla = `
-        <table id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS' class='table display table-striped' style="width:100%">
-            <tfoot>
-                <tr>
-                    <th style="font-size: 16px;" class="font-weight-bolder ">TOTAL</th>
-                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
-                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
-                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
-                    <th style="font-size: 16px;" class="font-weight-bolder "></th>
-                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_0).toFixed(2) + `</th>
-                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_12).toFixed(2) + `</th>
-                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(imp).toFixed(2) + `</th>
-                    <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(total).toFixed(2) + `</th>
-                </tr>
-            </tfoot>
-        </table>
-        `;
+            <table id='DES_TABLA_GUIAS_DESPACHADAS_FACTURAS' class='table display table-striped' style="width:100%">
+                <tfoot>
+                    <tr>
+                        <th style="font-size: 16px;" class="font-weight-bolder ">TOTAL</th>
+                        <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                        <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                        <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                        <th style="font-size: 16px;" class="font-weight-bolder "></th>
+                        <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_0).toFixed(2) + `</th>
+                        <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(sub_12).toFixed(2) + `</th>
+                        <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(imp).toFixed(2) + `</th>
+                        <th style="font-size: 16px;" class="font-weight-bolder ">$`+ parseFloat(total).toFixed(2) + `</th>
+                    </tr>
+                </tfoot>
+            </table>
+            `;
 
         $('#DES_TABLA_GUIAS_DESPACHADAS_FACTURAS_SECC').append(tabla);
 
@@ -1113,10 +1126,287 @@ function Administrar() {
         let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
         $("#AD_FECHA_INI").val(inicio_mes);
         $("#AD_FECHA_FIN").val(hoy);
+        setGuias_Retiradas_Form(true);
+        Cargar_Guias_Retiradas();
     }, []);
     function ajustar(item) {
         Cargar_Datos();
     }
+
+
+    //******************************************************************** */
+    //******************************************************************** */
+    //******************************************************************** */
+    //** GUIAS RETIRADAS */
+
+    const [DATOS_RETIRADAS, setDATOS_RETIRADAS] = useState([]);
+
+
+    function Cargar_Guias_Retiradas() {
+        let f_ini = $("#AD_FECHA_INI").val();
+        let f_fin = $("#AD_FECHA_FIN").val();
+        let Estado = $("#ESTADO_RETIRADAS").val() == undefined ? 1 : $("#ESTADO_RETIRADAS").val();
+
+        let param = {
+            inicio_mes: f_ini,
+            fin_mes: f_fin,
+            Estado: Estado
+        }
+        console.log('param: ', param);
+        if ($.fn.dataTable.isDataTable('#AD_TABLA_GUIAS_RETIRADAS')) {
+            $('#AD_TABLA_GUIAS_RETIRADAS').DataTable().destroy();
+            $('#AD_TABLA_GUIAS_RETIRADAS_SECC').empty();
+        }
+        let tabla = `
+            <table id='AD_TABLA_GUIAS_RETIRADAS' class='table table-striped'>
+
+            </table>
+        `;
+        $('#AD_TABLA_GUIAS_RETIRADAS_SECC').append(tabla);
+        $('#MEN_NO_RETIRADAS').text("");
+        if (Estado == 1) {
+            funciones.Cargar_Guias_Retiradas_Vigentes(param, function (x) {
+                // Tabla_Cargar_facturas_Pedido(x);
+                Tabla_Retiradas_Vigentes(x);
+            })
+        } else if (Estado == 2) {
+            funciones.Cargar_Guias_retiradas_Entregas(param, function (x) {
+                // Tabla_Cargar_facturas_Pedido(x);
+                Tabla_Retiradas_Entregas(x);
+            })
+        } else if (Estado == 3) {
+           
+            $('#MEN_NO_RETIRADAS').text("* La guias se retiraron pero no estan ingresadas");
+            funciones.Cargar_Guias_retiradas_No_Ingresadas(param, function (x) {
+                // Tabla_Cargar_facturas_Pedido(x);
+                Tabla_Retiradas_No_Ingresadas(x);
+            })
+        }
+    }
+
+    function Tabla_Retiradas_Vigentes(datos) {
+
+        let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            // "pageLength": 5,
+            order: [[0, "desc"]],
+            columns: [{
+                data: "FECHA_DE_EMISION",
+                title: "FECHA_DE_EMISION",
+            },
+            {
+                data: "PEDIDO_INTERNO",
+                title: "PEDIDO_INTERNO"
+            },
+            {
+                data: "FECHA_VALIDEZ",
+                title: "FECHA_VALIDEZ"
+            }, {
+                data: "VENCIDO",
+                title: "VENCIDO",
+                render: function (x, y, r) {
+                    const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
+
+                    if (x == 1) {
+                        x = `
+                        <span class="text-success">Vigente</span><br>
+                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                        <span class="text-muted">`+ diferenciaEnDias + ` días </span>
+                        `
+                    } else {
+                        x = `
+                        <span class="text-danger">Vencida</span><br>
+                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
+                        <span class="text-muted">`+ diferenciaEnDias + ` días</span>
+                        `
+                    }
+                    return x;
+                }
+            },
+            {
+                data: null,
+                title: "DETALLES",
+                className: "btn_detalle text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_detalle btn btn-warning"><i class="bi bi-receipt-cutoff fw-bold fs-4"></i></button>',
+                orderable: "",
+                width: 20
+            }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(8).addClass("fw-bold fs-6");
+
+            },
+        });
+
+        $('#AD_TABLA_GUIAS_RETIRADAS').on('click', 'td.btn_detalle', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            setVisible2(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
+            }
+            funciones.Cargar_Guias_Sin_Despachar_detalle(param, function (x) {
+                Tabla_guias_sin_despachar_detalles(x)
+            })
+        });
+    }
+
+    function Tabla_Retiradas_Entregas(datos) {
+        console.log('datos: ', datos);
+
+        let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            // "pageLength": 5,
+            order: [[0, "desc"]],
+            columns: [{
+                data: "FECHA_DE_EMISION",
+                title: "FECHA_DE_EMISION",
+            },
+            {
+                data: "FECHA_SALE_PLANTA",
+                title: "FECHA DE RETIRO",
+                render: function (x, y, r) {
+                    const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
+
+                    x = `
+                        <span class="text-muted">`+ moment(x).format("YYYY-MM-DD") + `</span><br>
+                        <span class="text-muted">`+ moment(x).format("hh:mm") + ` </span>
+                        `
+                    return x;
+                }
+            },
+            {
+                data: "PEDIDO_INTERNO",
+                title: "PEDIDO_INTERNO"
+            }, {
+                data: "Nombre",
+                title: "RETIRADO POR",
+
+            }, {
+                data: "placa",
+                title: "PLACA",
+            },
+            {
+                data: null,
+                title: "DETALLES",
+                className: "btn_detalle text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_detalle btn btn-warning"><i class="bi bi-receipt-cutoff fw-bold fs-4"></i></button>',
+                orderable: "",
+                width: 20
+            }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(8).addClass("fw-bold fs-6");
+
+            },
+        });
+
+        $('#AD_TABLA_GUIAS_RETIRADAS').on('click', 'td.btn_detalle', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            setVisible2(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
+            }
+            funciones.Cargar_Guias_Sin_Despachar_detalle(param, function (x) {
+                Tabla_guias_sin_despachar_detalles(x)
+            })
+        });
+    }
+
+    function Tabla_Retiradas_No_Ingresadas(datos) {
+        console.log('datos: ', datos);
+
+        let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'rtip',
+            // "pageLength": 5,
+            order: [[0, "desc"]],
+            columns: [
+                {
+                    data: "FECHA_SALE_PLANTA",
+                    title: "FECHA DE RETIRO",
+                    render: function (x, y, r) {
+                        const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
+
+                        x = `
+                        <span class="text-muted">`+ moment(x).format("YYYY-MM-DD") + `</span><br>
+                        <span class="text-muted">`+ moment(x).format("hh:mm") + ` </span>
+                        `
+                        return x;
+                    }
+                },
+                {
+                    data: "pedido_interno",
+                    title: "PEDIDO_INTERNO"
+                }, {
+                    data: "Nombre",
+                    title: "RETIRADO POR",
+
+                }, {
+                    data: "placa",
+                    title: "PLACA",
+                },
+                {
+                    data: null,
+                    title: "DETALLES",
+                    className: "btn_detalle text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                    defaultContent: '<button type="button" class="btn_detalle btn btn-warning"><i class="bi bi-receipt-cutoff fw-bold fs-4"></i></button>',
+                    orderable: "",
+                    width: 20
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-6");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(8).addClass("fw-bold fs-6");
+
+            },
+        });
+
+        $('#AD_TABLA_GUIAS_RETIRADAS').on('click', 'td.btn_detalle', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            setVisible2(true);
+            setPedido(data["PEDIDO_INTERNO"]);
+            let param = {
+                PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
+            }
+            funciones.Cargar_Guias_Sin_Despachar_detalle(param, function (x) {
+                Tabla_guias_sin_despachar_detalles(x)
+            })
+        });
+    }
+
+
+
+
 
     return (
         <CRow>
@@ -1147,6 +1437,16 @@ function Administrar() {
                                 </div>
                                 <div className="col-md-3">
                                     <button onClick={Cargar_Datos} className='btn btn-success text-light fw-bold mt-4'><i className="bi bi-search fw-bold fs-5"></i></button>
+                                </div>
+                            </div>
+                            <div className='mt-3 m-3'>
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input fs-5" name='a' type="radio" id="flexSwitchCheckDefault" defaultChecked />
+                                    <label className="form-check-label fw-bold" >Por Retiro de planta</label>
+                                </div>
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input fs-5" name='a' type="radio" id="flexSwitchCheckChecked" />
+                                    <label className="form-check-label fw-bold">Por despacho</label>
                                 </div>
                             </div>
                         </div>
@@ -1243,6 +1543,28 @@ function Administrar() {
                                 </div>
                             )
                         }
+                        {
+                            Guias_Retiradas_Form == true && (
+
+
+                                <div className='col-12 mt-4'>
+                                    <div className='col-4'>
+                                        <select onChange={Cargar_Guias_Retiradas} className='form-select' id='ESTADO_RETIRADAS'>
+                                            <option value="1" className='fs-4 fw-bold'>Vigentes</option>
+                                            <option value="2" className='fs-4 fw-bold'>Retiradas</option>
+                                            <option value="3" className='text-danger fs-4 fw-bold'>No ingresadas !</option>
+                                        </select>
+                                    </div>
+                                    <h4 className='text-danger fw-bold mt-2' id='MEN_NO_RETIRADAS'></h4>
+                                    <div className='table-responsive mt-3' id='AD_TABLA_GUIAS_RETIRADAS_SECC'>
+                                        <table id='AD_TABLA_GUIAS_RETIRADAS' className='table table-striped'>
+
+                                        </table>
+                                    </div>
+                                </div>
+                            )
+                        }
+
                         <CModal size="xl" id='AD_MODAL_DETALLES' backdrop="static" visible={visible} onClose={() => setVisible(false)}>
                             <CModalHeader>
                                 <CModalTitle>DETALLES</CModalTitle>
