@@ -17,22 +17,25 @@ import { cilBell, cilEnvelopeOpen, cilList, cilMenu } from '@coreui/icons'
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
 import { logo } from 'src/assets/brand/logo'
+import  loim  from '../../src/assets/images/logo2.png'
 
 const AppHeader = () => {
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
   return (
-    <CHeader position="sticky" className="mb-4">
-      <CContainer fluid>
+    <CHeader position="sticky" className="mb-4" >
+      <CContainer fluid style={{backgroundColor:"#566573"}}>
         <CHeaderToggler
-          className="ps-1"
+          className="ps-1 text-light fw-bold"
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
         <CHeaderBrand className="mx-auto d-md-none" to="/">
-          <CIcon icon={logo} height={48} alt="Logo" />
+          {/* <CIcon icon={loim} height={48} alt="Logo" /> */}
+        <img src={loim} style={{width:200}} alt="SvSys" />
+
         </CHeaderBrand>
         <CHeaderNav className="d-none d-md-flex me-auto">
           {/* <CNavItem>

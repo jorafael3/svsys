@@ -7,11 +7,13 @@ import * as fun from "../funciones/login/login"
 const host = window.location.hostname;
 // const host = "192.168.0.104";
 const protocol = window.location.protocol;
-const port = ":80";
+const port = ":8080";
 
-const URL = protocol + "//" + host + port + "/svsysback/"
+// const URL = protocol + "//" + host + port + "/svsysback/"
+// const URL ="http://" + "127.0.0.1" + port + "/svsysback/"
+// const URL ="../svsysback/"
 // const URL = "http://192.168.0.104:8080/svsysback/"
-// const URL = "https://salvacero.com.ec/svsysback/"
+const URL = "https://salvacero.com.ec/svsysback/"
 
 // https://lcaimport.com/svsysback/usuarios/Validar_Usuario_movil
 

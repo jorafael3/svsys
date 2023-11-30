@@ -574,10 +574,12 @@ const Dashboard = () => {
 
       // Create chart
       var chart = am4core.create("GRAFICO_DIARIO", am4charts.XYChart);
-
+      chart.width = am4core.percent(100);
+      chart.height = am4core.percent(100);
       chart.data = datos;
       // 
-
+      chart.responsive.enabled = true;
+      chart.padding(20, 20, 20, 20);
       var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
       dateAxis.renderer.grid.template.location = 0;
       dateAxis.renderer.labels.template.fill = am4core.color("#4680ff");
@@ -1072,7 +1074,7 @@ const Dashboard = () => {
     $("#GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT").text(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"] + " ");
     $("#GR_CARD_1_POR_RETIRAR").text(POR_RETIRAR["cantidad"] + " ");
 
-    
+
 
     let RET = parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"])
     let TOT = parseFloat(ESTE_MES_COMPRADAS["cantidad"]);
@@ -1090,6 +1092,13 @@ const Dashboard = () => {
 
 
   }
+
+  const [chartContainerHeight, setChartContainerHeight] = useState(650);
+
+  const adjustChartContainerSize = () => {
+    const newHeight = window.innerWidth <= 768 ? 400 : 650;
+    setChartContainerHeight(newHeight);
+  };
 
   useEffect(() => {
     let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
@@ -1141,7 +1150,13 @@ const Dashboard = () => {
     };
 
     flatpickr('#myDatePicker', options);
+    adjustChartContainerSize();
+    window.addEventListener('resize', adjustChartContainerSize);
 
+    // Limpieza del evento al desmontar el componente
+    return () => {
+      window.removeEventListener('resize', adjustChartContainerSize);
+    };
   }, []);
 
 
@@ -1683,13 +1698,13 @@ const Dashboard = () => {
                 <label className="required fs-6 fw-bold mb-2">Tipo</label>
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="radio" name='ra' role="switch"
-                    id="check_guia" defaultChecked={TIPO_ESTADO}
+                    id="check_guia"
                     onChange={CAMBIAR_MES} />
                   <label className="form-check-label fw-bold">Por guías</label>
                 </div>
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="radio" name='ra' role="switch"
-                    id="check_producto"
+                    id="check_producto" defaultChecked={TIPO_ESTADO}
                     onChange={CAMBIAR_MES} />
                   <label className="form-check-label fw-bold" >Por cantidad</label>
                 </div>
@@ -1826,12 +1841,11 @@ const Dashboard = () => {
                   </div>
                 </CCol>
               </CRow>
-              <div className='mt-5' id='GRAFICO_DIARIO' style={{ height: 650 }}></div>
+              <div className='mt-5' id='GRAFICO_DIARIO' style={{ height: chartContainerHeight }}></div>
 
             </CCardBody>
-            <CCardFooter className="d-none">
+            {/* <CCardFooter className="d-none">
               <CRow xs={{ cols: 3 }} md={{ cols: 3 }} className="text-center d-non">
-                {/* {progressExample.map((item, index) =>({443}%) ( */}
                 <CCol className="mb-sm-2 mb-0" >
                   <div className="fs-7">PROMEDIO DESPACHO</div>
                   <strong className='fs-5'>
@@ -1846,10 +1860,8 @@ const Dashboard = () => {
                   </strong>
                   <CProgress thin className="mt-2" color={"danger"} value={2222} />
                 </CCol>
-                {/* ))} */}
               </CRow>
-
-            </CCardFooter>
+            </CCardFooter> */}
           </CCard>
         </div>
 
