@@ -234,12 +234,14 @@ const Dashboard = () => {
 
 
     des.Cargar_Stats(param, function (x) {
+      console.log('x: ', x);
 
 
       let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
       let CARD_CHOFER_MAS_RET = x["CARD_CHOFER_MAS_RETIROS"];
       let CARD_DIA_RECOR = x["CARD_DIA_RECORD"];
       let GUIAS_RETIRADAS_POR_DIA = x["GUIAS_RETIRADAS_POR_DIA"];
+
       let GUIAS_RETIRADAS_POR_MES = x["GUIAS_RETIRADAS_POR_MES"];
       let GR_CAR_1 = x["GR_CARD_1"];
 
@@ -294,9 +296,9 @@ const Dashboard = () => {
 
     setCAR_GT_PORCENTAJE(parseFloat(por).toFixed(2));
     let total_pr = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"])
-    console.log('total_pr: ', total_pr);
+
     let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion_g");
-    console.log('p: ', p);
+
     setTimeout(() => {
       $("#CD_RECORD_PROYECCION").text(p);
 
@@ -464,6 +466,7 @@ const Dashboard = () => {
 
   function POR_DIA(datos) {
 
+
     let MES_ACTUAL = datos["DATOS"].filter(item => item.MES == "MES_ACT");
     let MES_ANTERIOR = datos["DATOS"].filter(item => item.MES == "MES_ANT");
     setDATOS_GR_DIA(datos);
@@ -548,6 +551,7 @@ const Dashboard = () => {
 
 
 
+
     am4core.ready(function () {
 
       let datos_ant = datos.filter(item => item.MES == "MES_ACT" && item.cantidad > 0);
@@ -558,9 +562,9 @@ const Dashboard = () => {
 
 
       var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
-      
+
       let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion");
-      
+
 
 
 
@@ -1060,18 +1064,27 @@ const Dashboard = () => {
     let MES_PASADO_TOTAL_RETIRADAS = datos[3];
     let MES_PASADO_COMPRADAS = datos[4];
     let MES_PASADO_RETIRADAS_COMPRADAS_MES_ANTERIOR = datos[5];
+    let POR_RETIRAR = datos[6];
 
     setGR_CARD_1_UNIDAD(ESTE_ME_TOTAL_RETIRADAS["UNIDAD"]);
     $("#GR_CARD_1_TOTAL_MES").text(ESTE_ME_TOTAL_RETIRADAS["cantidad"] + " ");
     $("#GR_CARD_1_TOTAL_MES_COMPRADO").text(ESTE_MES_COMPRADAS["cantidad"] + " ");
     $("#GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT").text(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"] + " ");
+    $("#GR_CARD_1_POR_RETIRAR").text(POR_RETIRAR["cantidad"] + " ");
 
-    let porc = ((parseFloat(ESTE_MES_COMPRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"]))
-      / (parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]))
-    ) * 100;
+    
+
+    let RET = parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"])
+    let TOT = parseFloat(ESTE_MES_COMPRADAS["cantidad"]);
+
+    $("#GR_CARD_1_TOTAL_RETIRADO").text(RET + " ");
+    let porc = ((RET) / TOT) * 100;
+
     setGR_CARD_1_PORCENTAJE(parseFloat(isNaN(porc) ? 0 : porc).toFixed(2));
 
-    let porc_mes_a = (parseFloat(ESTE_MES_COMPRADAS["cantidad"]) - parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]) / parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]))
+    let RET_A = parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]);
+
+    let porc_mes_a = ((RET - RET_A) / RET_A) * 100
     setGR_CARD_1_PORCENTAJE_MES_A(isNaN(porc_mes_a) ? 0 : porc_mes_a);
 
 
@@ -1587,13 +1600,13 @@ const Dashboard = () => {
                   <p className="mb-0 fw-bold mt-2">Cemento Holcim Fuerte Tipo GU 50Kg</p>
 
                   <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">RECORD GENERAL {CAR_DR_F_GEN}</div>
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">GENERAL {CAR_DR_F_GEN}</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
                       <span id='CARD_DIAR_GENERAL' className="text-gray-900 fw-semibold fs-6">0</span>
                     </div>
                   </div>
                   <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">RECORD MES {CAR_DR_F_MES}</div>
+                    <div className="col-9 small text-medium-emphasis fw-bold me-2">MES {CAR_DR_F_MES}</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
                       <span id='CARD_DIAR_MES' className="text-gray-900 fw-semibold fs-6">0</span>
                     </div>
@@ -1684,13 +1697,6 @@ const Dashboard = () => {
               <hr className="my-1 border-dashed" />
 
               <div className='col-12 mt-3 mb-3'>
-                <h6 className='card-title text-uppercase text-muted mb-2'>Retirado en el mes</h6>
-                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                  <span id='GR_CARD_1_TOTAL_MES'>0</span>
-                  <span className='text-muted fs-6'>
-                    {GR_CARD_1_UNIDAD}
-                  </span>
-                </h6>
 
                 <h6 className='card-title text-uppercase text-muted mb-2'>COMPRADO EN EL MES</h6>
                 <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
@@ -1699,8 +1705,19 @@ const Dashboard = () => {
                     {GR_CARD_1_UNIDAD}
                   </span>
                 </h6>
+                <hr className="my-1 border-dashed" />
 
-                <h6 className='card-title text-uppercase text-muted mb-2'>COMPRADAS MES ANTERIOR</h6>
+                <h6 className='card-title text-uppercase text-muted mb-2'>Retirado en el mes</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_TOTAL_MES'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+
+                <hr className="my-1 border-dashed" />
+
+                <h6 className='card-title text-uppercase text-muted mb-2'>RETIRADO DEL MES ANTERIOR</h6>
                 <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
                   <span id='GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT'>0</span>
                   <span className='text-muted fs-6'>
@@ -1708,9 +1725,28 @@ const Dashboard = () => {
                   </span>
                 </h6>
 
+                <hr className="my-1 border-dashed" />
 
+                <h6 className='card-title text-uppercase text-muted mb-2'>TOTAL RETIRADO</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_TOTAL_RETIRADO'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
+
+                <hr className="my-1 border-dashed" />
+
+                <h6 className='card-title text-uppercase text-muted mb-2'>POR RETIRAR</h6>
+                <h6 className="fs-4 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                  <span id='GR_CARD_1_POR_RETIRAR'>0</span>
+                  <span className='text-muted fs-6'>
+                    {GR_CARD_1_UNIDAD}
+                  </span>
+                </h6>
 
                 <div className="clearfix">
+                  <h6>Completado</h6>
                   <div className="float-start">
                     <strong>{GR_CARD_1_PORCENTAJE}%
                     </strong>
@@ -1771,12 +1807,12 @@ const Dashboard = () => {
 
               <CRow>
                 <CCol sm={7}>
-                  <h5 id="traffic" className="card-title mb-0">
+                  <h5 id="traffic" className="card-title mb-0 mt-1">
                     {cantidad_cemento_mes_pr}
                   </h5>
                   <div className="small text-medium-emphasis fw-bold">{moment(FECHA_INICIO).format("MMMM DD, YYYY")} - {moment(FECHA_FIN).format("MMMM DD, YYYY")}</div>
                 </CCol>
-                <CCol sm={5} className="d-none d-md-block">
+                <CCol sm={5} className="d-none d-md-block mt-1">
                   <div className="btn-group float-end" role="group" aria-label="Basic example">
                     <button onClick={() => {
                       POR_DIA(DATOS_GR_DIA);
@@ -1790,7 +1826,7 @@ const Dashboard = () => {
                   </div>
                 </CCol>
               </CRow>
-              <div id='GRAFICO_DIARIO' style={{ height: 650 }}></div>
+              <div className='mt-5' id='GRAFICO_DIARIO' style={{ height: 650 }}></div>
 
             </CCardBody>
             <CCardFooter className="d-none">
