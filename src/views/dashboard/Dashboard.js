@@ -215,6 +215,9 @@ const Dashboard = () => {
   const [PROMEDIO_DESPACHO, setPROMEDIO_DESPACHO] = useState(0);
   const [PORYECCION_DESPACHO, setPORYECCION_DESPACHO] = useState(0);
 
+  const [IS_CANTIDAD, setIS_CANTIDAD] = useState(true);
+
+
 
   function Cargar_Productos() {
     des.Cargar_Produts(function (x) {
@@ -234,7 +237,7 @@ const Dashboard = () => {
 
 
     des.Cargar_Stats(param, function (x) {
-      console.log('x: ', x);
+
 
 
       let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
@@ -267,6 +270,11 @@ const Dashboard = () => {
   }
 
   const [CAR_GT_PORCENTAJE, setCAR_GT_PORCENTAJE] = useState(0);
+  const [CAR_GT_MOS_G_POR_RETIRAR, setCAR_GT_MOS_G_POR_RETIRAR] = useState(false);
+  const [CAR_GT_MOS_OTROS, setCAR_GT_MOS_OTROS] = useState(false);
+  const [CAR_GT_UNIDAD, setCAR_GT_UNIDAD] = useState("");
+  const [CAR_GT_G_POR_RETIRAR, setCAR_GT_G_POR_RETIRAR] = useState("");
+  const [CAR_GT_G_OTROS, setCAR_GT_G_OTROS] = useState("");
 
 
   function CARD_GUIAS_TOTALES(datos) {
@@ -281,8 +289,23 @@ const Dashboard = () => {
     let GUIAS_RETIRADAS_NO_INGRESADAS = DATOS[6];
     let POR_RETIRAR_CEMENTO = DATOS[7];
     let POR_RETIRAR_OTROS = DATOS[8];
+    let UNIDAD = DATOS[9]["cantidad"];
 
-    $("#CARD_GT_TOTAL").text(parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]) + parseInt(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"]));
+
+    setCAR_GT_UNIDAD(UNIDAD);
+    if (UNIDAD == "SAC") {
+
+      let TOTAL = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"])
+      $("#CARD_GT_TOTAL").text(TOTAL);
+      setCAR_GT_MOS_G_POR_RETIRAR(false);
+      setCAR_GT_MOS_OTROS(false);
+    } else {
+      let TOTAL = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]) + parseInt(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"])
+      $("#CARD_GT_TOTAL").text(TOTAL);
+      setCAR_GT_MOS_G_POR_RETIRAR(true);
+      setCAR_GT_MOS_OTROS(true);
+    }
+
     $("#CARD_GT_RETIRADAS_MES_ANT").text(CORRESPONDEN_AL_MES_PASADO["cantidad"]);
     $("#CARD_GT_RETIRADAS_ESTE_MES").text(RETIRADAS_ESTE_MES["cantidad"]);
     $("#CARD_GT_COMPRADAS").text(GUIAS_EMITIDAS_MES_TOTAL["cantidad"]);
@@ -291,17 +314,24 @@ const Dashboard = () => {
     $("#CARD_GT_POR_RETIRAR_CEMENTO").text(POR_RETIRAR_CEMENTO["cantidad"]);
     $("#CARD_GT_POR_RETIRAR_OTROS").text(POR_RETIRAR_OTROS["cantidad"]);
 
-    let por = ((parseFloat(RETIRADAS_ESTE_MES["cantidad"]) - parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])) / parseFloat(parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"])))
-    por = por * 100
+    setCAR_GT_G_POR_RETIRAR(RESTANTE_DE_RETIRAR["cantidad"])
+    setCAR_GT_G_OTROS(POR_RETIRAR_OTROS["cantidad"])
 
-    setCAR_GT_PORCENTAJE(parseFloat(por).toFixed(2));
+
+
+    let RET_A = parseFloat(RETIRADAS_MES_ANTERIOR["cantidad"]);
+
+    let RET = parseFloat(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]);
+    let porc_mes_a = ((RET - RET_A) / RET_A) * 100
+
+    setCAR_GT_PORCENTAJE(parseFloat(porc_mes_a).toFixed(2));
+
+
     let total_pr = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"])
 
-    let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion_g");
-
+    let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion_g")
     setTimeout(() => {
-      $("#CD_RECORD_PROYECCION").text(p);
-
+      $("#CD_RECORD_PROYECCION").text(parseInt(p));
     }, 500);
 
     // let gr = datos["GRAFICO"];
@@ -332,32 +362,74 @@ const Dashboard = () => {
 
   }
 
+  const [CAR_CHOFER_MOSTRAR_SAC, setCAR_CHOFER_MOSTRAR_SAC] = useState(false);
+  const [CAR_CHOFER_SAC, setCAR_CHOFER_SAC] = useState("");
+  const [CAR_CHOFER_GUIAS, setCAR_CHOFER_GUIAS] = useState("");
+
+
   function CARD_CHOFER_MAS_RETIROS(datos) {
     let DATOS = datos["DATOS"];
 
+    if (DATOS.length > 0) {
+      if (DATOS[0]["unidad"] == "SAC") {
+        $("#CARD_CHOFER_TOTAL").text(DATOS[0]["SACOS_CEMENTO"]);
+        setCAR_CHOFER_MOSTRAR_SAC(false)
+      } else {
+        $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
+        setCAR_CHOFER_MOSTRAR_SAC(true)
+      }
 
-    $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
-    $("#CARD_CHOFER_SACOS").text(DATOS[0]["SACOS_CEMENTO"]);
-    $("#CARD_CHOFER_NOMBRE").text(DATOS[0]["Nombre"]);
-    $("#CARD_CHOFER_PLACA").text(" (" + DATOS[0]["placa"] + ")");
-    $("#CARD_CHOFER_PR_GUIAS").text(DATOS[0]["SACOS_CEMENTO_GUIAS"]);
+      setCAR_CHOFER_SAC(DATOS[0]["SACOS_CEMENTO"]);
+      setCAR_CHOFER_GUIAS(DATOS[0]["cantidad_total"]);
+      // $("#CARD_CHOFER_SACOS").text(DATOS[0]["SACOS_CEMENTO"]);
+      $("#CARD_CHOFER_NOMBRE").text(DATOS[0]["Nombre"]);
+      $("#CARD_CHOFER_PLACA").text(" (" + DATOS[0]["placa"] + ")");
+    } else {
+      $("#CARD_CHOFER_TOTAL").text(0);
+      setCAR_CHOFER_SAC(0);
+      setCAR_CHOFER_GUIAS(0);
+      $("#CARD_CHOFER_NOMBRE").text("Sin registro");
+      $("#CARD_CHOFER_PLACA").text(" ( )");
+
+
+    }
+
+
+    // $("#CARD_CHOFER_PR_GUIAS").text(DATOS[0]["SACOS_CEMENTO_GUIAS"]);
 
   }
 
   const [CAR_DR_F_GEN, setCAR_DR_F_GEN] = useState('');
   const [CAR_DR_F_MES, setCAR_DR_F_MES] = useState('');
+  const [CAR_DR_MOSTRAR_SACOS, setCAR_DR_MOSTRAR_SACOS] = useState(false);
+  const [CAR_DR_GUIAS, setCAR_DR_GUIAS] = useState('');
+  const [CAR_DR_SAC, setCAR_DR_SAC] = useState('');
 
 
   function CARD_DIA_RECORD(datos) {
     let DATOS = datos["DATOS"];
 
 
-    $("#CD_RECORD_TOTAL").text(DATOS[0]["cantidad"]);
-    $("#CD_RECORD_DIA_TOTAL").text(moment(DATOS[0]["fecha"]).format("MMMM DD, YYYY"));
-    $("#CARD_DIAR_GENERAL").text(DATOS[2]["cantidad"]);
-    $("#CARD_DIAR_MES").text(DATOS[3]["cantidad"]);
-    setCAR_DR_F_GEN(moment(DATOS[2]["fecha"]).format("MMMM DD, YYYY"));
-    setCAR_DR_F_MES(moment(DATOS[3]["fecha"]).format("MMMM DD, YYYY"));
+
+
+    // let UNIDAD = DATOS[2]["cantidad"];
+
+    // if (UNIDAD == "SAC") {
+    //   setCAR_DR_MOSTRAR_SACOS(false)
+    // } else {
+    //   $("#CD_RECORD_TOTAL").text(DATOS[0]["cantidad"]);
+    //   setCAR_DR_MOSTRAR_SACOS(true)
+    // }
+    $("#CD_RECORD_TOTAL").text(DATOS[1]["cantidad"]);
+
+    setCAR_DR_GUIAS(DATOS[0]["cantidad"]);
+    setCAR_DR_SAC(DATOS[1]["cantidad"]);
+
+    $("#CD_RECORD_DIA_TOTAL").text(moment(DATOS[1]["fecha"]).format("MMMM DD, YYYY"));
+    // $("#CARD_DIAR_GENERAL").text(DATOS[2]["cantidad"]);
+    // $("#CARD_DIAR_MES").text(DATOS[3]["cantidad"]);
+    // setCAR_DR_F_GEN(moment(DATOS[2]["fecha"]).format("MMMM DD, YYYY"));
+    // setCAR_DR_F_MES(moment(DATOS[3]["fecha"]).format("MMMM DD, YYYY"));
 
 
   }
@@ -1059,6 +1131,11 @@ const Dashboard = () => {
 
   function GR_CARD_1(d) {
 
+    let check_sac = $("#check_sac").is(":checked");
+    let check_ton = $("#check_ton").is(":checked");
+    console.log('check_ton: ', check_ton);
+    console.log('check_sac: ', check_sac);
+
     let datos = d["DATOS"]
     let ESTE_ME_TOTAL_RETIRADAS = datos[0];
     let ESTE_MES_COMPRADAS = datos[1];
@@ -1069,23 +1146,37 @@ const Dashboard = () => {
     let POR_RETIRAR = datos[6];
 
     setGR_CARD_1_UNIDAD(ESTE_ME_TOTAL_RETIRADAS["UNIDAD"]);
-    $("#GR_CARD_1_TOTAL_MES").text(ESTE_ME_TOTAL_RETIRADAS["cantidad"] + " ");
-    $("#GR_CARD_1_TOTAL_MES_COMPRADO").text(ESTE_MES_COMPRADAS["cantidad"] + " ");
-    $("#GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT").text(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"] + " ");
-    $("#GR_CARD_1_POR_RETIRAR").text(POR_RETIRAR["cantidad"] + " ");
 
+    let TOTAL_MES_COMPRADO = parseFloat(ESTE_MES_COMPRADAS["cantidad"]);
+    let TOTAL_MES_RETIRADO = parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]);
+    let TOTAL_MES_COMPRADO_MES_ANT = parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"]);
+    let TOTAL_RETIRADO = parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"]);
+    let POR_RETIRAR_ESTE_MES = parseFloat(POR_RETIRAR["cantidad"]);
 
+    if (check_ton == true) {
+
+      TOTAL_MES_COMPRADO = (TOTAL_MES_COMPRADO * 50) / 1000;
+      TOTAL_MES_RETIRADO = (TOTAL_MES_RETIRADO * 50) / 1000;
+      TOTAL_MES_COMPRADO_MES_ANT = (TOTAL_MES_COMPRADO_MES_ANT * 50) / 1000;
+      TOTAL_RETIRADO = (TOTAL_RETIRADO * 50) / 1000;
+      POR_RETIRAR_ESTE_MES = (POR_RETIRAR_ESTE_MES * 50) / 1000;
+      setGR_CARD_1_UNIDAD("TN");
+
+    }
+
+    $("#GR_CARD_1_TOTAL_MES_COMPRADO").text(TOTAL_MES_COMPRADO + " ");
+    $("#GR_CARD_1_TOTAL_MES").text(TOTAL_MES_RETIRADO + " ");
+    $("#GR_CARD_1_TOTAL_MES_COMPRADO_MES_ANT").text(TOTAL_MES_COMPRADO_MES_ANT + " ");
+    $("#GR_CARD_1_POR_RETIRAR").text(POR_RETIRAR_ESTE_MES + " ");
+    $("#GR_CARD_1_TOTAL_RETIRADO").text(TOTAL_RETIRADO + " ");
 
     let RET = parseFloat(ESTE_ME_TOTAL_RETIRADAS["cantidad"]) + parseFloat(ESTE_MES_RETIRADAS_COMPRADAS_MES_ANTERIOR["cantidad"])
     let TOT = parseFloat(ESTE_MES_COMPRADAS["cantidad"]);
-
-    $("#GR_CARD_1_TOTAL_RETIRADO").text(RET + " ");
     let porc = ((RET) / TOT) * 100;
 
     setGR_CARD_1_PORCENTAJE(parseFloat(isNaN(porc) ? 0 : porc).toFixed(2));
 
     let RET_A = parseFloat(MES_PASADO_TOTAL_RETIRADAS["cantidad"]);
-
     let porc_mes_a = ((RET - RET_A) / RET_A) * 100
     setGR_CARD_1_PORCENTAJE_MES_A(isNaN(porc_mes_a) ? 0 : porc_mes_a);
 
@@ -1121,6 +1212,7 @@ const Dashboard = () => {
       producto: "10016416",
       tipo: check_guia
     };
+
 
     // $("#SEL_PRODUCTOS").val("10016416").change();
 
@@ -1163,15 +1255,33 @@ const Dashboard = () => {
   return (
     <>
       {/* <WidgetsDropdown /> */}
+
       <div className='row mb-4'>
         <div className='col-lg-4 col-sm-6'>
           <label className="required fs-5 fw-bold mb-2">Mes</label>
-          {/* <input defaultValue={moment("20231001").format("YYYY-MM-DD")} id='AD_FECHA_INI' type="date" className="form-control form-control-solid ps-12 flatpickr-input active" /> */}
           <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
-
         </div>
 
-
+        <div className='col-lg-12 col-sm-6 mt-3'>
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="radio" name='ra' role="switch"
+              id="check_guia"
+              onChange={() => {
+                CAMBIAR_MES();
+                setIS_CANTIDAD(false);
+              }} />
+            <label className="form-check-label fw-bold">Por guías</label>
+          </div>
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="radio" name='ra' role="switch"
+              id="check_producto" defaultChecked={TIPO_ESTADO}
+              onChange={() => {
+                CAMBIAR_MES();
+                setIS_CANTIDAD(true);
+              }} />
+            <label className="form-check-label fw-bold" >Por cantidad</label>
+          </div>
+        </div>
       </div>
 
       <div className='row'>
@@ -1452,17 +1562,26 @@ const Dashboard = () => {
 
 
       </div>
+
       {/*  CARR GUIAS RETIRADAS */}
+
       <div className='row g-4 g-xl-10 mb-3'>
 
-        <div className='col-xl-4 mb-xl-10'>
-          <div className="card card-flush h-xl-100">
+        <div className='col-xl-4 mb-xl-10' >
+          <div className="card card-flush h-xl-100" style={{ height: 415 }}>
             <div className="card-body mt-n20">
 
               <div className="row">
                 <div className="col">
-                  <h5 className="card-title text-uppercase text-muted mb-2">GUIAS RETIRADAS</h5>
-                  <span id='CARD_GT_TOTAL' className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2"></span><br />
+                  <h5 className="card-title text-uppercase text-muted mb-2">TOTAL RETIRADO</h5>
+                  <span id='CARD_GT_TOTAL' className="fs-1 fw-bold text-gray-900 me-2 lh-1 ls-n2">
+
+
+                  </span>
+                  <span className='fs-5 fw-bold'>
+                    {" "}{CAR_GT_UNIDAD}
+                  </span>
+                  <br />
                   <p className="mt-3 mb-0 text-muted text-sm">
                     <span className={CAR_GT_PORCENTAJE > 0 ? "text-success mr-2 fw-bold" : "text-danger mr-2 fw-bold"}>
                       <CIcon icon={CAR_GT_PORCENTAJE > 0 ? cilArrowTop : cilArrowBottom} />
@@ -1482,7 +1601,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9  small fw-bold me-2 text-danger">RETIRADAS NO INGRESADAS !</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_RETIRADAS_NO_INGRESADAS' className="text-gray-900 fw-semibold fs-6 text-danger"></span>
+                      <span id='CARD_GT_RETIRADAS_NO_INGRESADAS' className="text-gray-900 fw-bold fs-6 text-danger"></span>
                     </div>
                   </div>
 
@@ -1492,7 +1611,7 @@ const Dashboard = () => {
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">RETIRADAS DEL MES ANTERIOR</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_RETIRADAS_MES_ANT' className="text-gray-900 fw-semibold fs-6"></span>
+                      <span id='CARD_GT_RETIRADAS_MES_ANT' className="text-gray-900 fw-bold fs-6"></span>
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
@@ -1501,44 +1620,64 @@ const Dashboard = () => {
 
                   <div className="d-flex flex-stack">
                     <div className="col-8 small text-medium-emphasis fw-bold me-2">RETIRADAS ESTE MES</div>
-                    <div className="col-3 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_RETIRADAS_ESTE_MES' className="text-gray-900 fw-semibold fs-6"></span>
+                    <div className="col-3 text-gray-700 fw-bold fs-6 text-end">
+                      <span id='CARD_GT_RETIRADAS_ESTE_MES' className="text-gray-900 fw-bold fs-6"></span>
                     </div>
                   </div>
                   <hr className="my-1 border-dashed" />
 
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">COMPRADAS</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_COMPRADAS' className="text-gray-900 fw-semibold fs-6"></span>
+                    <div className="col-2 text-gray-700 fw-bold fs-6 text-end">
+                      <span id='CARD_GT_COMPRADAS' className="text-gray-900 fw-bold fs-6"></span>
                     </div>
                   </div>
-                  <hr className="my-1 border-dashed" />
+                  {CAR_GT_MOS_G_POR_RETIRAR &&
+                    (
+                      <div>
+                        <hr className="my-1 border-dashed" />
+                        <div className="d-flex flex-stack">
+                          <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR TOTAL</div>
+                          <div className="col-2 text-gray-700 fw-bold fs-6 text-end">
+                            <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-bold fs-6 text-success">
+                              {CAR_GT_G_POR_RETIRAR}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR TOTAL</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_POR_RETIRAR' className="text-gray-900 fw-bold fs-6 text-success"></span>
-                    </div>
-                  </div>
+                    )
+                  }
+
 
                   <hr className="my-1 border-dashed" />
 
                   <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR CEMENTO</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                    <div className="col-2 text-gray-700 fw-bold fs-6 text-end">
                       <span id='CARD_GT_POR_RETIRAR_CEMENTO' className="text-gray-900 fw-bold fs-6 "></span>
                     </div>
                   </div>
 
-                  <hr className="my-1 border-dashed" />
 
-                  <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR OTROS</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_GT_POR_RETIRAR_OTROS' className="text-gray-900 fw-bold fs-6 "></span>
-                    </div>
-                  </div>
+
+
+                  {CAR_GT_MOS_OTROS &&
+                    (
+                      <div>
+                        <hr className="my-1 border-dashed" />
+                        <div className="d-flex flex-stack">
+                          <div className="col-9 small text-medium-emphasis fw-bold me-2">POR RETIRAR OTROS</div>
+                          <div className="col-2 text-gray-700 fw-bold fs-6 text-end">
+                            <span id='CARD_GT_POR_RETIRAR_OTROS' className="text-gray-900 fw-bold fs-6 ">
+                              {CAR_GT_G_OTROS}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                    )
+                  }
 
                   <hr className="my-1 border-dashed" />
 
@@ -1563,36 +1702,56 @@ const Dashboard = () => {
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
-                  <div className="row">
+                  <div className="row mb-3">
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">CHOFER MAS RETIROS</h5>
-                      <span id='CARD_CHOFER_TOTAL' className="h2 font-weight-bold mb-0"></span>
+                      <span id='CARD_CHOFER_TOTAL' className="h2 font-weight-bold mb-0">
+
+                      </span>
+                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span>
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-person-vcard fs-1"></i>
                     </div>
                   </div>
 
-                  <p className="mb-0 fw-bold">Cemento Holcim Fuerte Tipo GU 50Kg</p>
+                  {/* <p className="mb-0 fw-bold">Cemento Holcim Fuerte Tipo GU 50Kg</p> */}
 
-                  <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">SAC</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_CHOFER_SACOS' className="text-gray-900 fw-semibold fs-6">0</span>
-                    </div>
-                  </div>
-                  <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">GUIAS</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_CHOFER_PR_GUIAS' className="text-gray-900 fw-semibold fs-6">0</span>
-                    </div>
-                  </div>
-                  <hr className="my-1 border-dashed" />
 
                   <p className="mb-0 text-muted text-sm">
-                    <span id='CARD_CHOFER_NOMBRE' className="text-nowrap fw-bold">CHOFER 2 </span>
-                    <span id='CARD_CHOFER_PLACA' className="text-nowrap">(GBO-7758)</span>
+                    <span id='CARD_CHOFER_NOMBRE' className="text-nowrap fw-bold fs-5"></span>
+                    <span id='CARD_CHOFER_PLACA' className="text-nowrap"></span>
                   </p>
+
+                  {CAR_CHOFER_MOSTRAR_SAC && (
+                    <div>
+                      <hr className="my-1 border-dashed" />
+                      <div className="d-flex flex-stack">
+                        <div className="col-9 small text-medium-emphasis fw-bold me-2">SAC</div>
+                        <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                          <span id='CARD_CHOFER_SACOS' className="text-gray-900 fw-semibold fs-6">
+                            {CAR_CHOFER_SAC}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!CAR_CHOFER_MOSTRAR_SAC && (
+                    <div>
+                      <hr className="my-1 border-dashed" />
+
+                      <div className="d-flex flex-stack">
+                        <div className="col-9 small text-medium-emphasis fw-bold me-2">GUIAS</div>
+                        <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                          <span id='CARD_CHOFER_PR_GUIAS' className="text-gray-900 fw-semibold fs-6">
+                            {CAR_CHOFER_GUIAS}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <hr className="my-1 border-dashed" />
                 </div>
               </div>
             </div>
@@ -1600,32 +1759,62 @@ const Dashboard = () => {
             <div className="col-xl-6 col-sm-12">
               <div className="card card-stats mb-4 mb-xl-0">
                 <div className="card-body">
-                  <div className="row">
+                  <div className="row mb-3">
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
-                      <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"></span>
+                      <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"> </span>
+                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span>
+
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-calendar2-week fs-1"></i>
 
                     </div>
                   </div>
-                  <p id='CD_RECORD_DIA_TOTAL' className="mb-0 fw-bold"></p>
+                  <p className="mb-0 fw-bold text-muted">
+                    <span id='CD_RECORD_DIA_TOTAL' className="text-nowrap fw-bold fs-5"></span>
 
-                  <p className="mb-0 fw-bold mt-2">Cemento Holcim Fuerte Tipo GU 50Kg</p>
+                  </p>
 
-                  <div className="d-flex flex-stack">
-                    <div className="col-9 small text-medium-emphasis fw-bold me-2">GENERAL {CAR_DR_F_GEN}</div>
-                    <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
-                      <span id='CARD_DIAR_GENERAL' className="text-gray-900 fw-semibold fs-6">0</span>
+                  {/* <p className="mb-0 fw-bold mt-2">Cemento Holcim Fuerte Tipo GU 50Kg</p> */}
+                  {!CAR_DR_MOSTRAR_SACOS && (
+                    <div>
+                      <hr className="my-1 border-dashed" />
+                      <div className="d-flex flex-stack">
+                        <div className="col-9 small text-medium-emphasis fw-bold me-2">GUIAS</div>
+                        <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                          <span id='CARD_DIAR_GUIAS' className="text-gray-900 fw-semibold fs-6">
+                            {CAR_DR_GUIAS}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="d-flex flex-stack">
+                  )}
+
+
+                  {CAR_DR_MOSTRAR_SACOS && (
+                    <div>
+                      <hr className="my-1 border-dashed" />
+                      <div className="d-flex flex-stack">
+                        <div className="col-9 small text-medium-emphasis fw-bold me-2">SAC</div>
+                        <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
+                          <span id='CARD_DIAR_SAC' className="text-gray-900 fw-semibold fs-6">
+                            {CAR_DR_SAC}
+
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <hr className="my-1 border-dashed" />
+
+                  {/* <div className="d-flex flex-stack">
                     <div className="col-9 small text-medium-emphasis fw-bold me-2">MES {CAR_DR_F_MES}</div>
                     <div className="col-2 text-gray-700 fw-semibold fs-6 text-end">
                       <span id='CARD_DIAR_MES' className="text-gray-900 fw-semibold fs-6">0</span>
                     </div>
-                  </div>
+                  </div> */}
 
 
                 </div>
@@ -1694,7 +1883,7 @@ const Dashboard = () => {
                 <select onChange={CAMBIAR_MES} id='SEL_PRODUCTOS' className='form-select'>
                 </select>
               </div>
-              <div className='col-lg-12 col-sm-6'>
+              {/* <div className='col-lg-12 col-sm-6'>
                 <label className="required fs-6 fw-bold mb-2">Tipo</label>
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="radio" name='ra' role="switch"
@@ -1708,7 +1897,26 @@ const Dashboard = () => {
                     onChange={CAMBIAR_MES} />
                   <label className="form-check-label fw-bold" >Por cantidad</label>
                 </div>
-              </div>
+              </div> */}
+              {IS_CANTIDAD && (
+                <div className='col-lg-12 col-sm-6'>
+                  <div className="form-check form-switch">
+                    <input className="form-check-input" type="radio" name='ra1' role="switch"
+                      id="check_sac" defaultChecked
+                      onChange={CAMBIAR_MES} />
+                    <label className="form-check-label fw-bold small">Por Sacos</label>
+                  </div>
+                  <div className="form-check form-switch">
+                    <input className="form-check-input" type="radio" name='ra1' role="switch"
+                      id="check_ton"
+                      onChange={CAMBIAR_MES} />
+                    <label className="form-check-label fw-bold small" >Por Toneladas</label>
+                  </div>
+                </div>
+              )
+
+              }
+
               <hr className="my-1 border-dashed" />
 
               <div className='col-12 mt-3 mb-3'>

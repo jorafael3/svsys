@@ -1282,7 +1282,7 @@ function Administrar() {
 
                     x = `
                         <span class="text-muted">`+ moment(x).format("YYYY-MM-DD") + `</span><br>
-                        <span class="text-muted">`+ moment(x).format("hh:mm") + ` </span>
+                        <span class="text-muted">`+ moment(x).format("HH:mm A") + ` </span>
                         `
                     return x;
                 }
