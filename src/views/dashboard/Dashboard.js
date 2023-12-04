@@ -71,128 +71,7 @@ import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect/index.js'; // 
 
 
 const Dashboard = () => {
-  const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
 
-  const progressExample = [
-    { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
-    { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
-    { title: 'Pageviews', value: '78.706 Views', percent: 60, color: 'warning' },
-    { title: 'New Users', value: '22.123 Users', percent: 80, color: 'danger' },
-    { title: 'Bounce Rate', value: 'Average Rate', percent: 40.15, color: 'primary' },
-  ]
-
-  const progressGroupExample1 = [
-    { title: 'Monday', value1: 34, value2: 78 },
-    { title: 'Tuesday', value1: 56, value2: 94 },
-    { title: 'Wednesday', value1: 12, value2: 67 },
-    { title: 'Thursday', value1: 43, value2: 91 },
-    { title: 'Friday', value1: 22, value2: 73 },
-    { title: 'Saturday', value1: 53, value2: 82 },
-    { title: 'Sunday', value1: 9, value2: 69 },
-  ]
-
-  const progressGroupExample2 = [
-    { title: 'Male', icon: cilUser, value: 53 },
-    { title: 'Female', icon: cilUserFemale, value: 43 },
-  ]
-
-  const progressGroupExample3 = [
-    { title: 'Organic Search', icon: cibGoogle, percent: 56, value: '191,235' },
-    { title: 'Facebook', icon: cibFacebook, percent: 15, value: '51,223' },
-    { title: 'Twitter', icon: cibTwitter, percent: 11, value: '37,564' },
-    { title: 'LinkedIn', icon: cibLinkedin, percent: 8, value: '27,319' },
-  ]
-
-  const tableExample = [
-    {
-      avatar: { src: avatar1, status: 'success' },
-      user: {
-        name: 'Yiorgos Avraamu',
-        new: true,
-        registered: 'Jan 1, 2021',
-      },
-      country: { name: 'USA', flag: cifUs },
-      usage: {
-        value: 50,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'success',
-      },
-      payment: { name: 'Mastercard', icon: cibCcMastercard },
-      activity: '10 sec ago',
-    },
-    {
-      avatar: { src: avatar2, status: 'danger' },
-      user: {
-        name: 'Avram Tarasios',
-        new: false,
-        registered: 'Jan 1, 2021',
-      },
-      country: { name: 'Brazil', flag: cifBr },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'info',
-      },
-      payment: { name: 'Visa', icon: cibCcVisa },
-      activity: '5 minutes ago',
-    },
-    {
-      avatar: { src: avatar3, status: 'warning' },
-      user: { name: 'Quintin Ed', new: true, registered: 'Jan 1, 2021' },
-      country: { name: 'India', flag: cifIn },
-      usage: {
-        value: 74,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'warning',
-      },
-      payment: { name: 'Stripe', icon: cibCcStripe },
-      activity: '1 hour ago',
-    },
-    {
-      avatar: { src: avatar4, status: 'secondary' },
-      user: { name: 'Enéas Kwadwo', new: true, registered: 'Jan 1, 2021' },
-      country: { name: 'France', flag: cifFr },
-      usage: {
-        value: 98,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'danger',
-      },
-      payment: { name: 'PayPal', icon: cibCcPaypal },
-      activity: 'Last month',
-    },
-    {
-      avatar: { src: avatar5, status: 'success' },
-      user: {
-        name: 'Agapetus Tadeáš',
-        new: true,
-        registered: 'Jan 1, 2021',
-      },
-      country: { name: 'Spain', flag: cifEs },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'primary',
-      },
-      payment: { name: 'Google Wallet', icon: cibCcApplePay },
-      activity: 'Last week',
-    },
-    {
-      avatar: { src: avatar6, status: 'danger' },
-      user: {
-        name: 'Friderik Dávid',
-        new: true,
-        registered: 'Jan 1, 2021',
-      },
-      country: { name: 'Poland', flag: cifPl },
-      usage: {
-        value: 43,
-        period: 'Jun 11, 2021 - Jul 10, 2021',
-        color: 'success',
-      },
-      payment: { name: 'Amex', icon: cibCcAmex },
-      activity: 'Last week',
-    },
-  ]
 
   const [cantidad_cemento_mes, setcantidad_cemento_mes] = useState("");
   const [cantidad_cemento_mes_pr, setcantidad_cemento_mes_pr] = useState("");
@@ -234,10 +113,7 @@ const Dashboard = () => {
 
   function Cargar_Stats(param) {
 
-
-
     des.Cargar_Stats(param, function (x) {
-
 
 
       let CARD_GUIAS_TOT = x["CARD_GUIAS_TOTALES"];
@@ -247,6 +123,10 @@ const Dashboard = () => {
 
       let GUIAS_RETIRADAS_POR_MES = x["GUIAS_RETIRADAS_POR_MES"];
       let GR_CAR_1 = x["GR_CARD_1"];
+      let ULTIMA_ACT = x["ULTIMA_ACTUALIZACION"];
+
+      let ul_act = ULTIMA_ACT["DATOS"][0]["ultima_actualizacion"];
+      $("#Fecha_Ultima_Actualizacion").text(moment(ul_act).format("MMMM DD, YYYY  HH:mm A"))
 
       // let SACOS = x["SACOS"];
       // let CHOFER = x["CHOFER"];
@@ -299,6 +179,8 @@ const Dashboard = () => {
       $("#CARD_GT_TOTAL").text(TOTAL);
       setCAR_GT_MOS_G_POR_RETIRAR(false);
       setCAR_GT_MOS_OTROS(false);
+      $("#CARD_GT_TOTAL_TN").text(((TOTAL * 50) / 1000) + " Tn");
+
     } else {
       let TOTAL = parseInt(RETIRADAS_ESTE_MES["cantidad"]) + parseInt(CORRESPONDEN_AL_MES_PASADO["cantidad"]) + parseInt(GUIAS_RETIRADAS_NO_INGRESADAS["cantidad"])
       $("#CARD_GT_TOTAL").text(TOTAL);
@@ -373,7 +255,9 @@ const Dashboard = () => {
     if (DATOS.length > 0) {
       if (DATOS[0]["unidad"] == "SAC") {
         $("#CARD_CHOFER_TOTAL").text(DATOS[0]["SACOS_CEMENTO"]);
-        setCAR_CHOFER_MOSTRAR_SAC(false)
+        setCAR_CHOFER_MOSTRAR_SAC(false);
+        $("#CARD_CHOFER_TOTAL_TN").text(((parseInt(DATOS[0]["SACOS_CEMENTO"]) * 50) / 1000) + " Tn");
+
       } else {
         $("#CARD_CHOFER_TOTAL").text(DATOS[0]["cantidad_total"]);
         setCAR_CHOFER_MOSTRAR_SAC(true)
@@ -421,6 +305,8 @@ const Dashboard = () => {
     //   setCAR_DR_MOSTRAR_SACOS(true)
     // }
     $("#CD_RECORD_TOTAL").text(DATOS[1]["cantidad"]);
+    $("#CD_RECORD_TOTAL_TN").text(((parseInt(DATOS[1]["cantidad"]) * 50) / 1000) + " Tn");
+
 
     setCAR_DR_GUIAS(DATOS[0]["cantidad"]);
     setCAR_DR_SAC(DATOS[1]["cantidad"]);
@@ -621,24 +507,22 @@ const Dashboard = () => {
 
   function GRAFICO_DIARIO(datos) {
 
-
-
-
     am4core.ready(function () {
+      let check_ton = $("#check_ton").is(":checked");
 
       let datos_ant = datos.filter(item => item.MES == "MES_ACT" && item.cantidad > 0);
       var totaldolar = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
       let valor_completo = totaldolar
       totaldolar = totaldolar / datos_ant.length
+      if (check_ton) {
+        totaldolar = (totaldolar * 50) / 1000
+      }
       setPROMEDIO_DESPACHO(totaldolar);
 
 
       var total_pr = datos_ant.reduce((sum, value) => (sum + parseFloat(value.cantidad)), 0);
 
       let p = CALCULAR_PROYECCION(total_pr, "chartdiv_proyeccion");
-
-
-
 
       // Themes begin
       am4core.useTheme(am4themes_animated);
@@ -987,6 +871,7 @@ const Dashboard = () => {
 
   function CALCULAR_PROYECCION(totalret, label) {
 
+    let check_ton = $("#check_ton").is(":checked");
 
 
     function domingosEnMes(anio, mes) {
@@ -1000,6 +885,8 @@ const Dashboard = () => {
       }
       return domingos;
     }
+
+    var cahng = 0;
 
     function sabadosEnMes(anio, mes) {
       const primerDia = new Date(anio, mes - 1, 1);
@@ -1024,9 +911,24 @@ const Dashboard = () => {
     let PROYECCION = (totalret / DIAS_LABORABLES) * DIAS_ENEL_MES
     let porc = (totalret / PROYECCION) * 100
 
+    if (label == 'chartdiv_proyeccion') {
+      if (check_ton) {
+        PROYECCION = (PROYECCION * 50) / 1000
+        $("#CD_RECORD_PROYECCION_TN").text(parseFloat((parseInt(PROYECCION) * 50) / 1000).toFixed(0) + " Tn");
+
+      } else {
+        $("#CD_RECORD_PROYECCION_TN").text(parseFloat((parseInt(PROYECCION) * 50) / 1000).toFixed(0) + " Tn");
+
+      }
+      setPORYECCION_DESPACHO(PROYECCION);
+
+    } else {
+
+      setPORYECCION_DESPACHO(PROYECCION);
+
+    }
 
 
-    setPORYECCION_DESPACHO(PROYECCION);
 
     am4core.ready(function () {
 
@@ -1133,8 +1035,8 @@ const Dashboard = () => {
 
     let check_sac = $("#check_sac").is(":checked");
     let check_ton = $("#check_ton").is(":checked");
-    console.log('check_ton: ', check_ton);
-    console.log('check_sac: ', check_sac);
+
+
 
     let datos = d["DATOS"]
     let ESTE_ME_TOTAL_RETIRADAS = datos[0];
@@ -1260,6 +1162,10 @@ const Dashboard = () => {
         <div className='col-lg-4 col-sm-6'>
           <label className="required fs-5 fw-bold mb-2">Mes</label>
           <input type="text" id="myDatePicker" className='form-control' placeholder="Select Date" />
+        </div>
+        <div className='col-lg-4 col-sm-6'>
+          <label className="required fs-5 fw-bold mb-2">Ultima Actualizacion</label>
+          <h3 id='Fecha_Ultima_Actualizacion' className='text-muted'></h3>
         </div>
 
         <div className='col-lg-12 col-sm-6 mt-3'>
@@ -1568,7 +1474,7 @@ const Dashboard = () => {
       <div className='row g-4 g-xl-10 mb-3'>
 
         <div className='col-xl-4 mb-xl-10' >
-          <div className="card card-flush h-xl-100" style={{ height: 415 }}>
+          <div className="card card-flush h-xl-100" style={{ height: 485 }}>
             <div className="card-body mt-n20">
 
               <div className="row">
@@ -1580,7 +1486,8 @@ const Dashboard = () => {
                   </span>
                   <span className='fs-5 fw-bold'>
                     {" "}{CAR_GT_UNIDAD}
-                  </span>
+                  </span><br />
+                  <span id='CARD_GT_TOTAL_TN' className='fs-4 fw-bold text-muted'></span>
                   <br />
                   <p className="mt-3 mb-0 text-muted text-sm">
                     <span className={CAR_GT_PORCENTAJE > 0 ? "text-success mr-2 fw-bold" : "text-danger mr-2 fw-bold"}>
@@ -1708,7 +1615,9 @@ const Dashboard = () => {
                       <span id='CARD_CHOFER_TOTAL' className="h2 font-weight-bold mb-0">
 
                       </span>
-                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span>
+                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span><br />
+                      <span id='CARD_CHOFER_TOTAL_TN' className='fs-4 fw-bold text-muted'></span>
+
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-person-vcard fs-1"></i>
@@ -1763,7 +1672,9 @@ const Dashboard = () => {
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">RECORD DIARIO</h5>
                       <span id='CD_RECORD_TOTAL' className="h2 font-weight-bold mb-0"> </span>
-                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span>
+                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span><br />
+
+                      <span id='CD_RECORD_TOTAL_TN' className='fs-4 fw-bold text-muted'></span>
 
                     </div>
                     <div className="col-auto">
@@ -1832,6 +1743,9 @@ const Dashboard = () => {
                     <div className="col">
                       <h5 className="card-title text-uppercase text-muted mb-0">PROYECCION</h5>
                       <span id='CD_RECORD_PROYECCION' className="h2 font-weight-bold mb-0">0</span>
+                      <span className='fs-6 fw-bold text-muted'> {CAR_GT_UNIDAD}</span><br />
+                      <span id='CD_RECORD_PROYECCION_TN' className='fs-4 fw-bold text-muted'></span>
+
                     </div>
                     <div className="col-auto">
                       <i className="bi bi-calendar2-week fs-3"></i>
