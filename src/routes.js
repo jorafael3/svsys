@@ -12,6 +12,7 @@ const usuarios = React.lazy(() => import(`./views/mantenimiento/usuarios/Usuario
 const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
 const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Clientes'))
 const reportes_guias = React.lazy(() => import('./views/reportes/guias/Guias'))
+const rutas = React.lazy(() => import('./views/despacho/rutas/Rutas'))
 
 const choferes = Choferes;
 // const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
@@ -53,6 +54,12 @@ function Cargar_Rutas(callback) {
       "path": "/despacho/administrar",
       "name": "Administrar Guias",
       "element": administracion,
+      "exact": false
+    },
+    {
+      "path": "/despacho/rutas",
+      "name": "Rutas",
+      "element": rutas,
       "exact": false
     },
     {
