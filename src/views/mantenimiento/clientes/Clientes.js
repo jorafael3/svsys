@@ -540,7 +540,6 @@ function Clientes() {
                             <div className="col-md-6 fv-row">
                                 <label className="required fs-6 fw-semibold mb-2">Ciudad</label>
                                 <select defaultValue={CLI_EDI_CIUDADES} className='form-select' id='CLI_EDI_CIUDADES' name="" >
-
                                     {ciudades.map((option, index) => (
                                         <option key={index} value={option}>{option}</option>
                                     ))}
