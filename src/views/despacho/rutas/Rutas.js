@@ -496,6 +496,7 @@ function Rutas() {
         } else {
             let url = "rutas/Nueva_Ruta_Dia_detalle"
             ajax.AjaxSendReceiveData(url, param, function (x) {
+                console.log('x: ', x);
                 
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
