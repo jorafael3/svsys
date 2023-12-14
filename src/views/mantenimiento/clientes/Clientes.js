@@ -18,6 +18,7 @@ var URL = "clientes/"
 function Clientes() {
     const [visible_n, setVisible_n] = useState(false);
     const [visible_e, setVisible_e] = useState(false);
+    const [visible_s, setVisible_s] = useState(false);
     const [selectedValue, setSelectedValue] = useState('');
     const [ciudades, setciudades] = useState([]);
     const provincias = ajax.Provincias();
@@ -45,7 +46,7 @@ function Clientes() {
     function Cargar_Clientes() {
         let url = URL + "Cargar_Clientes"
         ajax.AjaxSendReceiveData(url, "", function (x) {
-            
+
             Tabla_Clientes(x)
         })
     }
@@ -142,6 +143,13 @@ function Clientes() {
                 defaultContent: '<button type="button" class="btn_recibir btn btn-danger text-light"><i class="bi bi-eraser"></i></button>',
                 orderable: "",
                 width: 20
+            }, {
+                data: null,
+                title: "SUCURSALES",
+                className: "btn_sucursales text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_sucursales btn btn-info text-light"><i class="bi bi-patch-plus-fill"></i></button>',
+                orderable: "",
+                width: 20
             }
 
             ],
@@ -200,7 +208,7 @@ function Clientes() {
         }, 500);
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_editar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
             setVisible_e(true);
 
             setCLI_EDI_RUC(data["CLIENTE_RUC"]);
@@ -220,19 +228,153 @@ function Clientes() {
             }
 
         });
+
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_activar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
             data.OPERACION = 1;
             ActivarDesact_Cliente(data);
 
         });
         $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_desactivar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
             data.OPERACION = 0;
             ActivarDesact_Cliente(data);
         });
+
+        $('#CLI_TABLA_CLIENTES').on('click', 'td.btn_sucursales', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            setCLI_EDI_CLIENTE_ID(data["ID"]);
+            setVisible_s(true);
+            Cargar_Cliente_Sucursal(data["ID"]);
+        });
+    }
+
+    function Cargar_Cliente_Sucursal(ID) {
+        let param = {
+            ID: ID
+        }
+        console.log('param: ', param);
+
+        let url = 'clientes/Cargar_Sucursales'
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+            console.log('x: ', x);
+
+            $('#TABLA_SUC_SECC').empty();
+            if ($.fn.dataTable.isDataTable('#TABLA_SUC')) {
+                $('#TABLA_SUC').DataTable().destroy();
+                $('#TABLA_SUC_SECC').empty();
+            }
+            let tabla = `
+            <table id='TABLA_SUC' class='table display table-striped'>
+            </table>
+            `;
+            $('#TABLA_SUC_SECC').append(tabla);
+            let TABLA_ = $('#TABLA_SUC').DataTable({
+                destroy: true,
+                data: x,
+                dom: 'frtip',
+
+                columns: [{
+                    data: "sucursal_nombre",
+                    title: "SUCURSAL",
+                },
+                {
+                    data: "direccion",
+                    title: "DIRECCION"
+                },
+                {
+                    data: "telefono",
+                    title: "TELEFONO",
+                },
+                {
+                    data: "responsable",
+                    title: "RESPONSABLE",
+                },
+                {
+                    data: null,
+                    title: "Eliminar",
+                    className: "btn_Eliminar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                    defaultContent: '<button type="button" class="btn_Eliminar btn btn-danger text-light"><i class="bi bi-trash"></i></button>',
+                    orderable: "",
+                    width: 20
+                }
+                ],
+                "createdRow": function (row, data, index) {
+                    $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                    $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                    $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                    $('td', row).eq(3).addClass("fw-bold fs-6 bg-light-warning");
+                    $('td', row).eq(4).addClass("fw-bold fs-6");
+
+
+
+                },
+            });
+            $('#TABLA_SUC').on('click', 'td.btn_Eliminar', function (respuesta) {
+                var data = TABLA_.row(this).data();
+                console.log('data: ', data);
+                Eliminar_Sucursal(data["ID"])
+            });
+        })
+    }
+
+    function Guardar_Sucursal() {
+        let sucursal = $("#CLI_SUC_NOMBRE").val();
+        let direccion = $("#CLI_SUC_DIR").val();
+        let responsable = $("#CLI_SUC_RES").val();
+        let telefono = $("#CLI_SUC_TEL").val();
+
+        let param = {
+            cliente_id: CLI_EDI_CLIENTE_ID,
+            sucursal_nombre: sucursal,
+            direccion: direccion,
+            telefono: telefono,
+            responsable: responsable,
+        }
+        console.log('param: ', param);
+
+        if (sucursal == '') {
+            ajax.Mensaje("Debe ingresar un nombre de sucursal");
+        } else {
+            let url = 'clientes/Nueva_Sucursales'
+            ajax.AjaxSendReceiveData(url, param, function (x) {
+                console.log('x: ', x);
+                if (x[0] == 1) {
+                    ajax.Mensaje(x[1], "", "success");
+                    Cargar_Cliente_Sucursal(CLI_EDI_CLIENTE_ID)
+                    $("#CLI_SUC_NOMBRE").val("");
+                    $("#CLI_SUC_DIR").val("");
+                    $("#CLI_SUC_RES").val("");
+                    $("#CLI_SUC_TEL").val("");
+                } else {
+                    ajax.Mensaje(x[1], "", "error")
+
+                }
+            })
+
+        }
+
+    }
+
+    function Eliminar_Sucursal(ID) {
+        let param = {
+            ID: ID
+        }
+        let url = 'clientes/Eliminar_Sucursal'
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+            console.log('x: ', x);
+            if (x[0] == 1) {
+                ajax.Mensaje(x[1], "", "success");
+                Cargar_Cliente_Sucursal(CLI_EDI_CLIENTE_ID)
+               
+            } else {
+                ajax.Mensaje(x[1], "", "error")
+
+            }
+        })
     }
 
     function Cargar_Provincias() {
@@ -245,7 +387,7 @@ function Clientes() {
         // setSelectedValue(event.target.value);
         let pr = $("#CLI_PROVINCIA").val();
         let array_ciudades = ajax.Ciudades(value);
-        
+
         setciudades(array_ciudades)
     }
 
@@ -282,14 +424,14 @@ function Clientes() {
                 CLI_CORREO: CLI_CORREO,
                 CLI_TELEFONO: CLI_TELEFONO,
             }
-            
+
 
             if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
                 ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
             } else {
                 let url = URL + "Nuevo_Cliente"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    
+
                     if (x[0] == true) {
                         ajax.Mensaje(x[1], "", x[2]);
                         if (x[2] == "success") {
@@ -337,14 +479,14 @@ function Clientes() {
                 CLI_TELEFONO: CLI_TELEFONO,
                 CLI_ID: CLI_EDI_CLIENTE_ID
             }
-            
+
 
             if ((CLI_RUC.trim()).length < 10 || (CLI_RUC.trim()).length == 11 || (CLI_RUC.trim()).length == 12 || (CLI_RUC.trim()).length > 13) {
                 ajax.Mensaje("CEDULA / RUC DEBEN TENER 10 o 13 DIGITOS", "Por favor corregir", "error");
             } else {
                 let url = URL + "Actualizar_Cliente"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    
+
                     if (x[0] == true) {
                         ajax.Mensaje(x[1], "", x[2]);
                         if (x[2] == "success") {
@@ -363,7 +505,7 @@ function Clientes() {
         // 
         let url = 'clientes/ActivarDesact_Cliente'
         ajax.AjaxSendReceiveData(url, data, function (x) {
-            
+
             if (x[0] == 1) {
                 ajax.Mensaje(x[1], "", "success");
                 Cargar_Clientes();
@@ -577,6 +719,59 @@ function Clientes() {
                         Cerrar
                     </CButton>
                     <CButton color="primary" onClick={Actualizar_Cliente} >Guardar Cambios</CButton>
+                </CModalFooter>
+            </CModal>
+            <CModal size="xl" id='AD_MODAL_SUCURSALES' backdrop="static" visible={visible_s} onClose={() => setVisible_s(false)}>
+                <CModalHeader>
+                    <CModalTitle>Sucursales</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className='row'>
+                        <div className='col-4'>
+                            <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">Sucursal Nombre</span>
+                                </label>
+                                <input id='CLI_SUC_NOMBRE' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+                            <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">Direccion</span>
+                                </label>
+                                <input id='CLI_SUC_DIR' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+                            <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">Responsable</span>
+                                </label>
+                                <input id='CLI_SUC_RES' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+                            <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">Telefono</span>
+                                </label>
+                                <input id='CLI_SUC_TEL' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+                            <CButton className='mt-3' color="primary" onClick={Guardar_Sucursal} >Guardar</CButton>
+                        </div>
+
+                        <div className='col-8'>
+                            <div className='table-responsive' id='TABLA_SUC_SECC'>
+                                <table id='TABLA_SUC'>
+
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setVisible_s(false)}>
+                        Cerrar
+                    </CButton>
                 </CModalFooter>
             </CModal>
         </CRow>
