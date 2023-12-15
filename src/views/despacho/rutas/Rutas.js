@@ -72,7 +72,7 @@ function Rutas() {
             columns: [{
                 data: "fecha",
                 title: "FECHA",
-                render:function(x){
+                render: function (x) {
                     return moment(x).format("YYYY MMMM DD")
                 }
             },
@@ -144,9 +144,12 @@ function Rutas() {
     const [E_FLETE_CANT, setE_FLETE_CANT] = useState("");
     const [E_FLETE_PROD, setE_FLETE_PROD] = useState("");
     const [E_RUTA_DET_ID, setE_RUTA_DET_ID] = useState("");
+    const [E_GUIA, setE_GUIA] = useState("");
 
     function Tabla_Rutas_dia(datos) {
-        
+        console.log('datos: ', datos);
+
+
 
         $('#Tabla_Rutas_dia_SECC').empty();
         if ($.fn.dataTable.isDataTable('#Tabla_Rutas_dia')) {
@@ -257,25 +260,21 @@ function Rutas() {
                 data: "factura",
                 title: "FACTURA",
                 width: 150
-
             },
             {
                 data: "CLIENTE_NOMBRE",
                 title: "CLIENTE",
                 width: 150
-
             },
             {
                 data: "destino_nombre",
                 title: "DESTINO",
                 width: 150
-
             },
             {
                 data: "producto_nombre",
                 title: "PRODUCTO",
                 width: 150
-
             }, {
                 data: "holcim",
                 title: "HOLCIM",
@@ -289,7 +288,10 @@ function Rutas() {
                 data: "flete_producto_nombre",
                 title: "FLETE PROD.",
                 width: 150
-
+            }, {
+                data: "pedido_interno",
+                title: "GUIA #",
+                width: 150
             }, {
                 data: null,
                 title: "Entregar a Proveedor",
@@ -304,14 +306,29 @@ function Rutas() {
                 $('td', row).eq(1).addClass("fw-bold fs-6 ");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 ");
-                $('td', row).eq(4).addClass("fw-bold fs-6 ");
+                $('td', row).eq(4).addClass("fw-bold fs-6 bg-info bg-opacity-10");
                 $('td', row).eq(5).addClass("fw-bold fs-6 ");
                 $('td', row).eq(6).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
-                $('td', row).eq(7).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(7).addClass("fw-bold fs-6 bg-primary bg-opacity-25");
                 if (data["cliente_id"] == null) {
-                    $('td', row).eq(8).removeClass("btn_detalles");
-                    $('td', row).eq(8).html("");
+                    $('td', row).eq(9).removeClass("btn_detalles");
+                    $('td', row).eq(9).html("");
+                }
+                if (data["pedido_interno"] != "") {
+                    if (data["FECHA_SALE_PLANTA"] == null) {
+                        let a = `
+                        <span class ="text-danger fw-bold">ORDEN NO VALIDA</span><br>
+                        `;
+                        $('td', row).eq(8).html(a);
 
+                    } else {
+                        let a = `
+                            <span class ="fw-bold">`+ data["pedido_interno"] + `</span><br>
+                            <span class ="fw-bold">retirada: </span><br>
+                            <span class ="fw-bold">`+ moment(data["FECHA_SALE_PLANTA"]).format("YYYY-MM-DD hh:mm A") + `</span><br>
+                        `;
+                        $('td', row).eq(8).html(a);
+                    }
                 }
             },
             "footerCallback": function (row, data, start, end, display) {
@@ -352,8 +369,8 @@ function Rutas() {
                 $(api.column(5).footer()).html((holcim));
                 $(api.column(6).footer()).html((bodega));
                 $(api.column(7).footer()).html((fletes));
-                
-                $("#RD_TOTAL").text(parseFloat(holcim)+parseFloat(bodega)+parseFloat(fletes))
+
+                $("#RD_TOTAL").text(parseFloat(holcim) + parseFloat(bodega) + parseFloat(fletes))
                 //$(api.column(3).footer()).html(format(wedTotal));
             }
         });
@@ -367,7 +384,8 @@ function Rutas() {
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+            console.log('data: ', data);
+
             setvisible_ne(true);
             setvisible_ne(false);
             setvisible_ne(true);
@@ -382,6 +400,7 @@ function Rutas() {
             setE_FLETE_PROD(data["flete_producto"]);
             setE_CLIENTE_DES(data["cliente_destino_id"]);
             setE_RUTA_DET_ID(data["RUTA_DET_ID"]);
+            setE_GUIA(data["pedido_interno"]);
             Cambiar_Sucursal(data["cliente_id"])
             Cambiar_Sucursal(data["cliente_id"])
 
@@ -460,10 +479,10 @@ function Rutas() {
         let param = {
             CLIENTE: ID
         }
-        
+
         let url = "rutas/Cargar_Clientes_Sucursales"
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            
+
             setSUCURSALES(x)
         })
     }
@@ -489,7 +508,7 @@ function Rutas() {
             GUIA: $("#N_GUIA").val(),
 
         }
-        
+
 
         if (N_cliente_id == "") {
             ajax.Mensaje("Debe seleccionar un cliente");
@@ -497,7 +516,7 @@ function Rutas() {
             let url = "rutas/Nueva_Ruta_Dia_detalle"
             ajax.AjaxSendReceiveData(url, param, function (x) {
                 console.log('x: ', x);
-                
+
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
                     Cargar_Rutas_dia(RUTA_ID);
@@ -530,14 +549,14 @@ function Rutas() {
 
         }
         console.log('param: ', param);
-        
+
 
         if (E_CLIENTE == "") {
             ajax.Mensaje("Debe seleccionar un cliente");
         } else {
             let url = "rutas/Actualizar_Ruta_Dia_detalle"
             ajax.AjaxSendReceiveData(url, param, function (x) {
-                
+
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
                     Cargar_Rutas_dia(RUTA_ID);
@@ -675,7 +694,7 @@ function Rutas() {
                             <Select options={PRODUCTOS}
                                 // defaultValue={PRODUCTOS.filter(option => option.value === null)}
                                 onChange={(items) => {
-                                    
+
                                     setN_producto_id(items.value);
                                 }}
                             />
@@ -765,10 +784,10 @@ function Rutas() {
                                     <span className="required">CLIENTE DESTINO</span>
                                 </label>
                                 <select value={E_CLIENTE_DES} onChange={(items) => {
-                                    
-                                        // setprov_select(items.label);
-                                        setE_CLIENTE_DES(items.target.value);
-                                    }} className='form-select' id='N_CLI_DESTINO_E' name="" >
+
+                                    // setprov_select(items.label);
+                                    setE_CLIENTE_DES(items.target.value);
+                                }} className='form-select' id='N_CLI_DESTINO_E' name="" >
                                     <option value="null">N/A</option>
                                     {SUCURSALES.map((option, index) => (
                                         <option key={index} value={option.value}>{option.label}</option>
@@ -835,7 +854,7 @@ function Rutas() {
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">GUIA #</span>
                             </label>
-                            <input id='N_GUIA_E' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            <input defaultValue={E_GUIA} id='N_GUIA_E' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                         </div>
 
                     </div>
