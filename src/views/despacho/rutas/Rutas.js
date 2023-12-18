@@ -193,6 +193,8 @@ function Rutas() {
             // "pageLength": 20,
             paging: false,
             order: [[2, "desc"]],
+            // responsive: true,
+            // fixedHeader: true,
             drawCallback: function (settings) {
                 var api = this.api();
                 var rows = api.rows({ page: 'current' }).nodes();
@@ -259,22 +261,23 @@ function Rutas() {
             {
                 data: "factura",
                 title: "FACTURA",
-                width: 150
+                // width: 200,
+                visible: false,
             },
             {
                 data: "CLIENTE_NOMBRE",
                 title: "CLIENTE",
-                width: 150
+                width: 200
             },
             {
                 data: "destino_nombre",
                 title: "DESTINO",
-                width: 150
+                width: 180
             },
             {
                 data: "producto_nombre",
                 title: "PRODUCTO",
-                width: 150
+                width: 300
             }, {
                 data: "holcim",
                 title: "HOLCIM",
@@ -287,16 +290,20 @@ function Rutas() {
             }, {
                 data: "flete_producto_nombre",
                 title: "FLETE PROD.",
-                width: 150
+                width: 300
             }, {
                 data: "pedido_interno",
                 title: "GUIA #",
                 width: 150
-            }, {
+            },  {
+                data: "pedido_interno",
+                title: "ESTADO",
+                width: 300
+            },{
                 data: null,
-                title: "Entregar a Proveedor",
+                title: "Modificar",
                 className: "btn_detalles",
-                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-light-danger"><i class="bi bi-pencil fs-3"></i></button>',
+                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-warning"><i class="bi bi-pencil fs-4"></i></button>',
                 orderable: "",
                 // width: 20
             }
@@ -306,29 +313,33 @@ function Rutas() {
                 $('td', row).eq(1).addClass("fw-bold fs-6 ");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 ");
-                $('td', row).eq(4).addClass("fw-bold fs-6 bg-info bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-6 ");
                 $('td', row).eq(5).addClass("fw-bold fs-6 ");
-                $('td', row).eq(6).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
-                $('td', row).eq(7).addClass("fw-bold fs-6 bg-primary bg-opacity-25");
-                if (data["cliente_id"] == null) {
-                    $('td', row).eq(9).removeClass("btn_detalles");
-                    $('td', row).eq(9).html("");
-                }
+                $('td', row).eq(6).addClass("fw-bold fs-6 ");
+                $('td', row).eq(7).addClass("fw-bold fs-6 ");
+
                 if (data["pedido_interno"] != "") {
                     if (data["FECHA_SALE_PLANTA"] == null) {
                         let a = `
-                        <span class ="text-danger fw-bold">ORDEN NO VALIDA</span><br>
+                        <span class ="fw-bold">`+ data["pedido_interno"] + `</span><br>
+                        <span class ="text-danger fw-bold fs-6">guia no valida</span><br>
                         `;
-                        $('td', row).eq(8).html(a);
+                        $('td', row).eq(7).html(a);
+                        $('td', row).eq(8).html("");
 
                     } else {
                         let a = `
-                            <span class ="fw-bold">`+ data["pedido_interno"] + `</span><br>
                             <span class ="fw-bold">retirada: </span><br>
-                            <span class ="fw-bold">`+ moment(data["FECHA_SALE_PLANTA"]).format("YYYY-MM-DD hh:mm A") + `</span><br>
+                            <span class ="fw-bold fs-6">`+ moment(data["FECHA_SALE_PLANTA"]).format("YYYY-MM-DD hh:mm A") + `</span><br>
                         `;
                         $('td', row).eq(8).html(a);
                     }
+                }
+                if (data["cliente_id"] == null) {
+                    $('td', row).eq(9).removeClass("btn_detalles");
+                    $('td', row).eq(9).html("");
+                    $('td', row).eq(7).html("");
+
                 }
             },
             "footerCallback": function (row, data, start, end, display) {
@@ -630,7 +641,7 @@ function Rutas() {
                     <CCardBody>
                         <div className='col-12'>
                             <div className='table-responsive' id='Tabla_Rutas_dia_SECC'>
-                                <table id='Tabla_Rutas_dia' className='display table'>
+                                <table id='Tabla_Rutas_dia' className='display table nowrap'>
 
                                 </table>
                             </div>
