@@ -18,13 +18,14 @@ import moment from 'moment';
 import Select from 'react-select'
 import ReactDOMServer from 'react-dom/server';
 
+var RUTA_ID = "";
 
 function Rutas() {
 
     const [visible_n, setVisible_n] = useState(false);
     const [visible_nc, setVisible_nc] = useState(false);
     const [visible_ne, setvisible_ne] = useState(false);
-    const [RUTA_ID, setRUTA_ID] = useState(false);
+    // const [RUTA_ID, setRUTA_ID] = useState("");
 
 
     function Cargar_Rutas() {
@@ -114,8 +115,7 @@ function Rutas() {
         }, 500);
         $('#Tabla_Rutas').on('click', 'td.btn_Asignar', function (respuesta) {
             var data = TABLA_.row(this).data();
-
-            setRUTA_ID(data["ID"])
+            RUTA_ID = (data["ID"]);
             let ID = data["ID"]
             Cargar_Rutas_dia(ID);
         });
@@ -126,6 +126,8 @@ function Rutas() {
         let param = {
             ID: data
         }
+        RUTA_ID = (data);
+        console.log('RUTA_ID: ', RUTA_ID);
 
         let url = "rutas/Cargar_Rutas_dia";
         ajax.AjaxSendReceiveData(url, param, function (x) {
@@ -150,7 +152,6 @@ function Rutas() {
         console.log('datos: ', datos);
 
 
-
         $('#Tabla_Rutas_dia_SECC').empty();
         if ($.fn.dataTable.isDataTable('#Tabla_Rutas_dia')) {
             $('#Tabla_Rutas_dia').DataTable().destroy();
@@ -164,10 +165,11 @@ function Rutas() {
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10"></th>
+                <th  class="fw-bold fs-5"></th>
+                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
             </tr>
             <tr>
@@ -175,8 +177,8 @@ function Rutas() {
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10">TOTAL</th>
-                <th  id="RD_TOTAL" colspan="3" class="fw-bold fs-5 bg-warning bg-opacity-10 text-center"></th>
+                <th  class="fw-bold fs-5 bg-success bg-opacity-10 text-end">TOTAL</th>
+                <th  id="RD_TOTAL" colspan="3" class="fw-bold fs-5 bg-success bg-opacity-10 text-center"></th>
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
                 <th  class="fw-bold fs-5"></th>
@@ -191,7 +193,11 @@ function Rutas() {
             data: datos,
             dom: 'Brtip',
             // "pageLength": 20,
+            fixedColumns: true,
             paging: false,
+            scrollCollapse: true,
+            scrollX: true,
+            // scrollY: 300,
             order: [[2, "desc"]],
             // responsive: true,
             // fixedHeader: true,
@@ -241,7 +247,8 @@ function Rutas() {
                     text: `<span className"fw-bold"><i class="bi bi-arrow-clockwise fs-4"></i></span>`,
                     className: 'btn btn-info',
                     action: function (e, dt, node, config) {
-                        Cargar_Rutas();
+                        Cargar_Rutas_dia(RUTA_ID);
+
                     },
                 },
                 {
@@ -252,11 +259,19 @@ function Rutas() {
                     },
                 },
             ],
+            columnDefs: [
+                { width: 100, targets: 2 },
+                { width: 120, targets: 3 },
+                { width: 180, targets: 5 },
+                { width: 180, targets: 9 },
+                { width: 200, targets: 10 },
+            ],
+            // columnDefs: [{ width: 160, targets: 3 }],
             columns: [{
                 data: "CHOFER",
                 title: "PLACA",
                 visible: false,
-                width: 150
+                // width: 200
             },
             {
                 data: "factura",
@@ -265,45 +280,65 @@ function Rutas() {
                 visible: false,
             },
             {
+                data: "pedido_interno",
+                title: "GUIA #",
+                // width: 150
+            },
+            {
                 data: "CLIENTE_NOMBRE",
                 title: "CLIENTE",
-                width: 200
+                // width: 300
             },
             {
                 data: "destino_nombre",
                 title: "DESTINO",
-                width: 180
+                // width: 180
             },
             {
                 data: "producto_nombre",
                 title: "PRODUCTO",
-                width: 300
+                // width: 300
             }, {
                 data: "holcim",
                 title: "HOLCIM",
+                className: "text-end"
             }, {
                 data: "bodega",
                 title: "BODEGA",
+                className: "text-end"
+
             }, {
                 data: "flete_cant",
                 title: "FLETE CANT.",
+                className: "text-end"
+
             }, {
                 data: "flete_producto_nombre",
                 title: "FLETE PROD.",
-                width: 300
+                // width: 300
             }, {
                 data: "pedido_interno",
-                title: "GUIA #",
-                width: 150
-            },  {
-                data: "pedido_interno",
                 title: "ESTADO",
-                width: 300
-            },{
+                // width: 300
+            }, {
+                data: null,
+                title: "Detalles",
+                className: "btn_detalles",
+                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-success"><i class="bi bi-eye fs-5"></i></button>',
+                orderable: "",
+                // width: 20
+            }, {
                 data: null,
                 title: "Modificar",
-                className: "btn_detalles",
-                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-warning"><i class="bi bi-pencil fs-4"></i></button>',
+                className: "btn_Modificar",
+                defaultContent: '<button type="button" id="btn_Modificar" class="btn_Modificar btn btn-warning"><i class="bi bi-pencil fs-5"></i></button>',
+                orderable: "",
+                // width: 20
+            }, {
+                data: null,
+                title: "Eliminar",
+                className: "btn_eliminar",
+                defaultContent: '<button type="button" id="btn_eliminar" class="btn_eliminar btn btn-danger"><i class="bi bi-trash fs-5"></i></button>',
                 orderable: "",
                 // width: 20
             }
@@ -312,9 +347,9 @@ function Rutas() {
                 $('td', row).eq(0).addClass("fw-bold fs-6");
                 $('td', row).eq(1).addClass("fw-bold fs-6 ");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
-                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
                 $('td', row).eq(4).addClass("fw-bold fs-6 ");
-                $('td', row).eq(5).addClass("fw-bold fs-6 ");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
                 $('td', row).eq(6).addClass("fw-bold fs-6 ");
                 $('td', row).eq(7).addClass("fw-bold fs-6 ");
 
@@ -329,7 +364,9 @@ function Rutas() {
 
                     } else {
                         let a = `
-                            <span class ="fw-bold">retirada: </span><br>
+                            <span class ="fw-bold text-success">Retirada</span>
+                            <span class ="fw-bold text-dark"> (`+ data["PLACA_RETIRO"] + `)</span>
+                            <br>
                             <span class ="fw-bold fs-6">`+ moment(data["FECHA_SALE_PLANTA"]).format("YYYY-MM-DD hh:mm A") + `</span><br>
                         `;
                         $('td', row).eq(8).html(a);
@@ -337,7 +374,11 @@ function Rutas() {
                 }
                 if (data["cliente_id"] == null) {
                     $('td', row).eq(9).removeClass("btn_detalles");
+                    $('td', row).eq(10).removeClass("btn_Modificar");
+                    $('td', row).eq(11).removeClass("btn_eliminar");
                     $('td', row).eq(9).html("");
+                    $('td', row).eq(10).html("");
+                    $('td', row).eq(11).html("");
                     $('td', row).eq(7).html("");
 
                 }
@@ -352,21 +393,21 @@ function Rutas() {
                             i : 0;
                 };
                 var holcim = api
-                    .column(5)
-                    .data()
-                    .reduce(function (a, b) {
-                        return (intVal(a) + intVal(b));
-
-                    }, 0);
-                var bodega = api
                     .column(6)
                     .data()
                     .reduce(function (a, b) {
                         return (intVal(a) + intVal(b));
 
                     }, 0);
-                var fletes = api
+                var bodega = api
                     .column(7)
+                    .data()
+                    .reduce(function (a, b) {
+                        return (intVal(a) + intVal(b));
+
+                    }, 0);
+                var fletes = api
+                    .column(8)
                     .data()
                     .reduce(function (a, b) {
                         return (intVal(a) + intVal(b));
@@ -388,21 +429,27 @@ function Rutas() {
         setTimeout(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
         }, 500);
-        $('#Tabla_Rutas').on('click', 'td.btn_Asignar', function (respuesta) {
-            var data = TABLA_.row(this).data();
-
-        });
-
         $('#Tabla_Rutas_dia').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
+        });
+
+        $('#Tabla_Rutas_dia').on('click', 'td.btn_eliminar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            Eliminar_ruta_dia_detalle(data["RUTA_DET_ID"])
+        });
+
+        $('#Tabla_Rutas_dia').on('click', 'td.btn_Modificar', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+
 
             setvisible_ne(true);
             setvisible_ne(false);
             setvisible_ne(true);
             $("#N_FACTURA_E").val(data["factura"]);
             setE_FACTURA(data["factura"]);
-
             setE_CLIENTE(data["cliente_id"]);
             setE_PRODUCTO(data["producto_id"]);
             setE_HOLCIM(data["holcim"]);
@@ -501,6 +548,7 @@ function Rutas() {
     const [N_ruta_dia_detalle_sucursal, setN_ruta_dia_detalle_sucursal] = useState("");
     const [N_cliente_id, setN_cliente_id] = useState("");
     const [N_producto_id, setN_producto_id] = useState("");
+    const [N_guia_id, setN_guia_id] = useState("");
     const [N_producto_flete_id, setN_producto_flete_id] = useState("");
 
     function Nueva_ruta_dia_detalle() {
@@ -516,9 +564,10 @@ function Rutas() {
             BODEGA: $("#N_BODEGA").val(),
             FLETE_CANT: $("#N_FLETE_CANT").val(),
             FLETE_PROD: N_producto_flete_id,
-            GUIA: $("#N_GUIA").val(),
+            GUIA: N_guia_id,
 
         }
+
 
 
         if (N_cliente_id == "") {
@@ -526,11 +575,12 @@ function Rutas() {
         } else {
             let url = "rutas/Nueva_Ruta_Dia_detalle"
             ajax.AjaxSendReceiveData(url, param, function (x) {
-                console.log('x: ', x);
+
 
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
                     Cargar_Rutas_dia(RUTA_ID);
+                    console.log('RUTA_ID: ', RUTA_ID);
                     setVisible_n(false);
                 } else {
                     ajax.Mensaje(x[1].toString(), "", "error")
@@ -541,8 +591,6 @@ function Rutas() {
         }
 
     }
-
-
 
     function Actualizar_ruta_dia_detalle() {
 
@@ -556,10 +604,11 @@ function Rutas() {
             BODEGA: $("#N_BODEGA_E").val(),
             FLETE_CANT: $("#N_FLETE_CANT_E").val(),
             FLETE_PROD: E_FLETE_PROD,
-            GUIA: $("#N_GUIA_E").val(),
+            GUIA: E_GUIA,
 
         }
         console.log('param: ', param);
+
 
 
         if (E_CLIENTE == "") {
@@ -582,14 +631,44 @@ function Rutas() {
 
     }
 
+    function Eliminar_ruta_dia_detalle(ID) {
+        console.log('RUTA_ID: ', RUTA_ID);
+        let param = {
+            RUTA_DIA_ID: ID,
+        }
 
 
+        Swal.fire({
+            title: "Se eliminara esta ruta, estas seguro?",
+            showDenyButton: true,
+            showCancelButton: false,
+            confirmButtonText: "Continuar",
+            denyButtonText: `Cancelar`
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                console.log('param: ', param);
+                let url = "rutas/Eliminar_Ruta_Dia_detalle"
+                ajax.AjaxSendReceiveData(url, param, function (x) {
+
+                    if (x[0] == 1) {
+                        ajax.Mensaje(x[1], "", "success");
+                        Cargar_Rutas_dia(RUTA_ID);
+                        console.log('RUTA_ID: ', RUTA_ID);
+                    } else {
+                        ajax.Mensaje(x[1].toString(), "", "error")
+                    }
+                })
+            }
+        });
+    }
 
     //***************** ONLOAD */
 
     const [CLIENTES, setCLIENTES] = useState([]);
     const [PRODUCTOS, setPRODUCTOS] = useState([]);
     const [CHOFERES, setCHOFERES] = useState([]);
+    const [GUIAS, setGUIAS] = useState([]);
 
     useEffect(() => {
         Cargar_Rutas();
@@ -603,6 +682,7 @@ function Rutas() {
 
         let url_p = "rutas/Cargar_Productos"
         ajax.AjaxSendReceiveData(url_p, [], function (x) {
+
             const clearOption = { value: null, label: 'N/A' };
             const optionsWithClear = [clearOption, ...x.map(option => ({ value: option.value, label: option.label }))];
             setPRODUCTOS(optionsWithClear);
@@ -610,8 +690,24 @@ function Rutas() {
 
         let url_ch = "rutas/Cargar_Chofer"
         ajax.AjaxSendReceiveData(url_ch, [], function (x) {
-
             setCHOFERES(x);
+        });
+
+        let url_gui = "rutas/Cargar_Guias"
+        let pa = {
+            FECHA_INI: moment().subtract(1, "month").format("YYYYMMDD"),
+            FECHA_FIN: moment().format("YYYYMMDD"),
+        }
+
+
+        ajax.AjaxSendReceiveData(url_gui, pa, function (x) {
+            x.map(function (x) {
+                x.value = x.PEDIDO_INTERNO
+                x.label = x.FECHA_DE_EMISION + "-" + x.PEDIDO_INTERNO + "-" + x.DESCRIPCION + "-" + x.POR_DESPACHAR
+            })
+
+
+            setGUIAS(x);
         });
 
 
@@ -698,7 +794,7 @@ function Rutas() {
                                 /> */}
                             </div>
                         </div>
-                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                        {/* <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">PRODUCTO</span>
                             </label>
@@ -709,6 +805,21 @@ function Rutas() {
                                     setN_producto_id(items.value);
                                 }}
                             />
+                        </div> */}
+                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span className="required bg-light mt-1">GUIA #</span>
+                            </label>
+                            <Select options={GUIAS}
+                                // defaultValue={PRODUCTOS.filter(option => option.value === null)}
+                                onChange={(items) => {
+
+                                    $("#N_HOLCIM").val(items.POR_DESPACHAR)
+                                    setN_guia_id(items.value);
+                                    setN_producto_id(items.ID);
+                                }}
+                            />
+                            {/* <input id='N_GUIA' type="text" className="form-control form-control-solid" placeholder="" name="target_title" /> */}
                         </div>
                         <div className="row g-9 mb-8">
 
@@ -716,7 +827,7 @@ function Rutas() {
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">HOLCIM</span>
                                 </label>
-                                <input id='N_HOLCIM' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input readOnly id='N_HOLCIM' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -725,14 +836,8 @@ function Rutas() {
                                 <input id='N_BODEGA' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                         </div>
+                        <h4 className='bg-light mt-3'>FLETE</h4>
                         <div className="row g-9 mb-8">
-
-                            <div className="col-md-6 fv-row fv-plugins-icon-container">
-                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    <span className="required">FLETE CANTIDAD</span>
-                                </label>
-                                <input id='N_FLETE_CANT' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
-                            </div>
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">FLETE PRODUCTO</span>
@@ -744,14 +849,16 @@ function Rutas() {
                                     }}
                                 />
                             </div>
+                            <div className="col-md-6 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">FLETE CANTIDAD</span>
+                                </label>
+                                <input id='N_FLETE_CANT' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+
                         </div>
 
-                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
-                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span className="required">GUIA #</span>
-                            </label>
-                            <input id='N_GUIA' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
-                        </div>
+
 
                     </div>
 
@@ -814,7 +921,7 @@ function Rutas() {
                                 /> */}
                             </div>
                         </div>
-                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                        {/* <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
                             <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span className="required">PRODUCTO</span>
                             </label>
@@ -824,6 +931,21 @@ function Rutas() {
                                     setE_PRODUCTO(items.value);
                                 }}
                             />
+                        </div> */}
+                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
+                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span className="required bg-light mt-1">GUIA #</span>
+                            </label>
+                            <Select options={GUIAS}
+                                defaultValue={GUIAS.filter(option => option.value === E_GUIA)}
+                                onChange={(items) => {
+
+                                    $("#N_HOLCIM_E").val(items.POR_DESPACHAR)
+                                    setE_GUIA(items.value);
+                                    setE_PRODUCTO(items.ID);
+                                }}
+                            />
+                            {/* <input id='N_GUIA' type="text" className="form-control form-control-solid" placeholder="" name="target_title" /> */}
                         </div>
                         <div className="row g-9 mb-8">
 
@@ -831,7 +953,7 @@ function Rutas() {
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">HOLCIM</span>
                                 </label>
-                                <input defaultValue={E_HOLCIM} id='N_HOLCIM_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input readOnly defaultValue={E_HOLCIM} id='N_HOLCIM_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -840,14 +962,9 @@ function Rutas() {
                                 <input defaultValue={E_BODEGA} id='N_BODEGA_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                         </div>
-                        <div className="row g-9 mb-8">
+                        <h4 className='bg-light mt-3'>FLETE</h4>
 
-                            <div className="col-md-6 fv-row fv-plugins-icon-container">
-                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    <span className="required">FLETE CANTIDAD</span>
-                                </label>
-                                <input defaultValue={E_FLETE_CANT} id='N_FLETE_CANT_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
-                            </div>
+                        <div className="row g-9 mb-8">
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">FLETE PRODUCTO</span>
@@ -859,14 +976,15 @@ function Rutas() {
                                     }}
                                 />
                             </div>
+                            <div className="col-md-6 fv-row fv-plugins-icon-container">
+                                <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span className="required">FLETE CANTIDAD</span>
+                                </label>
+                                <input defaultValue={E_FLETE_CANT} id='N_FLETE_CANT_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
+                            </div>
+
                         </div>
 
-                        <div className="d-flex flex-column mb-8 fv-row fv-plugins-icon-container">
-                            <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span className="required">GUIA #</span>
-                            </label>
-                            <input defaultValue={E_GUIA} id='N_GUIA_E' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
-                        </div>
 
                     </div>
 
