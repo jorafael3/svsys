@@ -13,6 +13,7 @@ const scrapy = React.lazy(() => import('./views/desarrollo/scrapy/Scrapy'))
 const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Clientes'))
 const reportes_guias = React.lazy(() => import('./views/reportes/guias/Guias'))
 const rutas = React.lazy(() => import('./views/despacho/rutas/Rutas'))
+const mis_rutas = React.lazy(() => import('./views/choferes/mis_rutas/Mis_rutas'))
 
 const choferes = Choferes;
 // const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
@@ -106,7 +107,16 @@ function Cargar_Rutas(callback) {
       "name": "Reportes guias",
       "element": reportes_guias,
       "exact": false
-    },
+    },{
+      "path": "/choferes",
+      "name": "Mis Rutas",
+      "exact": true
+    }, {
+      "path": "/choferes/Mis_rutas",
+      "name": "Mis Rutas",
+      "element": mis_rutas,
+      "exact": false
+    }
   ]
   let url = 'menu/Cargar_Menu'
   let DATOS_SESION = funciones.GET_DATOS_SESION()

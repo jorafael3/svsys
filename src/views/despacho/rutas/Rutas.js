@@ -17,6 +17,7 @@ import * as sesion from "../../../funciones/login/login";
 import moment from 'moment';
 import Select from 'react-select'
 import ReactDOMServer from 'react-dom/server';
+import 'moment/locale/es';
 
 var RUTA_ID = "";
 
