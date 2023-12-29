@@ -93,7 +93,7 @@ function AjaxSendReceiveData(url, param, callback) {
 
 function AjaxSendReceiveDatalogin(url, param, callback) {
     let DATOS_SESION = fun.GET_DATOS_SESION();
-    
+
 
     let token = "My0Ua8GDgEMPbpTZhiOEwjrzy5s4r9GFBOO7RWgwDA1kP2ZixULX0GpVHh99erfm";
     if (param.length == 0) {
@@ -103,7 +103,7 @@ function AjaxSendReceiveDatalogin(url, param, callback) {
     } else {
         param.TOKEN = token;
     }
-    
+
 
     $.ajax({
         url: URL + url,
@@ -117,7 +117,27 @@ function AjaxSendReceiveDatalogin(url, param, callback) {
         },
         error: function (error) {
             console.log('error: ', error);
-            
+
+        }
+    });
+}
+
+function guardarImg(url, data, callback) {
+
+    var formData = new FormData();
+    formData.append('file', data);
+    let param = {
+        archivo: 1,
+        formData: formData
+    }
+    $.ajax({
+        url: url,
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            callback(response)
         }
     });
 }
@@ -220,4 +240,4 @@ function Ciudades(value) {
     return ciudadesPorProvincia[value];
 }
 
-export { AjaxSendReceiveData, Mensaje, Ciudades, Provincias, AjaxSendReceiveDatalogin };
+export { AjaxSendReceiveData, Mensaje, Ciudades, Provincias, AjaxSendReceiveDatalogin, guardarImg };
