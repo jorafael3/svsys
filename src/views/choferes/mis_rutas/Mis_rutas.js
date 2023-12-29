@@ -267,6 +267,7 @@ function Mis_rutas() {
             $('#Tabla_Rutas_detalle').on('click', '.btn_Asignar .btn_despacho', function () {
                 var data = TABLA_.row($(this).closest('tr')).data();
                 console.log('data: ', data);
+
                 if (data["despachado"] == 1) {
                     ajax.Mensaje("Pedido ya entregado", "", "info")
                 } else {

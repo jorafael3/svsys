@@ -322,6 +322,10 @@ function Rutas() {
                 title: "ESTADO",
                 // width: 300
             }, {
+                data: "despachado",
+                title: "DESPACHO",
+                // width: 300
+            }, {
                 data: null,
                 title: "Detalles",
                 className: "btn_detalles",
@@ -357,11 +361,10 @@ function Rutas() {
                 if (data["pedido_interno"] != "") {
                     if (data["FECHA_SALE_PLANTA"] == null) {
                         let a = `
-                        <span class ="fw-bold">`+ data["pedido_interno"] + `</span><br>
-                        <span class ="text-danger fw-bold fs-6">guia no valida</span><br>
+                        <span class ="text-danger fw-bold fs-6">guia pendiente retiro</span><br>
                         `;
-                        $('td', row).eq(7).html(a);
-                        $('td', row).eq(8).html("");
+                        $('td', row).eq(8).html(a);
+                        // $('td', row).eq(8).html("");
 
                     } else {
                         let a = `
@@ -373,16 +376,35 @@ function Rutas() {
                         $('td', row).eq(8).html(a);
                     }
                 }
+
+                if (data["despachado"] == 0) {
+                    let a = `
+                    <span class ="fw-bold text-danger">Pendiente despacho</span>
+                    <br>
+                `;
+                    $('td', row).eq(9).html(a);
+                } else {
+                    let a = `
+                    <span class ="fw-bold text-success">Despachada</span>
+                    <br>
+                    <span class ="fw-bold fs-6">`+ moment(data["despachado_fecha"]).format("YYYY-MM-DD hh:mm A") + `</span><br>
+                `;
+                    $('td', row).eq(9).html(a);
+                }
+
+
                 if (data["cliente_id"] == null) {
-                    $('td', row).eq(9).removeClass("btn_detalles");
-                    $('td', row).eq(10).removeClass("btn_Modificar");
-                    $('td', row).eq(11).removeClass("btn_eliminar");
-                    $('td', row).eq(9).html("");
+                    $('td', row).eq(10).removeClass("btn_detalles");
+                    $('td', row).eq(11).removeClass("btn_Modificar");
+                    $('td', row).eq(12).removeClass("btn_eliminar");
                     $('td', row).eq(10).html("");
                     $('td', row).eq(11).html("");
-                    $('td', row).eq(7).html("");
-
+                    $('td', row).eq(12).html("");
+                    $('td', row).eq(8).html("");
+                    $('td', row).eq(9).html("");
                 }
+
+
             },
             "footerCallback": function (row, data, start, end, display) {
                 var api = this.api(),
@@ -438,7 +460,11 @@ function Rutas() {
         $('#Tabla_Rutas_dia').on('click', 'td.btn_eliminar', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
-            Eliminar_ruta_dia_detalle(data["RUTA_DET_ID"])
+            if (data["despachado"] == 0) {
+                Eliminar_ruta_dia_detalle(data["RUTA_DET_ID"])
+            } else {
+                ajax.Mensaje("No se puede eliminar", "Ruta ya ha sido despachada", "info")
+            }
         });
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_Modificar', function (respuesta) {
