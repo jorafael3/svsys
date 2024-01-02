@@ -14,6 +14,7 @@ const clientes = React.lazy(() => import('./views/mantenimiento/clientes/Cliente
 const reportes_guias = React.lazy(() => import('./views/reportes/guias/Guias'))
 const rutas = React.lazy(() => import('./views/despacho/rutas/Rutas'))
 const mis_rutas = React.lazy(() => import('./views/choferes/mis_rutas/Mis_rutas'))
+const mora = React.lazy(() => import('./views/credito/mora/Mora'))
 
 const choferes = Choferes;
 // const choferes = React.lazy(() => import('./views/mantenimiento/choferes/Choferes'))
@@ -115,6 +116,15 @@ function Cargar_Rutas(callback) {
       "path": "/choferes/Mis_rutas",
       "name": "Mis Rutas",
       "element": mis_rutas,
+      "exact": false
+    },{
+      "path": "/credito",
+      "name": "Credito",
+      "exact": true
+    }, {
+      "path": "/credito/mora",
+      "name": "Mora",
+      "element": mora,
       "exact": false
     }
   ]

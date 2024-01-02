@@ -26,6 +26,7 @@ function Rutas() {
     const [visible_n, setVisible_n] = useState(false);
     const [visible_nc, setVisible_nc] = useState(false);
     const [visible_ne, setvisible_ne] = useState(false);
+    const [visible_i, setVisible_i] = useState(false);
     // const [RUTA_ID, setRUTA_ID] = useState("");
 
 
@@ -148,6 +149,9 @@ function Rutas() {
     const [E_FLETE_PROD, setE_FLETE_PROD] = useState("");
     const [E_RUTA_DET_ID, setE_RUTA_DET_ID] = useState("");
     const [E_GUIA, setE_GUIA] = useState("");
+    const [D_ID, setD_ID] = useState("");
+    const [D_ID_DT, setD_ID_DT] = useState("");
+
 
     function Tabla_Rutas_dia(datos) {
         console.log('datos: ', datos);
@@ -159,33 +163,33 @@ function Rutas() {
             $('#Tabla_Rutas_dia_SECC').empty();
         }
         let tabla = `
-        <table id='Tabla_Rutas_dia' class=' display table table-striped'>
-        <tfoot >
-            <tr>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
-                <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-            </tr>
-            <tr>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5 bg-success bg-opacity-10 text-end">TOTAL</th>
-                <th  id="RD_TOTAL" colspan="3" class="fw-bold fs-5 bg-success bg-opacity-10 text-center"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-                <th  class="fw-bold fs-5"></th>
-            </tr>
-        </tfoot>
-        </table>
+            <table id='Tabla_Rutas_dia' class=' display table table-striped'>
+                <tfoot >
+                    <tr>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                        <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                        <th  class="fw-bold fs-5 bg-warning bg-opacity-10 text-end"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                    </tr>
+                    <tr>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5 bg-success bg-opacity-10 text-end">TOTAL</th>
+                        <th  id="RD_TOTAL" colspan="3" class="fw-bold fs-5 bg-success bg-opacity-10 text-center"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                        <th  class="fw-bold fs-5"></th>
+                    </tr>
+                </tfoot>
+            </table>
         `;
         $('#Tabla_Rutas_dia_SECC').append(tabla);
 
@@ -329,7 +333,7 @@ function Rutas() {
                 data: null,
                 title: "Detalles",
                 className: "btn_detalles",
-                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-success"><i class="bi bi-eye fs-5"></i></button>',
+                defaultContent: '<button type="button" id="btn_detalles" class="btn_detalles btn btn-light"><i class="bi bi-images fs-5"></i></button>',
                 orderable: "",
                 // width: 20
             }, {
@@ -455,6 +459,13 @@ function Rutas() {
         $('#Tabla_Rutas_dia').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
             console.log('data: ', data);
+            setVisible_i(true);
+            setD_ID(data["ID"]);
+            setD_ID_DT(data["RUTA_DETALLE_ID"]);
+            setTimeout(() => {
+                Cargar_imagenes(data["ID"], data["RUTA_DET_ID"]);
+            }, 500);
+
         });
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_eliminar', function (respuesta) {
@@ -491,6 +502,108 @@ function Rutas() {
 
         });
 
+    }
+
+    function Cargar_imagenes(D_ID, D_ID_DT) {
+        let param = {
+            ID: D_ID,
+            D_ID_DT: D_ID_DT,
+        }
+        console.log('param: ', param);
+
+        const host = window.location.hostname;
+        const port = window.location.port;
+        const protocol = window.location.protocol;
+
+        let url = "misrutas/Cargar_Documento"
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+            console.log('x: ', x);
+
+            if (x[0] == 1) {
+                let DATA = x[1];
+
+                $('#SECC_TABLA_DOCUMENTOS').empty();
+                if ($.fn.dataTable.isDataTable('#TABLA_DOCUMENTOS')) {
+                    $('#TABLA_DOCUMENTOS').DataTable().destroy();
+                    $('#SECC_TABLA_DOCUMENTOS').empty();
+                }
+                let tabla = `
+                    <table id='TABLA_DOCUMENTOS' class=' display table table-striped'>
+                    </table>
+                    `;
+                $('#SECC_TABLA_DOCUMENTOS').append(tabla);
+                let TABLA_ = $('#TABLA_DOCUMENTOS').DataTable({
+                    destroy: true,
+                    data: DATA,
+                    dom: 'Brtip',
+                    "pageLength": 3,
+                    // paging: false,
+                    info: false,
+                    order: [[0, "desc"]],
+                    buttons: [
+                        {
+                            text: `<span class"fw-bold"><i class="bi bi-arrow-clockwise fs-5"></i></span>`,
+                            className: 'btn btn-info btn-sm',
+                            action: function (e, dt, node, config) {
+                                Cargar_imagenes(D_ID, D_ID_DT);
+                            },
+                        },
+                    ],
+                    columns: [{
+                        data: "nombre",
+                        title: "nombre",
+                    },
+                        // {
+                        //     data: null,
+                        //     title: "",
+                        //     className: "btn_Asignar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                        //     defaultContent: '<button type="button" class="btn_Asignar btn btn-danger text-light"><i class="bi bi-trash fs-5 fw-bold"></i></button>',
+                        //     orderable: "",
+                        //     width: 20
+                        // },
+                    ],
+                    "createdRow": function (row, data, index) {
+                        $('td', row).eq(0).addClass("fw-bold fs-5");
+                        $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                        $('td', row).eq(2).addClass("fw-bold fs-6 ");
+
+                        let fir = protocol + "//" + host + "/" + "svsysback/recursos/guias_subidas/"
+
+                        let link = fir + data["nombre"];
+
+                        let d = `
+                        <div class="">
+                            <img style="height:500px;width:100%" class="" src="`+ link + `" alt="a">
+                        </div>
+                        `;
+                        $('td', row).eq(0).html(d);
+                    },
+                });
+                setTimeout(function () {
+                    $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
+                }, 500);
+
+                $('#TABLA_DOCUMENTOS').on('click', 'td.btn_Asignar', function (respuesta) {
+                    var data = TABLA_.row(this).data();
+
+
+                    let param = {
+                        ID: data["ID"]
+                    }
+                    let url = "misrutas/Eliminar_Documento"
+                    ajax.AjaxSendReceiveData(url, param, function (x) {
+                        if (x[0] == 1) {
+                            ajax.Mensaje("Imagen Eliminada", "", "success");
+                            Cargar_imagenes(D_ID, D_ID_DT);
+                        } else {
+                            ajax.Mensaje("Error al eliminar", "", "error");
+                        }
+                    })
+
+                });
+            }
+
+        })
     }
 
     function Nueva_Ruta() {
@@ -1049,6 +1162,34 @@ function Rutas() {
                         Cerrar
                     </CButton>
                     <CButton color="primary" onClick={Nueva_Ruta_Dia} >Guardar Cambios</CButton>
+                </CModalFooter>
+            </CModal>
+
+            <CModal size="lg" id='AD_MODAL_IMG' backdrop="static" visible={visible_i} onClose={() => setVisible_i(false)}>
+                <CModalHeader>
+                    <CModalTitle>Imagenes</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div id="kt_modal_new_target_form" className="form fv-plugins-bootstrap5 fv-plugins-framework" action="#">
+
+                        <div className='col-12'>
+
+                            <div id='SECC_TABLA_DOCUMENTOS'>
+                                <table id='TABLA_DOCUMENTOS'>
+
+                                </table>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setVisible_i(false)}>
+                        Cerrar
+                    </CButton>
+                    {/* <CButton color="primary" onClick={Nueva_ruta_dia_detalle} >Guardar Cambios</CButton> */}
                 </CModalFooter>
             </CModal>
         </CRow>

@@ -332,6 +332,7 @@ function Mis_rutas() {
 
                     let url = "misrutas/Guardar_Documento"
                     ajax.AjaxSendReceiveData(url, param, function (x) {
+                        console.log('x: ', x);
 
 
                         if (x[0] == 1) {
@@ -339,7 +340,7 @@ function Mis_rutas() {
                             Cargar_imagenes(D_ID, D_ID_DT);
                         } else {
 
-                            ajax.Mensaje("Error al subir", x[1], "erro");
+                            ajax.Mensaje("Error al subir", x[1], "error");
                         }
 
                     })
@@ -364,10 +365,6 @@ function Mis_rutas() {
         const host = window.location.hostname;
         const port = window.location.port;
         const protocol = window.location.protocol;
-
-
-
-
 
         let url = "misrutas/Cargar_Documento"
         ajax.AjaxSendReceiveData(url, param, function (x) {
