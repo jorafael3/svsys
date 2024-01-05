@@ -40,6 +40,8 @@ function Por_Cliente() {
             RUC: ruc
         }
         console.log('param: ', param);
+
+        console.log('param: ', param);
         let url = "Mora/Cargar_Datos_Cliente"
         ajax.AjaxSendReceiveData(url, param, function (x) {
             console.log('x: ', x);
