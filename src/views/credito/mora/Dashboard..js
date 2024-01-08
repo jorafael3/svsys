@@ -44,8 +44,12 @@ function Dashboard() {
 
 
             let EVOLUCION_MOROSIDAD_GRAFICO_ = x["EVOLUCION_MOROSIDAD_GRAFICO"];
+            let EVOLUCION_MOROSIDAD_TABLA_ = x["EVOLUCION_MOROSIDAD_TABLA"];
+            // let CARTERA_POR_ESTADO_ = x["CARTERA_POR_ESTADO"];
 
-            EVOLUCION_MOROSIDAD_GRAFICO(EVOLUCION_MOROSIDAD_GRAFICO_)
+            EVOLUCION_MOROSIDAD_GRAFICO(EVOLUCION_MOROSIDAD_GRAFICO_);
+            EVOLUCION_MOROSIDAD_TABLA(EVOLUCION_MOROSIDAD_TABLA_);
+            CARTERA_POR_ESTADO(EVOLUCION_MOROSIDAD_TABLA_)
         })
 
     }
@@ -135,6 +139,263 @@ function Dashboard() {
         }); // end am4core.ready()
     }
 
+    function EVOLUCION_MOROSIDAD_TABLA(datos) {
+
+        let r1 = datos.filter(item => item.rango_dias >= 1 && item.rango_dias <= 8);
+        let r1_operaciones = r1.length;
+        let r1_saldo = 0;
+
+        r1.map(function (x) {
+            r1_saldo = r1_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r2 = datos.filter(item => item.rango_dias >= 8 && item.rango_dias <= 15);
+        let r2_operaciones = r2.length;
+        let r2_saldo = 0;
+
+        r2.map(function (x) {
+            r2_saldo = r2_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r3 = datos.filter(item => item.rango_dias >= 15 && item.rango_dias <= 30);
+        let r3_operaciones = r3.length;
+        let r3_saldo = 0;
+
+        r3.map(function (x) {
+            r3_saldo = r3_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        // Continúa replicando el bloque anterior cambiando los índices hasta llegar a 8...
+
+        let r4 = datos.filter(item => item.rango_dias >= 30 && item.rango_dias <= 45);
+        let r4_operaciones = r4.length;
+        let r4_saldo = 0;
+
+        r4.map(function (x) {
+            r4_saldo = r4_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r5 = datos.filter(item => item.rango_dias >= 45 && item.rango_dias <= 70);
+        let r5_operaciones = r5.length;
+        let r5_saldo = 0;
+
+        r5.map(function (x) {
+            r5_saldo = r5_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r6 = datos.filter(item => item.rango_dias >= 70 && item.rango_dias <= 90);
+        let r6_operaciones = r6.length;
+        let r6_saldo = 0;
+
+        r6.map(function (x) {
+            r6_saldo = r6_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r7 = datos.filter(item => item.rango_dias >= 90 && item.rango_dias <= 120);
+        let r7_operaciones = r7.length;
+        let r7_saldo = 0;
+
+        r7.map(function (x) {
+            r7_saldo = r7_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r8 = datos.filter(item => item.rango_dias >= 120 && item.rango_dias <= 150);
+        let r8_operaciones = r8.length;
+        let r8_saldo = 0;
+
+        r8.map(function (x) {
+            r8_saldo = r8_saldo + parseFloat(x.Saldo);
+        });
+
+
+
+
+        let r9 = datos.filter(item => item.rango_dias >= 150 && item.rango_dias <= 180);
+        let r9_operaciones = r9.length;
+        let r9_saldo = 0;
+        r9.map(function (x) {
+            r9_saldo = r9_saldo + parseFloat(x.Saldo);
+        });
+
+        let r10 = datos.filter(item => item.rango_dias >= 180);
+        let r10_operaciones = r10.length;
+        let r10_saldo = 0;
+        r10.map(function (x) {
+            r10_saldo = r10_saldo + parseFloat(x.Saldo);
+        });
+
+
+        let TOTAL_SALDO = r1_saldo + r2_saldo + r3_saldo + r4_saldo + r5_saldo + r6_saldo + r7_saldo + r8_saldo + r9_saldo + r10_saldo;
+        let TOTAL_OPERACIONES = r1_operaciones + r2_operaciones + r3_operaciones + r4_operaciones + r5_operaciones + r6_operaciones + r7_operaciones + r8_operaciones + r9_operaciones + r10_operaciones;
+
+
+        let b = [
+            {
+                "pos": 1,
+                "RANGO": r1[0]["Rango"],
+                "SALDO": r1_saldo,
+                "OPERACIONES": r1_operaciones
+            },
+            {
+                "pos": 2,
+                "RANGO": r2[0]["Rango"],
+                "SALDO": r2_saldo,
+                "OPERACIONES": r2_operaciones
+            },
+            {
+                "pos": 3,
+                "RANGO": r3[0]["Rango"],
+                "SALDO": r3_saldo,
+                "OPERACIONES": r3_operaciones
+            },
+            // Repite este patrón para los rangos restantes hasta el rango 10...
+            {
+                "pos": 4,
+                "RANGO": r4[0]["Rango"],
+                "SALDO": r4_saldo,
+                "OPERACIONES": r4_operaciones
+            },
+            {
+                "pos": 5,
+                "RANGO": r5[0]["Rango"],
+                "SALDO": r5_saldo,
+                "OPERACIONES": r5_operaciones
+            },
+            {
+                "pos": 6,
+                "RANGO": r6[0]["Rango"],
+                "SALDO": r6_saldo,
+                "OPERACIONES": r6_operaciones
+            },
+            {
+                "pos": 7,
+                "RANGO": r7[0]["Rango"],
+                "SALDO": r7_saldo,
+                "OPERACIONES": r7_operaciones
+            },
+            {
+                "pos": 8,
+                "RANGO": r8[0]["Rango"],
+                "SALDO": r8_saldo,
+                "OPERACIONES": r8_operaciones
+            },
+            {
+                "pos": 9,
+                "RANGO": r9[0]["Rango"],
+                "SALDO": r9_saldo,
+                "OPERACIONES": r9_operaciones
+            },
+            {
+                "pos": 10,
+                "RANGO": r10[0]["Rango"],
+                "SALDO": r10_saldo,
+                "OPERACIONES": r10_operaciones
+            },
+            {
+                "pos": 11,
+                "RANGO": "TOTAL",
+                "SALDO": TOTAL_SALDO,
+                "OPERACIONES": TOTAL_OPERACIONES
+            }
+        ];
+
+
+
+        $('#Tabla_Evo').empty();
+        if ($.fn.dataTable.isDataTable('#Tabla_Evo')) {
+            $('#Tabla_Evo').DataTable().destroy();
+            $('#Tabla_Evo_SECC').empty();
+        }
+        let tabla = `
+            <table id='Tabla_Evo' class='table display table-striped'>
+            </table>
+        `;
+        $('#Tabla_Evo_SECC').append(tabla);
+        let TABLA_ = $('#Tabla_Evo').DataTable({
+            destroy: true,
+            data: b,
+            dom: 'rtip',
+            paging: false,
+            info: false,
+            // buttons: ['colvis', "excel"],
+            // scrollCollapse: true,
+            // scrollX: true,
+            // columnDefs: [
+            //     { width: 100, targets: 0 },
+            //     { width: 300, targets: 2 },
+            // ],
+            order: [[0, "asc"]],
+            columns: [
+                {
+                    "data": "pos",
+                    "title": "RANGO MORA",
+                    className: "text-start",
+                    visible: false
+                },
+                {
+                    "data": "RANGO",
+                    "title": "RANGO MORA",
+                    className: "text-start"
+                },
+                {
+                    "data": "SALDO",
+                    "title": "SALDO",
+                    className: "text-end",
+                    render: $.fn.dataTable.render.number(',', '.', 2, "$")
+
+                },
+                {
+                    "data": "OPERACIONES",
+                    "title": "OPERACIONES",
+                    className: "text-end"
+
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                $('td', row).eq(3).addClass("fw-bold fs-6 ");
+                if (data["RANGO"] == "TOTAL") {
+                    $('td', row).eq(0).addClass("bg-success bg-opacity-50");
+                    $('td', row).eq(1).addClass("bg-success bg-opacity-50");
+                    $('td', row).eq(2).addClass("bg-success bg-opacity-50");
+                }
+
+            },
+        })
+
+    }
+
+    function CARTERA_POR_ESTADO(datos) {
+        console.log('datos: ', datos);
+
+    }
+
+
+
+
     const [FECHA_INI_DC, setFECHA_INI_DC] = useState(moment().startOf("month").format("YYYY-MM"));
 
     function Descripcion_Colocacion() {
@@ -155,7 +416,7 @@ function Dashboard() {
     }
 
     function POR_PLAZO(datos) {
-        console.log('datos: ', datos);
+
         let r1 = datos[0];
         let r2 = datos[1];
         let r3 = datos[2];
@@ -299,7 +560,7 @@ function Dashboard() {
             }
         ];
 
-        console.log('ARRAY: ', ARRAY);
+
 
         $('#DESC_POR_PLAZO').empty();
         if ($.fn.dataTable.isDataTable('#DESC_POR_PLAZO')) {
@@ -548,13 +809,12 @@ function Dashboard() {
                     </div>
                     <div className='col-12' id=''>
                         <div className='row'>
-                            <div className='col-12'>
+                            <div className='col-6'>
                                 <div id="chart_evolucion" style={{ height: 500 }}></div>
                             </div>
-                            <div className='col-5'>
-                                <div className='table-responsive' id='Tabla_Rutas_SECC'>
-
-                                    <table id='Tabla_Rutas' className='display table table-striped'>
+                            <div className='col-6'>
+                                <div className='table-responsive' id='Tabla_Evo_SECC'>
+                                    <table id='Tabla_Evo' className='display table table-striped'>
                                     </table>
                                 </div>
                             </div>
