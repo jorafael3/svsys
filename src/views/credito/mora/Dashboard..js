@@ -37,19 +37,37 @@ function Dashboard() {
         maximumFractionDigits: 2,
     };
 
+    const [DATOS_TOTALES, setDATOS_TOTALES] = useState([]);
+
+
 
     function Cargar_Dasboard() {
         let url = "mora/Cargar_Dashboard"
         ajax.AjaxSendReceiveData(url, [], function (x) {
+            console.log('x: ', x);
 
+            // let cliCreditosMora = x;
+            // // Función para obtener el número de filas para cada registro
+            // const obtenerRowNum = (registro) => {
+            //     return cliCreditosMora.filter(cr => cr.Identificacion === registro.Identificacion && new Date(cr.FechaCorte) >= new Date(registro.FechaCorte)).length;
+            // };
+            // // Agregar la columna RowNum a cada registro
+            // const resultados = cliCreditosMora.map(cr => ({
+            //     ...cr,
+            //     RowNum: obtenerRowNum(cr),
+            // }));
 
-            let EVOLUCION_MOROSIDAD_GRAFICO_ = x["EVOLUCION_MOROSIDAD_GRAFICO"];
-            let EVOLUCION_MOROSIDAD_TABLA_ = x["EVOLUCION_MOROSIDAD_TABLA"];
+            // setDATOS_TOTALES(resultados);
+
+            // EVOLUCION_MOROSIDAD_TABLA(resultados);
+
+            // let EVOLUCION_MOROSIDAD_GRAFICO_ = x["EVOLUCION_MOROSIDAD_GRAFICO"];
+            // let EVOLUCION_MOROSIDAD_TABLA_ = x["EVOLUCION_MOROSIDAD_TABLA"];
             // let CARTERA_POR_ESTADO_ = x["CARTERA_POR_ESTADO"];
 
-            EVOLUCION_MOROSIDAD_GRAFICO(EVOLUCION_MOROSIDAD_GRAFICO_);
-            EVOLUCION_MOROSIDAD_TABLA(EVOLUCION_MOROSIDAD_TABLA_);
-            CARTERA_POR_ESTADO(EVOLUCION_MOROSIDAD_TABLA_)
+            // EVOLUCION_MOROSIDAD_GRAFICO(EVOLUCION_MOROSIDAD_GRAFICO_);
+            // EVOLUCION_MOROSIDAD_TABLA(EVOLUCION_MOROSIDAD_TABLA_);
+            // CARTERA_POR_ESTADO(EVOLUCION_MOROSIDAD_TABLA_)
         })
 
     }
@@ -139,20 +157,52 @@ function Dashboard() {
         }); // end am4core.ready()
     }
 
-    function EVOLUCION_MOROSIDAD_TABLA(datos) {
+    function EVOLUCION_MOROSIDAD_TABLA(ARRAY) {
 
-        let r1 = datos.filter(item => item.rango_dias >= 1 && item.rango_dias <= 8);
+        function calcularRango(registro) {
+            const rangoDias = Math.abs((new Date(registro.FechaVencimiento) - new Date(registro.FechaCorte)) / (1000 * 60 * 60 * 24));
+
+            switch (true) {
+                case rangoDias >= 1 && rangoDias <= 8:
+                    return "DE 1 A 8 DIAS";
+                case rangoDias >= 9 && rangoDias <= 15:
+                    return "DE 8 A 15 DIAS";
+                case rangoDias >= 16 && rangoDias <= 30:
+                    return "DE 15 A 30 DIAS";
+                case rangoDias >= 31 && rangoDias <= 45:
+                    return "DE 30 A 45 DIAS";
+                case rangoDias >= 46 && rangoDias <= 70:
+                    return "DE 45 A 70 DIAS";
+                case rangoDias >= 71 && rangoDias <= 90:
+                    return "DE 70 A 90 DIAS";
+                case rangoDias >= 91 && rangoDias <= 120:
+                    return "DE 90 A 120 DIAS";
+                case rangoDias >= 121 && rangoDias <= 150:
+                    return "DE 120 A 150 DIAS";
+                case rangoDias >= 151 && rangoDias <= 180:
+                    return "DE 150 A 180 DIAS";
+                case rangoDias >= 181:
+                    return "DE 180 DIAS";
+                default:
+                    return null;
+            }
+        };
+
+        let datos = ARRAY
+            .filter(r => r.RowNum === 1 && r.EstadoCredito === "VIGENTE" && !ARRAY.some(r2 => r2.Identificacion === r.Identificacion && r2.RowNum > r.RowNum && r2.EstadoCredito === "CANCELADO"))
+            .map(r => ({ ...r, Rango: calcularRango(r) }));
+
+        console.log('resultados: ', datos);
+        let r1 = datos.filter(item => item.Rango == "DE 1 A 8 DIAS");
         let r1_operaciones = r1.length;
         let r1_saldo = 0;
 
         r1.map(function (x) {
             r1_saldo = r1_saldo + parseFloat(x.Saldo);
         });
+        console.log('r1: ', r1);
 
-
-
-
-        let r2 = datos.filter(item => item.rango_dias >= 8 && item.rango_dias <= 15);
+        let r2 = datos.filter(item => item.Rango == "DE 8 A 15 DIAS");
         let r2_operaciones = r2.length;
         let r2_saldo = 0;
 
@@ -160,10 +210,7 @@ function Dashboard() {
             r2_saldo = r2_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r3 = datos.filter(item => item.rango_dias >= 15 && item.rango_dias <= 30);
+        let r3 = datos.filter(item => item.Rango == "DE 15 A 30 DIAS");
         let r3_operaciones = r3.length;
         let r3_saldo = 0;
 
@@ -171,12 +218,9 @@ function Dashboard() {
             r3_saldo = r3_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
         // Continúa replicando el bloque anterior cambiando los índices hasta llegar a 8...
 
-        let r4 = datos.filter(item => item.rango_dias >= 30 && item.rango_dias <= 45);
+        let r4 = datos.filter(item => item.Rango == "DE 30 A 45 DIAS");
         let r4_operaciones = r4.length;
         let r4_saldo = 0;
 
@@ -184,10 +228,7 @@ function Dashboard() {
             r4_saldo = r4_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r5 = datos.filter(item => item.rango_dias >= 45 && item.rango_dias <= 70);
+        let r5 = datos.filter(item => item.Rango == "DE 45 A 70 DIAS");
         let r5_operaciones = r5.length;
         let r5_saldo = 0;
 
@@ -195,10 +236,7 @@ function Dashboard() {
             r5_saldo = r5_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r6 = datos.filter(item => item.rango_dias >= 70 && item.rango_dias <= 90);
+        let r6 = datos.filter(item => item.Rango == "DE 70 A 90 DIAS");
         let r6_operaciones = r6.length;
         let r6_saldo = 0;
 
@@ -206,10 +244,7 @@ function Dashboard() {
             r6_saldo = r6_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r7 = datos.filter(item => item.rango_dias >= 90 && item.rango_dias <= 120);
+        let r7 = datos.filter(item => item.Rango == "DE 90 A 120 DIAS");
         let r7_operaciones = r7.length;
         let r7_saldo = 0;
 
@@ -217,10 +252,7 @@ function Dashboard() {
             r7_saldo = r7_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r8 = datos.filter(item => item.rango_dias >= 120 && item.rango_dias <= 150);
+        let r8 = datos.filter(item => item.Rango == "DE 120 A 150 DIAS");
         let r8_operaciones = r8.length;
         let r8_saldo = 0;
 
@@ -228,17 +260,14 @@ function Dashboard() {
             r8_saldo = r8_saldo + parseFloat(x.Saldo);
         });
 
-
-
-
-        let r9 = datos.filter(item => item.rango_dias >= 150 && item.rango_dias <= 180);
+        let r9 = datos.filter(item => item.Rango == "DE 150 A 180 DIAS");
         let r9_operaciones = r9.length;
         let r9_saldo = 0;
         r9.map(function (x) {
             r9_saldo = r9_saldo + parseFloat(x.Saldo);
         });
 
-        let r10 = datos.filter(item => item.rango_dias >= 180);
+        let r10 = datos.filter(item => item.Rango == "DE 180 DIAS");
         let r10_operaciones = r10.length;
         let r10_saldo = 0;
         r10.map(function (x) {
@@ -389,7 +418,7 @@ function Dashboard() {
     }
 
     function CARTERA_POR_ESTADO(datos) {
-        console.log('datos: ', datos);
+
 
     }
 
@@ -794,7 +823,7 @@ function Dashboard() {
     useEffect(() => {
 
         Cargar_Dasboard();
-        Descripcion_Colocacion();
+        // Descripcion_Colocacion();
     }, []);
 
     return (
