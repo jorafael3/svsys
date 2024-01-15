@@ -288,10 +288,10 @@ function Mis_rutas() {
                             ajax.AjaxSendReceiveData(url, param, function (x) {
                                 console.log('x: ', x);
                                 if (x[0] == 1) {
-                                    ajax.Mensaje("Imagen Eliminada", "", "success");
+                                    ajax.Mensaje("Orden despachada", "", "success");
                                     Cargar_Mis_Rutas_Detalle(ID_RUTA_GEN)
                                 } else {
-                                    ajax.Mensaje("Error al eliminar", "", "error");
+                                    ajax.Mensaje("Error al Guardar", "", "error");
                                 }
                             });
                         }
