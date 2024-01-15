@@ -129,7 +129,7 @@ function Rutas() {
             ID: data
         }
         RUTA_ID = (data);
-        console.log('RUTA_ID: ', RUTA_ID);
+        
 
         let url = "rutas/Cargar_Rutas_dia";
         ajax.AjaxSendReceiveData(url, param, function (x) {
@@ -155,6 +155,7 @@ function Rutas() {
 
     function Tabla_Rutas_dia(datos) {
         console.log('datos: ', datos);
+        
 
 
         $('#Tabla_Rutas_dia_SECC').empty();
@@ -198,12 +199,12 @@ function Rutas() {
             data: datos,
             dom: 'Brtip',
             // "pageLength": 20,
-            fixedColumns: true,
+            // fixedColumns: true,
             paging: false,
             scrollCollapse: true,
             scrollX: true,
             // scrollY: 300,
-            order: [[2, "desc"]],
+            // order: [[2, "desc"]],
             // responsive: true,
             // fixedHeader: true,
             drawCallback: function (settings) {
@@ -214,12 +215,14 @@ function Rutas() {
                 api.column(0, { page: 'current' })
                     .data()
                     .each(function (group, i, r) {
+                        console.log('group: ', group);
                         var additionalInfo = api.cell({ row: r, column: 2 }).data(); // Obtener datos de la columna 2
 
 
                         if (last !== group) {
 
                             let ID = group.split("/")
+                            console.log('ID: ', ID);
 
 
                             const reactString = ReactDOMServer.renderToString(
@@ -458,7 +461,7 @@ function Rutas() {
         }, 500);
         $('#Tabla_Rutas_dia').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             setVisible_i(true);
             setD_ID(data["ID"]);
             setD_ID_DT(data["RUTA_DETALLE_ID"]);
@@ -470,7 +473,7 @@ function Rutas() {
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_eliminar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
             if (data["despachado"] == 0) {
                 Eliminar_ruta_dia_detalle(data["RUTA_DET_ID"])
             } else {
@@ -480,7 +483,7 @@ function Rutas() {
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_Modificar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            console.log('data: ', data);
+            
 
 
             setvisible_ne(true);
@@ -509,7 +512,7 @@ function Rutas() {
             ID: D_ID,
             D_ID_DT: D_ID_DT,
         }
-        console.log('param: ', param);
+        
 
         const host = window.location.hostname;
         const port = window.location.port;
@@ -517,7 +520,7 @@ function Rutas() {
 
         let url = "misrutas/Cargar_Documento"
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            console.log('x: ', x);
+            
 
             if (x[0] == 1) {
                 let DATA = x[1];
@@ -720,7 +723,7 @@ function Rutas() {
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
                     Cargar_Rutas_dia(RUTA_ID);
-                    console.log('RUTA_ID: ', RUTA_ID);
+                    
                     setVisible_n(false);
                 } else {
                     ajax.Mensaje(x[1].toString(), "", "error")
@@ -747,7 +750,7 @@ function Rutas() {
             GUIA: E_GUIA,
 
         }
-        console.log('param: ', param);
+        
 
 
 
@@ -772,7 +775,7 @@ function Rutas() {
     }
 
     function Eliminar_ruta_dia_detalle(ID) {
-        console.log('RUTA_ID: ', RUTA_ID);
+        
         let param = {
             RUTA_DIA_ID: ID,
         }
@@ -787,14 +790,14 @@ function Rutas() {
         }).then((result) => {
             /* Read more about isConfirmed, isDenied below */
             if (result.isConfirmed) {
-                console.log('param: ', param);
+                
                 let url = "rutas/Eliminar_Ruta_Dia_detalle"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
 
                     if (x[0] == 1) {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Rutas_dia(RUTA_ID);
-                        console.log('RUTA_ID: ', RUTA_ID);
+                        
                     } else {
                         ajax.Mensaje(x[1].toString(), "", "error")
                     }
