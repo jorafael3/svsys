@@ -114,6 +114,14 @@ function Cargar_Guias_retiradas_No_Ingresadas(param, callback) {
     });
 }
 
+function Actualizar_FActura(param, callback) {
+    let url = URL + 'Actualizar_FActura'
+    fun.AjaxSendReceiveData(url, param, function (x) {
+        console.log('x: ', x);
+        callback(x);
+    });
+}
+
 
 
 export {
@@ -131,4 +139,5 @@ export {
     Cargar_Guias_Retiradas_Vigentes,
     Cargar_Guias_retiradas_Entregas,
     Cargar_Guias_retiradas_No_Ingresadas,
+    Actualizar_FActura
 };

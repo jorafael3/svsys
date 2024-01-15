@@ -15,6 +15,12 @@ import axios from 'axios';
 import moment from 'moment';
 import * as funciones from '../../../funciones/Despacho/administrar/administrar';
 import * as fun from "../../../config/config"
+import { iter } from '@amcharts/amcharts4/core';
+import Select from 'react-select'
+
+
+var CHOFER_SELECT = "TODO";
+var CLIENTE_SELECT = "TODO";
 
 function Administrar() {
     const [visible, setVisible] = useState(false);
@@ -63,7 +69,7 @@ function Administrar() {
         let FECHA_INI = $("#AD_FECHA_INI").val();
         let FECHA_FIN = $("#AD_FECHA_FIN").val();
         let POR_RETIRO = $("#flexSwitchCheckDefault").is(":checked") == true ? 1 : 0;
-        console.log('POR_RETIRO: ', POR_RETIRO);
+
 
         // let ESTADO = $("#SEL_ESTADO_PEDIDO").val();
         let param = {
@@ -102,7 +108,7 @@ function Administrar() {
             });
 
             funciones.Guias_En_Proceso(param, function (x) {
-                console.log('x: ', x);
+
                 Cargar_Guias_Proceso_Despacho(x);
                 var VAL = x.reduce((sum, value) => (sum + parseFloat(value.POR_DESPACHAR)), 0);
                 setPRO_SACOS_POR_DESP(VAL);
@@ -1120,15 +1126,7 @@ function Administrar() {
 
 
 
-    useEffect(() => {
-        // Coloca aquí la lógica que deseas ejecutar cuando la página se carga
-        let hoy = moment().format("YYYY-MM-DD");
-        let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
-        $("#AD_FECHA_INI").val(inicio_mes);
-        $("#AD_FECHA_FIN").val(hoy);
-        setGuias_Retiradas_Form(true);
-        Cargar_Guias_Retiradas();
-    }, []);
+
     function ajustar(item) {
         Cargar_Datos();
     }
@@ -1140,19 +1138,30 @@ function Administrar() {
     //** GUIAS RETIRADAS */
 
     const [DATOS_RETIRADAS, setDATOS_RETIRADAS] = useState([]);
+    const [DATOS_ENTREGADAS, setDATOS_ENTREGADAS] = useState([]);
+    const [DATOS_CHOFERES, setDATOS_CHOFERES] = useState([]);
+    const [DATOS_CLIENTES, setDATOS_CLIENTES] = useState([]);
+    const [ESTADO_RETIRO, setESTADO_RETIRO] = useState(false);
+    const [FACTURA_RET, setFACTURA_RET] = useState(false);
+    const [GRDD_ID, setGRDD_ID] = useState("");
+
 
 
     function Cargar_Guias_Retiradas() {
         let f_ini = $("#AD_FECHA_INI").val();
         let f_fin = $("#AD_FECHA_FIN").val();
         let Estado = $("#ESTADO_RETIRADAS").val() == undefined ? 1 : $("#ESTADO_RETIRADAS").val();
-
+        if (Estado == 2) {
+            setESTADO_RETIRO(true);
+        } else {
+            setESTADO_RETIRO(false);
+        }
         let param = {
             inicio_mes: f_ini,
             fin_mes: f_fin,
             Estado: Estado
         }
-        console.log('param: ', param);
+
         if ($.fn.dataTable.isDataTable('#AD_TABLA_GUIAS_RETIRADAS')) {
             $('#AD_TABLA_GUIAS_RETIRADAS').DataTable().destroy();
             $('#AD_TABLA_GUIAS_RETIRADAS_SECC').empty();
@@ -1166,16 +1175,24 @@ function Administrar() {
         $('#MEN_NO_RETIRADAS').text("");
         if (Estado == 1) {
             funciones.Cargar_Guias_Retiradas_Vigentes(param, function (x) {
+
+                setDATOS_RETIRADAS(x);
                 // Tabla_Cargar_facturas_Pedido(x);
                 Tabla_Retiradas_Vigentes(x);
+                llenar_Choferes(x);
+                llenar_Clientes(x);
             })
         } else if (Estado == 2) {
             funciones.Cargar_Guias_retiradas_Entregas(param, function (x) {
                 // Tabla_Cargar_facturas_Pedido(x);
+                setDATOS_ENTREGADAS(x);
                 Tabla_Retiradas_Entregas(x);
+                llenar_Choferes(x);
+                llenar_Clientes(x);
+
             })
         } else if (Estado == 3) {
-           
+
             $('#MEN_NO_RETIRADAS').text("* La guias se retiraron pero no estan ingresadas");
             funciones.Cargar_Guias_retiradas_No_Ingresadas(param, function (x) {
                 // Tabla_Cargar_facturas_Pedido(x);
@@ -1189,36 +1206,50 @@ function Administrar() {
         let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
             destroy: true,
             data: datos,
-            dom: 'rtip',
+            dom: 'frtip',
             // "pageLength": 5,
             order: [[0, "desc"]],
             columns: [{
                 data: "FECHA_DE_EMISION",
-                title: "FECHA_DE_EMISION",
+                title: "EMISION",
             },
             {
                 data: "PEDIDO_INTERNO",
-                title: "PEDIDO_INTERNO"
+                title: "PEDIDO INTERNO"
             },
             {
-                data: "FECHA_VALIDEZ",
-                title: "FECHA_VALIDEZ"
-            }, {
+                data: "chofer_nombre",
+                title: "CHOFER"
+            },
+            {
+                data: "chofer_placa",
+                title: "PLACA"
+            },
+            {
+                data: "cliente_nombre",
+                title: "CLIENTE"
+            },
+            {
+                data: "cliente_destino_nombre",
+                title: "DESTINO"
+            },
+            {
+                data: "FACTURA",
+                title: "FACTURA"
+            },
+            {
                 data: "VENCIDO",
-                title: "VENCIDO",
+                title: "VIGENCIA",
                 render: function (x, y, r) {
                     const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
-
                     if (x == 1) {
                         x = `
                         <span class="text-success">Vigente</span><br>
-                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
                         <span class="text-muted">`+ diferenciaEnDias + ` días </span>
                         `
                     } else {
                         x = `
                         <span class="text-danger">Vencida</span><br>
-                        <span class="text-muted">`+ r.FECHA_VALIDEZ + `</span><br>
                         <span class="text-muted">`+ diferenciaEnDias + ` días</span>
                         `
                     }
@@ -1236,14 +1267,24 @@ function Administrar() {
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-6 ");
-                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 bg-success bg-opacity-10");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
                 $('td', row).eq(3).addClass("fw-bold fs-6 ");
                 $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
-                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
+                $('td', row).eq(5).addClass("fw-bold fs-6 bg-secondary bg-opacity-10");
                 $('td', row).eq(6).addClass("fw-bold fs-6");
-                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(7).addClass("fw-bold fs-6");
                 $('td', row).eq(8).addClass("fw-bold fs-6");
+                let col1 = `
+                    <div class="text-muted fs-6">`+ moment(data["FECHA_DE_EMISION"]).format("YYYY-MM-DD") + `</div>
+                    <div class="fs-6">
+                        <span>`+ data["PEDIDO_INTERNO"] + `</span>
+                    </div>
+                `;
+                // $('td', row).eq(0).html(col1);
+
+
+
 
             },
         });
@@ -1252,6 +1293,8 @@ function Administrar() {
             var data = TABLA_.row(this).data();
             setVisible2(true);
             setPedido(data["PEDIDO_INTERNO"]);
+            setFACTURA_RET(data["FACTURA"]);
+            setGRDD_ID(data["GRDD_ID"])
             let param = {
                 PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
             }
@@ -1262,41 +1305,69 @@ function Administrar() {
     }
 
     function Tabla_Retiradas_Entregas(datos) {
-        console.log('datos: ', datos);
+
 
         let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
             destroy: true,
             data: datos,
-            dom: 'rtip',
+            dom: 'frtip',
             // "pageLength": 5,
             order: [[0, "desc"]],
             columns: [{
                 data: "FECHA_DE_EMISION",
-                title: "FECHA_DE_EMISION",
+                title: "EMISION",
+            }, {
+                data: "PEDIDO_INTERNO",
+                title: "PEDIDO"
+            },
+            {
+                data: "chofer_placa",
+                title: "PLACA"
+            },
+            {
+                data: "cliente_nombre",
+                title: "CLIENTE"
+            },
+            {
+                data: "cliente_destino_nombre",
+                title: "DESTINO"
+            },
+            {
+                data: "FACTURA",
+                title: "FACTURA"
             },
             {
                 data: "FECHA_SALE_PLANTA",
-                title: "FECHA DE RETIRO",
+                title: "RETIRO",
                 render: function (x, y, r) {
                     const diferenciaEnDias = (moment(r.FECHA_VALIDEZ)).diff(moment(), 'days');
 
                     x = `
+                        <span class="text-success">Retirado</span><br>
                         <span class="text-muted">`+ moment(x).format("YYYY-MM-DD") + `</span><br>
                         <span class="text-muted">`+ moment(x).format("HH:mm A") + ` </span>
                         `
                     return x;
                 }
-            },
-            {
-                data: "PEDIDO_INTERNO",
-                title: "PEDIDO_INTERNO"
             }, {
-                data: "Nombre",
-                title: "RETIRADO POR",
+                data: "despachado",
+                title: "DESPACHO",
+                render: function (x, y, r) {
+                    if (x == 0 || x == null) {
+                        x = `
+                        <span class="text-danger">Pendiente</span><br>
+                        <span class="text-danger">Despacho</span><br>
+                        `
+                    } else {
+                        x = `
+                        <span class="text-primary">Despachado</span><br>
+                        <span class="text-muted">`+ moment(r.despachado_fecha).format("YYYY-MM-DD") + `</span><br>
+                        <span class="text-muted">`+ moment(r.despachado_fecha).format("HH:mm A") + ` </span>
+                        `
+                    }
 
-            }, {
-                data: "placa",
-                title: "PLACA",
+                    return x;
+                }
             },
             {
                 data: null,
@@ -1309,22 +1380,34 @@ function Administrar() {
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-6 ");
-                $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                $('td', row).eq(1).addClass("fw-bold fs-6 bg-success bg-opacity-10");
                 $('td', row).eq(2).addClass("fw-bold fs-6 ");
-                $('td', row).eq(3).addClass("fw-bold fs-6 ");
-                $('td', row).eq(4).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
-                $('td', row).eq(5).addClass("fw-bold fs-6 bg-primary bg-opacity-10");
-                $('td', row).eq(6).addClass("fw-bold fs-6");
-                $('td', row).eq(7).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(3).addClass("fw-bold fs-6 bg-warning bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-6 ");
+                $('td', row).eq(5).addClass("fw-bold fs-6 ");
+                $('td', row).eq(6).addClass("fw-bold fs-6 bg-light bg-opacity-75");
+                $('td', row).eq(7).addClass("fw-bold fs-6 ");
                 $('td', row).eq(8).addClass("fw-bold fs-6");
+
+                let col1 = `
+                <span class="">`+ data["chofer_nombre"] + `</span><br>
+                <span class="text-muted">`+ data["chofer_placa"] + ` </span>
+                `;
+
+                $('td', row).eq(2).html(col1);
+
 
             },
         });
 
         $('#AD_TABLA_GUIAS_RETIRADAS').on('click', 'td.btn_detalle', function (respuesta) {
             var data = TABLA_.row(this).data();
+
             setVisible2(true);
             setPedido(data["PEDIDO_INTERNO"]);
+            setFACTURA_RET(data["FACTURA"]);
+            setGRDD_ID(data["GRDD_ID"])
+
             let param = {
                 PEDIDO_INTERNO: data["PEDIDO_INTERNO"]
             }
@@ -1335,12 +1418,12 @@ function Administrar() {
     }
 
     function Tabla_Retiradas_No_Ingresadas(datos) {
-        console.log('datos: ', datos);
+
 
         let TABLA_ = $('#AD_TABLA_GUIAS_RETIRADAS').DataTable({
             destroy: true,
             data: datos,
-            dom: 'rtip',
+            dom: 'frtip',
             // "pageLength": 5,
             order: [[0, "desc"]],
             columns: [
@@ -1404,8 +1487,138 @@ function Administrar() {
         });
     }
 
+    function llenar_Choferes(datos) {
+        let unique = [...new Set(datos.map(item => item.chofer_id))];
 
 
+
+        let ARRAY_ = [{
+            value: "TODO",
+            label: "TODO"
+        }]
+        unique.map(function (x) {
+            if (x != null) {
+                let fil = datos.filter(item => item.chofer_id == x)[0]
+
+                let b = {
+                    value: fil.chofer_id,
+                    label: fil.chofer_placa + " - " + fil.chofer_nombre
+                }
+                ARRAY_.push(b);
+            }
+        })
+
+        setDATOS_CHOFERES(ARRAY_)
+
+    }
+
+    function llenar_Clientes(datos) {
+        let unique = [...new Set(datos.map(item => item.cliente_id))];
+        console.log('unique: ', unique);
+
+
+
+        let ARRAY_ = [{
+            value: "TODO",
+            label: "TODO"
+        }]
+        unique.map(function (x) {
+            if (x != null) {
+                let fil = datos.filter(item => item.cliente_id == x)[0]
+
+                let b = {
+                    value: fil.cliente_id,
+                    label: fil.cliente_nombre
+                }
+                ARRAY_.push(b);
+            }
+        })
+
+        setDATOS_CLIENTES(ARRAY_)
+
+    }
+
+    // const [CLIENTE_SELECT, setCLIENTE_SELECT] = useState("TODO");
+    // const [CHOFER_SELECT, setCHOFER_SELECT] = useState("TODO");
+
+
+    function FILTRAR_DATOS() {
+        let Estado = $("#ESTADO_RETIRADAS").val() == undefined ? 1 : $("#ESTADO_RETIRADAS").val();
+
+        let datafiltrada = [];
+
+        if (Estado == 1) {
+            datafiltrada = DATOS_RETIRADAS
+        } else if (Estado == 2) {
+            datafiltrada = DATOS_ENTREGADAS
+        }
+
+        if (CHOFER_SELECT != "TODO") {
+            datafiltrada = datafiltrada.filter(item => item.chofer_id == CHOFER_SELECT)
+        }
+
+        if (CLIENTE_SELECT != "TODO") {
+            datafiltrada = datafiltrada.filter(item => item.cliente_id == CLIENTE_SELECT)
+        }
+
+        if (Estado == 2) {
+            let estado_des = $("#ESTADO_DESPACHADAS").val();
+
+            if (estado_des == 1) {
+                datafiltrada = datafiltrada.filter(item => item.despachado == 0 || item.despachado == null || item.despachado == "")
+            } else if (estado_des == 2) {
+                datafiltrada = datafiltrada.filter(item => item.despachado == 1)
+            }
+        }
+
+        if (Estado == 1) {
+            Tabla_Retiradas_Vigentes(datafiltrada);
+        } else if (Estado == 2) {
+            Tabla_Retiradas_Entregas(datafiltrada);
+        }
+
+    }
+
+    function Actualizar_FActura() {
+        let FACTURA = $("#FACTURA_R").val()
+        console.log('FACTURA: ', FACTURA);
+
+        if (FACTURA == "") {
+            fun.Mensaje("Debe ingresar un numero de factura", "", "error")
+        } else {
+            let param = {
+                GRDD_ID: GRDD_ID,
+                FACTURA: FACTURA
+
+            }
+            console.log('param: ', param);
+            funciones.Actualizar_FActura(param, function (x) {
+                console.log('x: ', x);
+                if (x[0] == 1) {
+                    fun.Mensaje(x[1], "", "success")
+
+                } else {
+                    fun.Mensaje("Error al actualizar", "", "error")
+
+                }
+
+            })
+        }
+
+    }
+
+
+
+
+    useEffect(() => {
+        // Coloca aquí la lógica que deseas ejecutar cuando la página se carga
+        let hoy = moment().format("YYYY-MM-DD");
+        let inicio_mes = moment().startOf("month").format("YYYY-MM-DD");
+        $("#AD_FECHA_INI").val(inicio_mes);
+        $("#AD_FECHA_FIN").val(hoy);
+        setGuias_Retiradas_Form(true);
+        Cargar_Guias_Retiradas();
+    }, []);
 
 
     return (
@@ -1548,13 +1761,56 @@ function Administrar() {
 
 
                                 <div className='col-12 mt-4'>
-                                    <div className='col-4'>
-                                        <select onChange={Cargar_Guias_Retiradas} className='form-select' id='ESTADO_RETIRADAS'>
-                                            <option value="1" className='fs-4 fw-bold'>Vigentes</option>
-                                            <option value="2" className='fs-4 fw-bold'>Retiradas</option>
-                                            <option value="3" className='text-danger fs-4 fw-bold'>No ingresadas !</option>
-                                        </select>
+                                    <div className='row'>
+                                        <div className='col-3'>
+                                            <h5>Tipo de retiro</h5>
+                                            <select onChange={Cargar_Guias_Retiradas} className='form-select' id='ESTADO_RETIRADAS'>
+                                                <option value="1" className='fs-4 fw-bold'>Por retirar en planta</option>
+                                                <option value="2" className='fs-4 fw-bold'>Retiradas de planta</option>
+                                                <option value="3" className='text-danger fs-4 fw-bold'>No ingresadas !</option>
+                                            </select>
+                                        </div>
+                                        <div className='col-3'>
+                                            <h5>Chofer</h5>
+                                            <Select options={DATOS_CHOFERES}
+                                                // defaultValue={PRODUCTOS.filter(option => option.value === null)}
+                                                onChange={(items) => {
+                                                    // setCLIENTE_SELECT(items.value);
+                                                    CHOFER_SELECT = items.value;
+                                                    FILTRAR_DATOS()
+                                                }}
+                                            />
+                                        </div>
+                                        <div className='col-3'>
+                                            <h5>Cliente</h5>
+                                            <Select options={DATOS_CLIENTES}
+                                                // defaultValue={PRODUCTOS.filter(option => option.value === null)}
+                                                onChange={(items) => {
+                                                    // setCLIENTE_SELECT(items.value);
+                                                    CLIENTE_SELECT = items.value;
+                                                    FILTRAR_DATOS()
+                                                }}
+                                            />
+                                        </div>
+
+                                        {ESTADO_RETIRO && (
+                                            <div className='col-3'>
+                                                <h5>Estado despacho</h5>
+                                                <select onChange={FILTRAR_DATOS} className='form-select' id='ESTADO_DESPACHADAS'>
+                                                    <option value="TODO" className='fs-5 fw-bold'>TODO</option>
+                                                    <option value="1" className='text-danger fs-5 fw-bold'>Pendiente despacho</option>
+                                                    <option value="2" className='text-primary fs-5 fw-bold'>Despachadas</option>
+                                                </select>
+                                            </div>
+                                        )
+
+                                        }
+
+
+
+
                                     </div>
+
                                     <h4 className='text-danger fw-bold mt-2' id='MEN_NO_RETIRADAS'></h4>
                                     <div className='table-responsive mt-3' id='AD_TABLA_GUIAS_RETIRADAS_SECC'>
                                         <table id='AD_TABLA_GUIAS_RETIRADAS' className='table table-striped'>
@@ -1697,6 +1953,13 @@ function Administrar() {
                                     <h4 className="mb-2 mb-3">Pedido Interno #
                                         <span className="text-gray-700" id="ORDEN_NUM">{Pedido}</span>
                                     </h4>
+
+                                    <div className='col-4'>
+                                        <h5>Factura</h5>
+                                        <input id='FACTURA_R' defaultValue={FACTURA_RET} className='form-control' type="text" />
+                                        <button onClick={Actualizar_FActura} className='btn btn-success mt-1'>Actualizar</button>
+                                    </div>
+
 
                                     <div className='col-12' >
                                         <div className='table-responsive'>

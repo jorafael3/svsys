@@ -38,6 +38,7 @@ function Dashboard() {
     };
 
     const [DATOS_TOTALES, setDATOS_TOTALES] = useState([]);
+    const [DATOS_TOTALES_CORTE, setDATOS_TOTALES_CORTE] = useState([]);
 
 
 
@@ -46,21 +47,28 @@ function Dashboard() {
         ajax.AjaxSendReceiveData(url, [], function (x) {
             console.log('x: ', x);
 
-            // let cliCreditosMora = x;
+            let cliCreditosMora = x;
             // // Función para obtener el número de filas para cada registro
-            // const obtenerRowNum = (registro) => {
-            //     return cliCreditosMora.filter(cr => cr.Identificacion === registro.Identificacion && new Date(cr.FechaCorte) >= new Date(registro.FechaCorte)).length;
-            // };
+            const obtenerRowNum = (registro) => {
+                return cliCreditosMora.filter(cr => cr.Identificacion === registro.Identificacion && new Date(cr.FechaCorte) >= new Date(registro.FechaCorte)).length;
+            };
             // // Agregar la columna RowNum a cada registro
-            // const resultados = cliCreditosMora.map(cr => ({
-            //     ...cr,
-            //     RowNum: obtenerRowNum(cr),
-            // }));
+            const resultados = cliCreditosMora.map(cr => ({
+                ...cr,
+                RowNum: obtenerRowNum(cr),
+            }));
 
-            // setDATOS_TOTALES(resultados);
+            let datos = resultados
+                .filter(r => r.RowNum === 1 && r.EstadoCredito === "VIGENTE" && !resultados.some(r2 => r2.Identificacion === r.Identificacion && r2.RowNum > r.RowNum && r2.EstadoCredito === "CANCELADO"));
 
-            // EVOLUCION_MOROSIDAD_TABLA(resultados);
 
+            setDATOS_TOTALES(resultados);
+            setDATOS_TOTALES_CORTE(datos);
+            console.log('resultados: ', datos);
+
+            EVOLUCION_MOROSIDAD_TABLA(datos);
+            POR_PLAZO(datos)
+            POR_MONTO(datos)
             // let EVOLUCION_MOROSIDAD_GRAFICO_ = x["EVOLUCION_MOROSIDAD_GRAFICO"];
             // let EVOLUCION_MOROSIDAD_TABLA_ = x["EVOLUCION_MOROSIDAD_TABLA"];
             // let CARTERA_POR_ESTADO_ = x["CARTERA_POR_ESTADO"];
@@ -159,6 +167,8 @@ function Dashboard() {
 
     function EVOLUCION_MOROSIDAD_TABLA(ARRAY) {
 
+        const newarray = JSON.parse(JSON.stringify(ARRAY));
+
         function calcularRango(registro) {
             const rangoDias = Math.abs((new Date(registro.FechaVencimiento) - new Date(registro.FechaCorte)) / (1000 * 60 * 60 * 24));
 
@@ -188,9 +198,7 @@ function Dashboard() {
             }
         };
 
-        let datos = ARRAY
-            .filter(r => r.RowNum === 1 && r.EstadoCredito === "VIGENTE" && !ARRAY.some(r2 => r2.Identificacion === r.Identificacion && r2.RowNum > r.RowNum && r2.EstadoCredito === "CANCELADO"))
-            .map(r => ({ ...r, Rango: calcularRango(r) }));
+        let datos = newarray.map(r => ({ ...r, Rango: calcularRango(r) }));
 
         console.log('resultados: ', datos);
         let r1 = datos.filter(item => item.Rango == "DE 1 A 8 DIAS");
@@ -422,9 +430,6 @@ function Dashboard() {
 
     }
 
-
-
-
     const [FECHA_INI_DC, setFECHA_INI_DC] = useState(moment().startOf("month").format("YYYY-MM"));
 
     function Descripcion_Colocacion() {
@@ -432,8 +437,6 @@ function Dashboard() {
             FECHA_INI: moment(FECHA_INI_DC).format("YYYYMMDD"),
             FECHA_FIN: moment(FECHA_INI_DC).endOf("month").format("YYYYMMDD"),
         }
-
-
         let url = "mora/Descripcion_Colocacion"
         ajax.AjaxSendReceiveData(url, param, function (x) {
 
@@ -444,17 +447,19 @@ function Dashboard() {
         })
     }
 
-    function POR_PLAZO(datos) {
+    function POR_PLAZO(ARRAY_) {
 
-        let r1 = datos[0];
-        let r2 = datos[1];
-        let r3 = datos[2];
-        let r4 = datos[3];
-        let r5 = datos[4];
-        let r6 = datos[5];
-        let r7 = datos[6];
-        let r8 = datos[7];
-        let r9 = datos[8];
+        let datos = JSON.parse(JSON.stringify(ARRAY_));
+
+        let r1 = datos.filter(item => parseInt(item.PlazoOriginal) >= 0 && parseInt(item.PlazoOriginal) <= 2);
+        let r2 = datos.filter(item => parseInt(item.PlazoOriginal) >= 3 && parseInt(item.PlazoOriginal) <= 5);
+        let r3 = datos.filter(item => parseInt(item.PlazoOriginal) >= 6 && parseInt(item.PlazoOriginal) <= 8);
+        let r4 = datos.filter(item => parseInt(item.PlazoOriginal) >= 9 && parseInt(item.PlazoOriginal) <= 11);
+        let r5 = datos.filter(item => parseInt(item.PlazoOriginal) >= 12 && parseInt(item.PlazoOriginal) <= 14);
+        let r6 = datos.filter(item => parseInt(item.PlazoOriginal) >= 15 && parseInt(item.PlazoOriginal) <= 17);
+        let r7 = datos.filter(item => parseInt(item.PlazoOriginal) >= 18 && parseInt(item.PlazoOriginal) <= 20);
+        let r8 = datos.filter(item => parseInt(item.PlazoOriginal) >= 21 && parseInt(item.PlazoOriginal) <= 23);
+        let r9 = datos.filter(item => parseInt(item.PlazoOriginal) >= 24 && parseInt(item.PlazoOriginal) <= 26);
 
         let r1_operaciones = r1.length;
         let r2_operaciones = r2.length;
@@ -669,13 +674,14 @@ function Dashboard() {
 
     }
 
-    function POR_MONTO(datos) {
+    function POR_MONTO(ARRAY_) {
 
+        let datos = JSON.parse(JSON.stringify(ARRAY_));
 
-        let r1 = datos[0];
-        let r2 = datos[1];
-        let r3 = datos[2];
-        let r4 = datos[3];
+        let r1 = datos.filter(item => parseFloat(item.MontoOriginal) < 1000);
+        let r2 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1000 && parseFloat(item.MontoOriginal) < 1200);
+        let r3 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1200 && parseFloat(item.MontoOriginal) < 1500);
+        let r4 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1500 && parseFloat(item.MontoOriginal) <= 4000);
 
         let r1_operaciones = r1.length;
         let r2_operaciones = r2.length;
@@ -858,7 +864,7 @@ function Dashboard() {
                     <div className='col-12 '>
                         <div className='row'>
                             <div className='col-12'>
-                                <div className="row g-9 mb-8">
+                                {/* <div className="row g-9 mb-8">
                                     <div className="col-md-3 fv-row">
                                         <label className="required fs-6 fw-semibold mb-2">Fecha Inicio</label>
                                         <input
@@ -874,7 +880,7 @@ function Dashboard() {
                                             onClick={Descripcion_Colocacion}
                                             className='btn btn-success text-light fw-bold mt-4'><i className="bi bi-search fw-bold fs-5"></i></button>
                                     </div>
-                                </div>
+                                </div> */}
 
                             </div>
                             <div className='col-9'>
