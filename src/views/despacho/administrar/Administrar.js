@@ -1652,7 +1652,7 @@ function Administrar() {
                                     <button onClick={Cargar_Datos} className='btn btn-success text-light fw-bold mt-4'><i className="bi bi-search fw-bold fs-5"></i></button>
                                 </div>
                             </div>
-                            <div className='mt-3 m-3'>
+                            {/* <div className='mt-3 m-3'>
                                 <div className="form-check form-switch">
                                     <input className="form-check-input fs-5" name='a' type="radio" id="flexSwitchCheckDefault" defaultChecked />
                                     <label className="form-check-label fw-bold" >Por Retiro de planta</label>
@@ -1661,7 +1661,7 @@ function Administrar() {
                                     <input className="form-check-input fs-5" name='a' type="radio" id="flexSwitchCheckChecked" />
                                     <label className="form-check-label fw-bold">Por despacho</label>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         {
                             barra_visible == true && (
