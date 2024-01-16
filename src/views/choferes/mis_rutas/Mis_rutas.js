@@ -56,7 +56,7 @@ function Mis_rutas() {
                 $('#Tabla_Rutas_SECC').empty();
             }
             let tabla = `
-            <table id='Tabla_Rutas' class=' display table table-striped'>
+            <table id='Tabla_Rutas' class=' table table-striped'>
             </table>
             `;
             $('#Tabla_Rutas_SECC').append(tabla);
@@ -88,6 +88,16 @@ function Mis_rutas() {
                     className: "text-center"
                 },
                 {
+                    data: "DESPACHADAS",
+                    title: "DESPACHADAS",
+                    className: "text-center"
+                },
+                {
+                    data: null,
+                    title: "",
+                    className: "text-center"
+                },
+                {
                     data: null,
                     title: "",
                     className: "btn_Asignar text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
@@ -97,12 +107,22 @@ function Mis_rutas() {
                 },
                 ],
                 "createdRow": function (row, data, index) {
-                    $('td', row).eq(0).addClass("fw-bold fs-5");
-                    $('td', row).eq(1).addClass("fw-bold fs-6 ");
+                    $('td', row).eq(0).addClass("fw-bold fs-5 ");
+                    $('td', row).eq(1).addClass("fw-bold fs-5 ");
                     $('td', row).eq(2).addClass("fw-bold fs-6 ");
+                    $('td', row).eq(3).addClass("fw-bold fs-6 text-success");
 
+                    if (parseInt(data["RUTAS_ASIGNADAS"]) == parseInt(data["DESPACHADAS"])) {
+                        $('td', row).eq(0).addClass("bg-success bg-opacity-10");
+                        $('td', row).eq(1).addClass("bg-success bg-opacity-10");
+                        $('td', row).eq(2).addClass("bg-success bg-opacity-10");
+                        $('td', row).eq(3).html("Completo");
+                    } else {
+                        // $('td', row).eq(1).addClass("bg-success bg-opacity-10");
+                        $('td', row).eq(2).addClass("bg-danger bg-opacity-10");
+                        $('td', row).eq(3).html("");
 
-
+                    }
 
                 },
             });
@@ -133,6 +153,8 @@ function Mis_rutas() {
     const [D_BODEGA, setD_BODEGA] = useState("");
     const [D_PRODUCTO_F, setD_PRODUCTO_F] = useState("");
     const [D_CANTIDAD_F, setD_CANTIDAD_F] = useState("");
+    const [D_RUTA_DETALLE_CANTIDAD, setD_RUTA_DETALLE_CANTIDAD] = useState("");
+    const [D_RUTA_DETALLE_DESPACHADO, setD_RUTA_DETALLE_DESPACHADO] = useState("");
 
 
     function Cargar_Mis_Rutas_Detalle(data) {
@@ -146,6 +168,16 @@ function Mis_rutas() {
 
         let url = "misrutas/Cargar_Mis_Rutas_Detalle"
         ajax.AjaxSendReceiveData(url, param, function (x) {
+            console.log('x: ', x);
+            setD_RUTA_DETALLE_CANTIDAD(x.length)
+
+            let DES = 0
+            x.map(function (x) {
+                console.log('x: ', x);
+                DES = DES + parseInt(x.despachado)
+            })
+            setD_RUTA_DETALLE_DESPACHADO(DES)
+
 
             $('#Tabla_Rutas_detalle_SECC').empty();
             if ($.fn.dataTable.isDataTable('#Tabla_Rutas_detalle')) {
@@ -489,21 +521,28 @@ function Mis_rutas() {
                     </CCardHeader>
                     <CCardBody>
                         <div className='col-xl-12 col-sm-12'>
-                            <h2 className='fs-1'>{USUARIO}</h2>
-                            <h2 className='fs-2 text-muted'>{PLACA}</h2>
+                            <h4 className='fs-1'>{USUARIO} {PLACA}</h4>
+                            <h2 className='fs-2 text-muted'></h2>
                             <h4 className='fs-4 text-muted'>{moment().format("YYYY MMMM D")}</h4>
                         </div>
                         {SECC_TABLA && (
                             <div className='col-12 mt-2' id=''>
                                 <div className='table-responsive' id='Tabla_Rutas_SECC'>
-                                    <table id='Tabla_Rutas' className='display table table-striped'>
+                                    <table id='Tabla_Rutas' className=' table table-striped'>
                                     </table>
                                 </div>
                             </div>
                         )}
 
                         {SECC_TABLA_DETALLE && (
+
                             <div className='col-12 mt-3' id=''>
+                                <h4 className='fs-4'>
+                                    Rutas Asignadas {D_RUTA_DETALLE_CANTIDAD}
+                                </h4>
+                                <h4 className='fs-4'>
+                                    Rutas Despachadas {D_RUTA_DETALLE_DESPACHADO}
+                                </h4>
                                 <div className='table-responsive' id='Tabla_Rutas_detalle_SECC'>
                                     <table id='Tabla_Rutas_detalle' className='display table table-striped'>
                                     </table>

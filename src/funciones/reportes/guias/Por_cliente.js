@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     CRow,
     CCol,
+    CCard,
+    CCardBody,
+    CCardHeader,
     CDropdown,
     CDropdownMenu,
     CDropdownItem,
@@ -38,29 +41,28 @@ function Cargar_datos(param) {
     function Reporte_Clientes_General() {
         let url = URL + "Reporte_Clientes_General"
         fun.AjaxSendReceiveData(url, param, function (res) {
-            // console.log('x: ', x);
+            console.log('res: ', res);
+            // 
             // let data = JSON.parse(JSON.stringify(res));
             // setdatos_totales(data);
-            let reporte = res[0];
-            let servicios = res[1];
-            reporte.map(function (x) {
-                let filtro = servicios.filter(item => item.CLIENTE_ENTREGA_ID == x.CLIENTE_ID)[0];
-                // console.log('filtro: ', filtro);
-                const keys = Object.keys(filtro);
-                for (const key of keys) {
-                    const value = filtro[key];
-                    x[key] = value
-                }
-            });
-            console.log('res: ', res);
-            Tabla_Reporte_Clientes_General(reporte);
-            FATURADO(reporte);
+            // let reporte = res[0];
+            // let servicios = res[1];
+            // reporte.map(function (x) {
+            //     let filtro = servicios.filter(item => item.CLIENTE_ENTREGA_ID == x.CLIENTE_ID)[0];
+            //     const keys = Object.keys(filtro);
+            //     for (const key of keys) {
+            //         const value = filtro[key];
+            //         x[key] = value
+            //     }
+            // });
+
+            Tabla_Reporte_Clientes_General(res);
+            // FATURADO(reporte);
 
         });
     }
 
     function Tabla_Reporte_Clientes_General(datos) {
-
         $('#REP_CLIENTE_TABLA').empty();
         if ($.fn.dataTable.isDataTable('#REP_CLIENTE_TABLA')) {
             $('#REP_CLIENTE_TABLA').DataTable().destroy();
@@ -103,25 +105,33 @@ function Cargar_datos(param) {
                 title: "CLIENTE NOMBRE",
             },
             {
-                data: "CANTIDAD_GUIAS_ENTREGADAS",
-                title: "GUIAS DESPACHADAS"
+                data: "GUIAS_ASIGNADAS",
+                title: "GUIAS ASIGNADAS"
             }, {
-                data: "FACTURADO_CANTIDAD",
-                title: "FACTURAS INGRESADAS",
+                data: "CEMENTO_DESPACHADO",
+                title: "CEMENTO",
 
             }, {
-                data: "FLETES",
-                title: "SERV. FLETES",
+                data: "GUIAS_RETIRADAS",
+                title: "GUIAS RETIRADAS",
 
             }, {
-                data: "CARGAS",
-                title: "SERV. CARGA",
+                data: "GUIAS_DESPACHADAS",
+                title: "GUIAS DESPACHADAS",
             },
             {
-                data: "FACTURADO",
-                title: "FACTURADO TOTAL",
-                render: $.fn.dataTable.render.number(',', '.', 2, "$")
-            },
+                data: null,
+                title: "DETALLES",
+                className: "btn_detalles text-left", // Centrar la columna "Detalles" y aplicar la clase "btn_detalles"
+                defaultContent: '<button type="button" class="btn_recibir btn btn-sm btn-danger text-light"><i class="bi bi-file-bar-graph fs-5"></i></button>',
+                orderable: "",
+                width: 20
+            }
+                // {
+                //     data: "FACTURADO",
+                //     title: "FACTURADO TOTAL",
+                //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
+                // },
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-7 ");
@@ -130,10 +140,16 @@ function Cargar_datos(param) {
                 $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
                 $('td', row).eq(4).addClass("fw-bold fs-7 bg-info bg-opacity-10");
                 $('td', row).eq(5).addClass("fw-bold fs-7");
-
-
             },
         }).clear().rows.add(datos).draw();
+
+        $('#REP_CLIENTE_TABLA').on('click', 'td.btn_detalles', function (respuesta) {
+            var data = TABLA_.row(this).data();
+            console.log('data: ', data);
+            $("#SECC_TABLA").hide();
+            $("#SECC_DET").show(200);
+        });
+
     }
 
     function FATURADO(arr) {
@@ -156,7 +172,7 @@ function Cargar_datos(param) {
         <div className="col-12">
             <h4 className="fw-bold bg-light">Reporte por Clientes</h4>
 
-            <div className="col-12 p-3">
+            <div className="col-12 p-3 d-none">
                 <div className="row">
                     <CCol sm={6} lg={3}>
                         <CWidgetStatsA
@@ -319,12 +335,127 @@ function Cargar_datos(param) {
 
             </div>
 
-            <div className="col-12">
+            <div className="col-12" id="SECC_TABLA">
                 <div className="table-responsive" id="REP_CLIENTE_TABLA_SECC">
                     <table id="REP_CLIENTE_TABLA" className="table table-striped">
 
                     </table>
                 </div>
+            </div>
+
+            <div className="col-12 mt-4" id="SECC_DET" style={{ display: "none" }}>
+                <CRow>
+                    <CCol xs>
+                        <CCard className="mb-4">
+                            <CCardHeader>
+                                <div className="row">
+                                    <div className="col-1">
+                                        <button onClick={() => {
+
+                                            $("#SECC_TABLA").show(100);
+                                            $("#SECC_DET").hide();
+                                        }} className="btn btn-info text-light"><i className="bi bi-backspace-fill fs-6"></i></button>
+                                    </div>
+                                    <div className="col-4 mt-2">
+                                        <h5 className="fw-bold text-muted">Datos por chofer</h5>
+                                    </div>
+                                </div>
+                            </CCardHeader>
+                            <CCardBody>
+                                <h5 className="text-muted">Nombre:
+                                    <span id="CHOFER_NOMBRE"></span>
+                                </h5>
+                                <h5 className="text-muted">Placa:
+                                    <span id="CHOFER_PLACA"></span>
+                                </h5>
+                                <CRow>
+
+                                    <CCol xs={12} md={6} xl={6}>
+
+                                        <CRow>
+                                            <CCol sm={6}>
+                                                <div className="border-start border-start-4 border-start-info py-1 px-3">
+                                                    <div className="text-medium-emphasis small">Total guias asignadas</div>
+                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_TOTALES"></div>
+                                                </div>
+                                            </CCol>
+                                            <CCol sm={6}>
+                                                <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
+                                                    <div className="text-medium-emphasis small">Guias asignadas Mes</div>
+                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_ASIGNADAS_PERIODO">78,623</div>
+                                                </div>
+                                            </CCol>
+
+                                        </CRow>
+
+                                    </CCol>
+
+                                    <CCol xs={12} md={6} xl={6}>
+                                        <CRow>
+                                            <CCol sm={6}>
+                                                <div className="border-start border-start-4 border-start-danger py-1 px-3">
+                                                    <div className="text-medium-emphasis small">Total guias despachadas</div>
+                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_TOTALES"></div>
+                                                </div>
+                                            </CCol>
+                                            <CCol sm={6}>
+                                                <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
+                                                    <div className="text-medium-emphasis small">Guias despachadas Mes</div>
+                                                    <div className="fs-5 fw-semibold" id="CHOFER_GUIAS_DESPACHADAS_PERIODO">49,123</div>
+                                                </div>
+                                            </CCol>
+                                        </CRow>
+
+
+                                    </CCol>
+                                </CRow>
+
+                                <br />
+                                <div className="row">
+                                    <div className="col-5">
+                                        <div id="chartdiv" style={{ width: "100%", height: "300px" }}></div>
+                                    </div>
+                                    {/* <div className="col-7">
+                                        <div className="btn-group" role="group" aria-label="Basic example">
+                                            <button onClick={() => CAMBIAR_GRAFICO(1)} type="button" className="btn btn-light">Dia</button>
+                                            <button onClick={() => CAMBIAR_GRAFICO(2)} type="button" className="btn btn-light">Mes</button>
+                                            <button onClick={() => CAMBIAR_GRAFICO(3)} type="button" className="btn btn-light">Año</button>
+                                        </div>
+                                        <div id="chartdiv2" style={{ width: "100%", height: "400px" }}></div>
+                                    </div> */}
+                                </div>
+                                <div className="row">
+                                    <div className="col-5">
+                                        <div className="fw-bold fs-4"> Tiempo promedio de despacho</div>
+                                        {/* <div className="small text-medium-emphasis">
+                                            <span className="fs-5 fw-bold text-muted">MES {moment(param.FECHA_INI).format("MMM YYYY")} | </span>
+                                            <span id="CH_PROM_H_MES" className="fs-5 fw-bold text-muted">
+
+                                            </span>
+                                        </div> */}
+                                        <div className="small text-medium-emphasis">
+                                            <span className="fs-5 fw-bold text-muted">GENERAL     | </span>
+                                            <span id="CH_PROM_H_GEN" className="fs-5 fw-bold text-muted">
+
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="col-7">
+                                        <div className="table-resposive">
+                                            <table id="TABLA_CODIGOS" className="table " style={{ width: "100%" }}>
+                                                <thead className="table-light">
+
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </CCardBody>
+                        </CCard>
+                    </CCol>
+                </CRow>
             </div>
         </div>
     )

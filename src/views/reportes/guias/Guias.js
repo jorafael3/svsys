@@ -151,7 +151,7 @@ function Reportes_guias() {
                         <div className='row'>
                             <div className='col-3'>
                                 <div className="g-9 p-2 mt-2">
-                                    {/* <div className="col-md-4">
+                                    <div className="col-md-4">
                                         <div className="form-check form-switch">
                                             <input
                                                 className="form-check-input"
@@ -160,7 +160,7 @@ function Reportes_guias() {
                                             />
                                             <label className="form-check-label fw-bold" >Cliente</label>
                                         </div>
-                                    </div> */}
+                                    </div>
                                     <div className="col-md-4">
                                         <div className="form-check form-switch">
                                             <input
