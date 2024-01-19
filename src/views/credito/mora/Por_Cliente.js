@@ -63,8 +63,10 @@ function Por_Cliente() {
         let TABLA_ = $('#Tabla_clientes').DataTable({
             destroy: true,
             data: datos,
-            dom: 'Bfrtip',
-            buttons: ['colvis',"excel"],
+            dom: 'frtip',
+            "paging": true,
+            "pageLength": 10,
+            // buttons: ['colvis',"excel"],
             scrollCollapse: true,
             scrollX: true,
             columnDefs: [
@@ -74,10 +76,10 @@ function Por_Cliente() {
                 // { width: 180, targets: 9 },
                 // { width: 200, targets: 10 },
             ],
-            order: [[2, "asc"], [0, "desc"]],
-            fixedColumns: {
-                left: 2
-            },
+            // order: [[2, "asc"], [0, "desc"]],
+            // fixedColumns: {
+            //     left: 2
+            // },
             columns: [{
                 data: "FechaCorte",
                 title: "FECHA CORTE",
@@ -242,16 +244,16 @@ function Por_Cliente() {
                 // },
             ],
             "createdRow": function (row, data, index) {
-                $('td', row).eq(0).addClass("fw-bold fs-7 ");
-                $('td', row).eq(1).addClass("fw-bold fs-7 ");
-                $('td', row).eq(2).addClass("fw-bold fs-7 ");
-                $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
-                $('td', row).eq(4).addClass("fw-bold fs-7 ");
-                $('td', row).eq(5).addClass("fw-bold fs-7 bg-info bg-opacity-10");
-                for (let i = 5; i <= 40; i++) {
-                    $('td', row).eq(i).addClass("fw-bold fs-7");
-                }
-                $('td', row).eq(7).addClass("bg-warning bg-opacity-10");
+                // $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                // $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                // $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                // $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
+                // $('td', row).eq(4).addClass("fw-bold fs-7 ");
+                // $('td', row).eq(5).addClass("fw-bold fs-7 bg-info bg-opacity-10");
+                // for (let i = 5; i <= 40; i++) {
+                //     $('td', row).eq(i).addClass("fw-bold fs-7");
+                // }
+                // $('td', row).eq(7).addClass("bg-warning bg-opacity-10");
 
 
 
@@ -261,7 +263,7 @@ function Por_Cliente() {
 
     useEffect(() => {
 
-        Cargar_Datos();
+        // Cargar_Datos();
     }, []);
     return (
         <CCol xs={12}>

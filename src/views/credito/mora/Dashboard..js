@@ -826,9 +826,217 @@ function Dashboard() {
 
     }
 
-    useEffect(() => {
+    function Cargar_Creditos_Cancelados() {
 
-        Cargar_Dasboard();
+        let url = "mora/Cargar_Creditos_Cancelados"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+            console.log('x: ', x);
+
+            $('#TABLA_CR_CANCELADOS').empty();
+            if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
+                $('#TABLA_CR_CANCELADOS').DataTable().destroy();
+                $('#SECC_TABLA_CR_CANCELADOS').empty();
+            }
+            let tabla = `
+                <table id='TABLA_CR_CANCELADOS' class='table display table-striped'>
+                </table>
+            `;
+            $('#SECC_TABLA_CR_CANCELADOS').append(tabla);
+            let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
+                destroy: true,
+                data: x,
+                dom: 'rtip',
+                paging: true,
+                // info: false,
+                // buttons: ['colvis', "excel"],
+                scrollCollapse: true,
+                scrollX: true,
+                columnDefs: [
+                    { width: 100, targets: 0 },
+                    { width: 300, targets: 2 },
+                ],
+                columns: [{
+                    data: "FechaCorte",
+                    title: "FECHA CORTE",
+                    // width: 130
+                },
+                {
+                    "data": "Identificacion",
+                    "title": "IDENTIFICACION"
+                },
+                {
+                    "data": "Cliente",
+                    "title": "CLIENTE"
+                },
+                {
+                    "data": "NumeroCredito",
+                    "title": "NUMERO DE CREDITO"
+                },
+                {
+                    "data": "NumeroCreditoNuevo",
+                    "title": "NUMERO DE CREDITO NUEVO"
+                },
+                {
+                    "data": "Oficina",
+                    "title": "OFICINA"
+                },
+                {
+                    "data": "OrigenCredito",
+                    "title": "ORIGEN DEL CREDITO"
+                },
+                {
+                    "data": "EstadoCredito",
+                    "title": "ESTADO DEL CREDITO"
+                },
+                {
+                    "data": "TipoCartera",
+                    "title": "TIPO DE CARTERA"
+                },
+                {
+                    "data": "TipoTablaAmortizacion",
+                    "title": "TIPO DE TABLA DE AMORTIZACION"
+                },
+                {
+                    "data": "TipoGracia",
+                    "title": "TIPO DE GRACIA"
+                },
+                {
+                    "data": "PeriodosGracia",
+                    "title": "PERIODOS DE GRACIA"
+                },
+                {
+                    "data": "MontoOriginal",
+                    "title": "MONTO ORIGINAL"
+                },
+                {
+                    "data": "PlazoOriginal",
+                    "title": "PLAZO ORIGINAL"
+                },
+                {
+                    "data": "Saldo",
+                    "title": "SALDO"
+                },
+                {
+                    "data": "ValorAPagar",
+                    "title": "VALOR A PAGAR"
+                },
+                {
+                    "data": "ValorCuota",
+                    "title": "VALOR CUOTA"
+                },
+                {
+                    "data": "FechaDesembolso",
+                    "title": "FECHA DESEMBOLSO"
+                },
+                {
+                    "data": "FechaPrimerVencimiento",
+                    "title": "FECHA PRIMER VENCIMIENTO"
+                },
+                {
+                    "data": "FechaVencimiento",
+                    "title": "FECHA VENCIMIENTO"
+                },
+                {
+                    "data": "FechaCancelacion",
+                    "title": "FECHA CANCELACION"
+                },
+                {
+                    "data": "Atraso",
+                    "title": "ATRASO"
+                },
+                {
+                    "data": "AtrasoMaximo",
+                    "title": "ATRASO MAXIMO"
+                },
+                {
+                    "data": "CuotasRestantes",
+                    "title": "CUOTAS RESTANTES"
+                },
+                {
+                    "data": "CuotaImpaga",
+                    "title": "CUOTA IMPAGA"
+                },
+                {
+                    "data": "TipoCancelacion",
+                    "title": "TIPO DE CANCELACION"
+                },
+                {
+                    "data": "DispositivoNotificacion",
+                    "title": "DISPOSITIVO DE NOTIFICACION"
+                },
+                {
+                    "data": "Celular_01",
+                    "title": "CELULAR 01"
+                },
+                {
+                    "data": "Celular_02",
+                    "title": "CELULAR 02"
+                },
+                {
+                    "data": "Celular_03",
+                    "title": "CELULAR 03"
+                },
+                {
+                    "data": "TelefonoNegocio_01",
+                    "title": "TELEFONO DE NEGOCIO 01"
+                },
+                {
+                    "data": "TelefonoNegocio_02",
+                    "title": "TELEFONO DE NEGOCIO 02"
+                },
+                {
+                    "data": "TelefonoNegocio_03",
+                    "title": "TELEFONO DE NEGOCIO 03"
+                },
+                {
+                    "data": "TelefonoDomicilio_01",
+                    "title": "TELEFONO DOMICILIO 01"
+                },
+                {
+                    "data": "TelefonoDomicilio_02",
+                    "title": "TELEFONO DOMICILIO 02"
+                },
+                {
+                    "data": "TelefonoDomicilio_03",
+                    "title": "TELEFONO DOMICILIO 03"
+                },
+                {
+                    "data": "TelefonoLaboral_01",
+                    "title": "TELEFONO LABORAL 01"
+                },
+                {
+                    "data": "TelefonoLaboral_02",
+                    "title": "TELEFONO LABORAL 02"
+                },
+                {
+                    "data": "TelefonoLaboral_03",
+                    "title": "TELEFONO LABORAL 03"
+                }
+                    // {
+                    //     data: "FACTURADO",
+                    //     title: "FACTURADO TOTAL",
+                    //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
+                    // },
+                ],
+                "createdRow": function (row, data, index) {
+                    $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(3).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(4).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(5).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(6).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(7).addClass("fw-bold fs-7 text-success");
+
+
+                },
+            })
+        });
+    }
+
+    useEffect(() => {
+        // Cargar_Creditos_Cancelados()
+        // Cargar_Dasboard();
         // Descripcion_Colocacion();
     }, []);
 
@@ -840,9 +1048,24 @@ function Dashboard() {
                 </CCardHeader>
                 <CCardBody>
                     <div className='bg-warning bg-opacity-50 mb-3'>
+                        <h5>CREDITOS CANCELADOS</h5>
+                    </div>
+                    <div className='col-12 mb-2'>
+                        <button onClick={Cargar_Creditos_Cancelados} className='btn btn-success text-light fw-bold'>Cargar</button>
+                        <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS'>
+                            <table id='TABLA_CR_CANCELADOS' className='table display table-striped'>
+
+                            </table>
+
+                        </div>
+                    </div>
+                    <div className='bg-warning bg-opacity-50 mb-3'>
                         <h5>EVOLUCIÓN DE LA MOROSIDAD PAR 30</h5>
                     </div>
+
                     <div className='col-12' id=''>
+                        <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button>
+
                         <div className='row'>
                             <div className='col-6'>
                                 <div id="chart_evolucion" style={{ height: 500 }}></div>
@@ -862,6 +1085,7 @@ function Dashboard() {
                     </div>
 
                     <div className='col-12 '>
+
                         <div className='row'>
                             <div className='col-12'>
                                 {/* <div className="row g-9 mb-8">

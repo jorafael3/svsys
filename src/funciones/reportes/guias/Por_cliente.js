@@ -56,7 +56,7 @@ function Cargar_datos(param) {
             //     }
             // });
 
-            Tabla_Reporte_Clientes_General(res);
+            // Tabla_Reporte_Clientes_General(res);
             // FATURADO(reporte);
 
         });
