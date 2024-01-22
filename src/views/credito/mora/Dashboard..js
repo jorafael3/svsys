@@ -21,6 +21,7 @@ import 'moment/locale/es';
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import { func } from 'prop-types';
 
 
 function Dashboard() {
@@ -44,8 +45,9 @@ function Dashboard() {
 
     function Cargar_Dasboard() {
         let url = "mora/Cargar_Dashboard"
+
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+
 
             let cliCreditosMora = x;
             // // Función para obtener el número de filas para cada registro
@@ -64,7 +66,7 @@ function Dashboard() {
 
             setDATOS_TOTALES(resultados);
             setDATOS_TOTALES_CORTE(datos);
-            console.log('resultados: ', datos);
+
 
             EVOLUCION_MOROSIDAD_TABLA(datos);
             POR_PLAZO(datos)
@@ -78,6 +80,17 @@ function Dashboard() {
             // CARTERA_POR_ESTADO(EVOLUCION_MOROSIDAD_TABLA_)
         })
 
+    }
+
+    //** */ EVOLUCION MOROCIDAD
+
+    function CARGAR_EVOLUCION_MOROSIDAD_GRAFICO() {
+        let url = "mora/CARGAR_EVOLUCION_MOROSIDAD_GRAFICO"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+
+            EVOLUCION_MOROSIDAD_GRAFICO(x)
+        });
     }
 
     function EVOLUCION_MOROSIDAD_GRAFICO(datos) {
@@ -145,6 +158,17 @@ function Dashboard() {
             series2.fill = am4core.color("#dfcc64");
             series2.stroke = am4core.color("#dfcc64");
             series2.strokeWidth = 3;
+            series2.showOnInit = true;
+            var bullet = series2.bullets.push(new am4charts.CircleBullet());
+            bullet.circle.fill = am4core.color("#fff");
+            bullet.circle.strokeWidth = 1;
+            bullet.circle.radius = 3;
+            bullet.label = new am4core.Label();
+            bullet.label.text = "{Atraso30}";
+            bullet.label.fill = am4core.color("#000");
+            bullet.label.fontSize = 10;
+            bullet.label.dy = -15;
+
 
             chart.cursor = new am4charts.XYCursor();
             chart.cursor.xAxis = dateAxis2;
@@ -163,6 +187,15 @@ function Dashboard() {
             valueAxis.renderer.grid.template.strokeOpacity = 0.07;
 
         }); // end am4core.ready()
+    }
+
+    function CARGAR_EVOLUCION_MOROSIDAD_TABLA() {
+        let url = "mora/CARGAR_EVOLUCION_MOROSIDAD_TABLA"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+            EVOLUCION_MOROSIDAD_TABLA(x)
+        });
+
     }
 
     function EVOLUCION_MOROSIDAD_TABLA(ARRAY) {
@@ -200,7 +233,7 @@ function Dashboard() {
 
         let datos = newarray.map(r => ({ ...r, Rango: calcularRango(r) }));
 
-        console.log('resultados: ', datos);
+
         let r1 = datos.filter(item => item.Rango == "DE 1 A 8 DIAS");
         let r1_operaciones = r1.length;
         let r1_saldo = 0;
@@ -208,7 +241,7 @@ function Dashboard() {
         r1.map(function (x) {
             r1_saldo = r1_saldo + parseFloat(x.Saldo);
         });
-        console.log('r1: ', r1);
+
 
         let r2 = datos.filter(item => item.Rango == "DE 8 A 15 DIAS");
         let r2_operaciones = r2.length;
@@ -425,6 +458,11 @@ function Dashboard() {
 
     }
 
+    //****************************************** */
+
+    //** */ DESCRIPCION COLOCACION
+
+
     function CARTERA_POR_ESTADO(datos) {
 
 
@@ -447,19 +485,28 @@ function Dashboard() {
         })
     }
 
+    function CARGAR_POR_PLAZO() {
+        let url = "mora/CARGAR_POR_PLAZO"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+            POR_PLAZO(x)
+        })
+    }
+
     function POR_PLAZO(ARRAY_) {
+
 
         let datos = JSON.parse(JSON.stringify(ARRAY_));
 
-        let r1 = datos.filter(item => parseInt(item.PlazoOriginal) >= 0 && parseInt(item.PlazoOriginal) <= 2);
-        let r2 = datos.filter(item => parseInt(item.PlazoOriginal) >= 3 && parseInt(item.PlazoOriginal) <= 5);
-        let r3 = datos.filter(item => parseInt(item.PlazoOriginal) >= 6 && parseInt(item.PlazoOriginal) <= 8);
-        let r4 = datos.filter(item => parseInt(item.PlazoOriginal) >= 9 && parseInt(item.PlazoOriginal) <= 11);
-        let r5 = datos.filter(item => parseInt(item.PlazoOriginal) >= 12 && parseInt(item.PlazoOriginal) <= 14);
-        let r6 = datos.filter(item => parseInt(item.PlazoOriginal) >= 15 && parseInt(item.PlazoOriginal) <= 17);
-        let r7 = datos.filter(item => parseInt(item.PlazoOriginal) >= 18 && parseInt(item.PlazoOriginal) <= 20);
-        let r8 = datos.filter(item => parseInt(item.PlazoOriginal) >= 21 && parseInt(item.PlazoOriginal) <= 23);
-        let r9 = datos.filter(item => parseInt(item.PlazoOriginal) >= 24 && parseInt(item.PlazoOriginal) <= 26);
+        let r1 = datos[0]
+        let r2 = datos[1]
+        let r3 = datos[2]
+        let r4 = datos[3]
+        let r5 = datos[4]
+        let r6 = datos[5]
+        let r7 = datos[6]
+        let r8 = datos[7]
+        let r9 = datos[8]
 
         let r1_operaciones = r1.length;
         let r2_operaciones = r2.length;
@@ -674,14 +721,22 @@ function Dashboard() {
 
     }
 
+    function CARGAR_POR_MONTO() {
+        let url = "mora/CARGAR_POR_MONTO"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+            POR_MONTO(x)
+        })
+    }
+
     function POR_MONTO(ARRAY_) {
 
         let datos = JSON.parse(JSON.stringify(ARRAY_));
 
-        let r1 = datos.filter(item => parseFloat(item.MontoOriginal) < 1000);
-        let r2 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1000 && parseFloat(item.MontoOriginal) < 1200);
-        let r3 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1200 && parseFloat(item.MontoOriginal) < 1500);
-        let r4 = datos.filter(item => parseFloat(item.MontoOriginal) >= 1500 && parseFloat(item.MontoOriginal) <= 4000);
+        let r1 = datos[1]
+        let r2 = datos[2]
+        let r3 = datos[3]
+        let r4 = datos[4]
 
         let r1_operaciones = r1.length;
         let r2_operaciones = r2.length;
@@ -826,11 +881,15 @@ function Dashboard() {
 
     }
 
+
+    //** CREDITOS CANCELADOS */
+
     function Cargar_Creditos_Cancelados() {
 
         let url = "mora/Cargar_Creditos_Cancelados"
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+
+
 
             $('#TABLA_CR_CANCELADOS').empty();
             if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
@@ -845,16 +904,21 @@ function Dashboard() {
             let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
                 destroy: true,
                 data: x,
-                dom: 'rtip',
+                dom: 'frtip',
                 paging: true,
+                pageLength: 5,
                 // info: false,
                 // buttons: ['colvis', "excel"],
                 scrollCollapse: true,
                 scrollX: true,
+                order: [[0, "desc"]],
                 columnDefs: [
                     { width: 100, targets: 0 },
                     { width: 300, targets: 2 },
                 ],
+                fixedColumns: {
+                    left: 3
+                },
                 columns: [{
                     data: "FechaCorte",
                     title: "FECHA CORTE",
@@ -870,11 +934,13 @@ function Dashboard() {
                 },
                 {
                     "data": "NumeroCredito",
-                    "title": "NUMERO DE CREDITO"
+                    "title": "NUMERO DE CREDITO",
+                    visible: false
                 },
                 {
                     "data": "NumeroCreditoNuevo",
-                    "title": "NUMERO DE CREDITO NUEVO"
+                    "title": "NUMERO DE CREDITO NUEVO",
+                    visible: false
                 },
                 {
                     "data": "Oficina",
@@ -882,27 +948,12 @@ function Dashboard() {
                 },
                 {
                     "data": "OrigenCredito",
-                    "title": "ORIGEN DEL CREDITO"
+                    "title": "ORIGEN DEL CREDITO",
+                    visible: false
                 },
                 {
                     "data": "EstadoCredito",
                     "title": "ESTADO DEL CREDITO"
-                },
-                {
-                    "data": "TipoCartera",
-                    "title": "TIPO DE CARTERA"
-                },
-                {
-                    "data": "TipoTablaAmortizacion",
-                    "title": "TIPO DE TABLA DE AMORTIZACION"
-                },
-                {
-                    "data": "TipoGracia",
-                    "title": "TIPO DE GRACIA"
-                },
-                {
-                    "data": "PeriodosGracia",
-                    "title": "PERIODOS DE GRACIA"
                 },
                 {
                     "data": "MontoOriginal",
@@ -913,28 +964,8 @@ function Dashboard() {
                     "title": "PLAZO ORIGINAL"
                 },
                 {
-                    "data": "Saldo",
-                    "title": "SALDO"
-                },
-                {
-                    "data": "ValorAPagar",
-                    "title": "VALOR A PAGAR"
-                },
-                {
-                    "data": "ValorCuota",
-                    "title": "VALOR CUOTA"
-                },
-                {
                     "data": "FechaDesembolso",
                     "title": "FECHA DESEMBOLSO"
-                },
-                {
-                    "data": "FechaPrimerVencimiento",
-                    "title": "FECHA PRIMER VENCIMIENTO"
-                },
-                {
-                    "data": "FechaVencimiento",
-                    "title": "FECHA VENCIMIENTO"
                 },
                 {
                     "data": "FechaCancelacion",
@@ -942,19 +973,9 @@ function Dashboard() {
                 },
                 {
                     "data": "Atraso",
-                    "title": "ATRASO"
-                },
-                {
-                    "data": "AtrasoMaximo",
-                    "title": "ATRASO MAXIMO"
-                },
-                {
-                    "data": "CuotasRestantes",
-                    "title": "CUOTAS RESTANTES"
-                },
-                {
-                    "data": "CuotaImpaga",
-                    "title": "CUOTA IMPAGA"
+                    "title": "ATRASO",
+                    visible: false
+
                 },
                 {
                     "data": "TipoCancelacion",
@@ -1024,20 +1045,505 @@ function Dashboard() {
                     $('td', row).eq(2).addClass("fw-bold fs-7 ");
                     $('td', row).eq(3).addClass("fw-bold fs-7 ");
                     $('td', row).eq(4).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(5).addClass("fw-bold fs-7 ");
+                    $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
                     $('td', row).eq(6).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(7).addClass("fw-bold fs-7 text-success");
+                    $('td', row).eq(7).addClass("fw-bold fs-7 ");
+                    for (let i = 6; i <= 40; i++) {
+                        $('td', row).eq(i).addClass("fw-bold fs-7");
+                    }
 
+                    if (data["EstadoCredito"] == "VIGENTE") {
+                        $('td', row).eq(4).addClass("text-primary");
 
+                    } else {
+                        $('td', row).eq(4).addClass("text-success");
+
+                    }
                 },
             })
         });
     }
 
+    //** MOROSIDAD */
+
+    function MOROSIDAD_POR_DIA() {
+        let url = "mora/MOROSIDAD_POR_DIA"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+
+            x.map(function (x) {
+                let total = parseInt(x.CANCELADO) + parseInt(x.VENCIDO) + parseInt(x.VIGENTE)
+                x.TOTAL = total
+                x.TOTAL_POR = parseFloat((parseInt(x.VENCIDO) / total) * 100).toFixed(2)
+            })
+            const primerYUltimoDato = [x[0], x[x.length - 1]];
+
+
+            MOROSIDAD_POR_DIA_TABLA(x);
+            MOROSIDAD_POR_DIA_GRAFICO(x, primerYUltimoDato);
+        })
+    }
+
+    function MOROSIDAD_POR_DIA_TABLA(data) {
+
+
+
+        $('#Tabla_MOROSIDAD').empty();
+        if ($.fn.dataTable.isDataTable('#Tabla_MOROSIDAD')) {
+            $('#Tabla_MOROSIDAD').DataTable().destroy();
+            $('#Tabla_MOROSIDAD_SECC').empty();
+        }
+        let tabla = `
+            <table id='Tabla_MOROSIDAD' class='table display table-striped'>
+               
+            </table>
+        `;
+        $('#Tabla_MOROSIDAD_SECC').append(tabla);
+        let TABLA_ = $('#Tabla_MOROSIDAD').DataTable({
+            destroy: true,
+            data: data,
+            dom: 'rtip',
+            paging: true,
+            info: false,
+            buttons: ["excel"],
+            order: [[0, "desc"]],
+            // scrollCollapse: true,
+            // scrollX: true,
+            // columnDefs: [
+            //     { width: 100, targets: 0 },
+            //     { width: 300, targets: 2 },
+            // ],
+            columns: [
+                {
+                    "data": "FechaCorte",
+                    "title": "FECHA",
+                    className: "text-start"
+                },
+                {
+                    "data": "CANCELADO",
+                    "title": "CANCELADOS",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "VENCIDO",
+                    "title": "VENCIDOS",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "VIGENTE",
+                    "title": "VIGENTES",
+                    className: "text-center"
+                },
+                {
+                    "data": "TOTAL",
+                    "title": "TOTAL",
+                    className: "text-center",
+                },
+                {
+                    "data": "TOTAL_POR",
+                    "title": "TOTAL %",
+                    className: "text-center",
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 bg-danger bg-opacity-10");
+                $('td', row).eq(3).addClass("fw-bold fs-7 ");
+                $('td', row).eq(4).addClass("fw-bold fs-7 bg-light");
+                $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(5).html(data["TOTAL_POR"] + "%");
+            },
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api();
+
+                // Suma de la columna 5
+                var totalColumna5 = api.column(5, {
+                    page: 'current'
+                }).data().reduce(function (a, b) {
+                    return parseFloat(a) + parseFloat(b);
+                }, 0);
+                $('#Tabla_MOROSIDAD > tfoot').empty()
+                $('#Tabla_MOROSIDAD').append(`
+                    <tfoot >
+                        <tr>
+                            <th  class="fw-bold fs-5 text-center">TOTAL</th>
+                            <th  class="fw-bold fs-5 text-center" id="TM_CANCELADOS"></th>
+                            <th  class="fw-bold fs-5 text-center" id="TM_VENCIDOS"></th>
+                            <th  class="fw-bold fs-5 text-center" id="TM_VIGENTES"></th>
+                            <th  class="fw-bold fs-5 text-center" id="TM_TOTALES"></th>
+                            <th  class="fw-bold fs-5 text-center" ></th>
+                        </tr>    
+                    </tfoot>
+                `);
+
+                let cancelados = data.reduce((acumulador, objeto) => acumulador + parseInt(objeto["CANCELADO"]), 0);
+                let VENCIDO = data.reduce((acumulador, objeto) => acumulador + parseInt(objeto["VENCIDO"]), 0);
+                let VIGENTE = data.reduce((acumulador, objeto) => acumulador + parseInt(objeto["VIGENTE"]), 0);
+                let TOTAL = data.reduce((acumulador, objeto) => acumulador + parseInt(objeto["TOTAL"]), 0);
+
+
+                $("#TM_CANCELADOS").text(cancelados);
+                $("#TM_VENCIDOS").text(VENCIDO);
+                $("#TM_VIGENTES").text(VIGENTE);
+                $("#TM_TOTALES").text(TOTAL);
+            },
+        })
+    }
+
+    function MOROSIDAD_POR_DIA_GRAFICO(data, primerYUltimoDato) {
+        am4core.ready(function () {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+            // Create chart instance
+            var chart = am4core.create("chart_MOROSIDAD", am4charts.XYChart);
+
+            // Add data
+            chart.data = data
+
+            // Set input format for the dates
+            chart.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+            // Create axes
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+            // Create series
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.dataFields.valueY = "TOTAL_POR";
+            series.dataFields.dateX = "FechaCorte";
+            series.tooltipText = "{TOTAL_POR}"
+            series.strokeWidth = 2;
+            series.minBulletDistance = 15;
+
+            // Drop-shaped tooltips
+            series.tooltip.background.cornerRadius = 20;
+            series.tooltip.background.strokeOpacity = 0;
+            series.tooltip.pointerOrientation = "vertical";
+            series.tooltip.label.minWidth = 40;
+            series.tooltip.label.minHeight = 40;
+            series.tooltip.label.textAlign = "middle";
+            series.tooltip.label.textValign = "middle";
+
+            // Make bullets grow on hover
+            var bullet = series.bullets.push(new am4charts.CircleBullet());
+            bullet.circle.strokeWidth = 2;
+            bullet.circle.radius = 4;
+            bullet.circle.fill = am4core.color("#fff");
+            let labelBullet = series.bullets.push(new am4charts.LabelBullet());
+            labelBullet.label.text = "{TOTAL_POR}";
+            labelBullet.label.dy = -20;
+            var bullethover = bullet.states.create("hover");
+            bullethover.properties.scale = 1.3;
+
+            // Make a panning cursor
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.behavior = "panXY";
+            chart.cursor.xAxis = dateAxis;
+            chart.cursor.snapToSeries = series;
+
+            // Create vertical scrollbar and place it before the value axis
+            chart.scrollbarY = new am4core.Scrollbar();
+            chart.scrollbarY.parent = chart.leftAxesContainer;
+            chart.scrollbarY.toBack();
+
+            // Create a horizontal scrollbar with previe and place it underneath the date axis
+            chart.scrollbarX = new am4charts.XYChartScrollbar();
+            chart.scrollbarX.series.push(series);
+            chart.scrollbarX.parent = chart.bottomAxesContainer;
+
+            // dateAxis.start = 0.79;
+            dateAxis.keepSelection = true;
+
+            function createTrendLine(data) {
+                var trend = chart.series.push(new am4charts.LineSeries());
+                trend.dataFields.valueY = "TOTAL_POR";
+                trend.dataFields.dateX = "FechaCorte";
+                trend.strokeWidth = 2
+                trend.stroke = trend.fill = am4core.color("#c00");
+                trend.data = data;
+
+                var bullet = trend.bullets.push(new am4charts.CircleBullet());
+                // bullet.tooltipText = "{date}\n[bold font-size: 17px]value: {valueY}[/]";
+                bullet.strokeWidth = 2;
+                bullet.stroke = am4core.color("#fff")
+                bullet.circle.fill = trend.stroke;
+
+                var hoverState = bullet.states.create("hover");
+                hoverState.properties.scale = 1.7;
+
+                return trend;
+            };
+
+            createTrendLine(primerYUltimoDato);
+
+        });
+    }
+
+    function MOROSIDAD_CARTERA() {
+        let url = "mora/MOROSIDAD_CARTERA"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+
+            x.map(function (x) {
+                x.TOTAL = parseInt(x.CARTERABANCO) + parseInt(x.FONDODEGARANTIA)
+            })
+            MOROSIDAD_CARTERA_TABLA(x)
+            MOROSIDAD_CARTERA_GRAFICO(x)
+        })
+    }
+
+
+    function MOROSIDAD_CARTERA_TABLA(data) {
+        $('#Tabla_MOROSIDAD_cartera').empty();
+        if ($.fn.dataTable.isDataTable('#Tabla_MOROSIDAD_cartera')) {
+            $('#Tabla_MOROSIDAD_cartera').DataTable().destroy();
+            $('#Tabla_MOROSIDAD_cartera_SECC').empty();
+        }
+        let tabla = `
+            <table id='Tabla_MOROSIDAD_cartera' class='table display table-striped'>
+            </table>
+        `;
+        $('#Tabla_MOROSIDAD_cartera_SECC').append(tabla);
+        let TABLA_ = $('#Tabla_MOROSIDAD_cartera').DataTable({
+            destroy: true,
+            data: data,
+            dom: 'rtip',
+            paging: true,
+            pageLength: 5,
+            info: false,
+            buttons: ["excel"],
+            order: [[0, "desc"]],
+            // scrollCollapse: true,
+            // scrollX: true,
+            // columnDefs: [
+            //     { width: 100, targets: 0 },
+            //     { width: 300, targets: 2 },
+            // ],
+            columns: [
+                {
+                    "data": "FechaCorte",
+                    "title": "FECHA",
+                    className: "text-start"
+                },
+                {
+                    "data": "CARTERABANCO",
+                    "title": "CARTERA BANCO",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "FONDODEGARANTIA",
+                    "title": "FONDO DE GARANTIA",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "SALDO",
+                    "title": "SALDO",
+                    className: "text-center",
+                    render: $.fn.dataTable.render.number(',', '.', 2, "$"),
+
+                },
+                {
+                    "data": "TOTAL",
+                    "title": "TOTAL",
+                    className: "text-center",
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-7 bg-light");
+                $('td', row).eq(5).addClass("fw-bold fs-7 ");
+            },
+        })
+    }
+
+    function MOROSIDAD_CARTERA_GRAFICO(data) {
+        am4core.ready(function () {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+            // Create chart instance
+            var chart = am4core.create("chart_CARTERA", am4charts.XYChart);
+
+            // Add data
+            chart.data = data
+
+            // Set input format for the dates
+            chart.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+            // Create axes
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            // valueAxis.logarithmic = true;
+            // valueAxis.renderer.minGridDistance = 0;
+            // Create series
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.dataFields.valueY = "FONDODEGARANTIA";
+            series.dataFields.dateX = "FechaCorte";
+            series.tooltipText = "{FONDODEGARANTIA}"
+            series.strokeWidth = 2;
+            series.minBulletDistance = 5;
+
+            // Drop-shaped tooltips
+            series.tooltip.background.cornerRadius = 20;
+            series.tooltip.background.strokeOpacity = 0;
+            series.tooltip.pointerOrientation = "vertical";
+            series.tooltip.label.minWidth = 40;
+            series.tooltip.label.minHeight = 40;
+            series.tooltip.label.textAlign = "middle";
+            series.fill = am4core.color("#22941E");
+            series.stroke = am4core.color("#22941E");
+
+
+
+            // var series2 = chart.series.push(new am4charts.LineSeries());
+            // series2.name = "saldo";
+            // series2.dataFields.dateX = "FechaCorte";
+            // series2.dataFields.valueY = "CARTERABANCO";
+            // series2.tooltipText = "{valueY.value}";
+            // series2.fill = am4core.color("#52BE80");
+            // series2.stroke = am4core.color("#52BE80");
+            // //series.strokeWidth = 3;
+            // series2.fillOpacity = 0.3;
+
+            // Make bullets grow on hover
+            var bullet = series.bullets.push(new am4charts.CircleBullet());
+            bullet.circle.strokeWidth = 2;
+            bullet.circle.radius = 2;
+            bullet.circle.fill = am4core.color("#fff");
+            let labelBullet = series.bullets.push(new am4charts.LabelBullet());
+            // labelBullet.label.text = "{FONDODEGARANTIA}";
+            // labelBullet.label.dy = -20;
+            var bullethover = bullet.states.create("hover");
+            bullethover.properties.scale = 1.3;
+
+
+
+
+
+            // Make a panning cursor
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.behavior = "panXY";
+            chart.cursor.xAxis = dateAxis;
+            chart.cursor.snapToSeries = series;
+
+            // Create vertical scrollbar and place it before the value axis
+            // chart.scrollbarY = new am4core.Scrollbar();
+            // chart.scrollbarY.parent = chart.leftAxesContainer;
+            // chart.scrollbarY.toBack();
+
+            // Create a horizontal scrollbar with previe and place it underneath the date axis
+            chart.scrollbarX = new am4charts.XYChartScrollbar();
+            chart.scrollbarX.series.push(series);
+            chart.scrollbarX.parent = chart.bottomAxesContainer;
+
+            // dateAxis.start = 0.79;
+            dateAxis.keepSelection = true;
+
+
+
+        });
+    }
+
+    //*** COMPORTAMIENTO */
+
+    function COMPORTAMIENTO() {
+        let url = "mora/COMPORTAMIENTO"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+            console.log('x: ', x);
+            COMPORTAMIENTO_TABLA(x)
+        })
+    }
+
+    function COMPORTAMIENTO_TABLA(data) {
+        $('#Tabla_COMPORTAMIENTO').empty();
+        if ($.fn.dataTable.isDataTable('#Tabla_COMPORTAMIENTO')) {
+            $('#Tabla_COMPORTAMIENTO').DataTable().destroy();
+            $('#Tabla_COMPORTAMIENTO_SECC').empty();
+        }
+        let tabla = `
+            <table id='Tabla_COMPORTAMIENTO' class='table display table-striped'>
+            </table>
+        `;
+        $('#Tabla_COMPORTAMIENTO_SECC').append(tabla);
+        let TABLA_ = $('#Tabla_COMPORTAMIENTO').DataTable({
+            destroy: true,
+            data: data,
+            dom: 'rtip',
+            paging: true,
+            pageLength: 10,
+            info: false,
+            buttons: ["excel"],
+            order: [[0, "desc"]],
+            // scrollCollapse: true,
+            // scrollX: true,
+            // columnDefs: [
+            //     { width: 100, targets: 0 },
+            //     { width: 300, targets: 2 },
+            // ],
+            columns: [
+                {
+                    "data": "FechaCorte",
+                    "title": "FECHA",
+                    className: "text-start"
+                },
+                {
+                    "data": "NUEVO",
+                    "title": "NUEVO",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "REESTRUCTURA",
+                    "title": "REESTRUCTURA",
+                    className: "text-center"
+
+                },
+                {
+                    "data": "REFINANCIAMIENTO",
+                    "title": "REFINANCIAMIENTO",
+                    className: "text-center",
+                },
+                {
+                    "data": "REPRESTAMO",
+                    "title": "REPRESTAMO",
+                    className: "text-center",
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 bg-success bg-opacity-10");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-7 bg-light");
+                $('td', row).eq(5).addClass("fw-bold fs-7 ");
+            },
+        })
+    }
+
+
+
     useEffect(() => {
-        // Cargar_Creditos_Cancelados()
-        // Cargar_Dasboard();
-        // Descripcion_Colocacion();
+        // CARGAR_EVOLUCION_MOROSIDAD_TABLA();
+        // CARGAR_EVOLUCION_MOROSIDAD_GRAFICO();
+        // CARGAR_POR_PLAZO();
+        // CARGAR_POR_MONTO();
+        Cargar_Creditos_Cancelados();
+        MOROSIDAD_POR_DIA();
+        MOROSIDAD_CARTERA();
+        COMPORTAMIENTO();
+
     }, []);
 
     return (
@@ -1051,7 +1557,7 @@ function Dashboard() {
                         <h5>CREDITOS CANCELADOS</h5>
                     </div>
                     <div className='col-12 mb-2'>
-                        <button onClick={Cargar_Creditos_Cancelados} className='btn btn-success text-light fw-bold'>Cargar</button>
+                        {/* <button onClick={Cargar_Creditos_Cancelados} className='btn btn-success text-light fw-bold'>Cargar</button> */}
                         <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS'>
                             <table id='TABLA_CR_CANCELADOS' className='table display table-striped'>
 
@@ -1059,18 +1565,64 @@ function Dashboard() {
 
                         </div>
                     </div>
+
                     <div className='bg-warning bg-opacity-50 mb-3'>
-                        <h5>EVOLUCIÓN DE LA MOROSIDAD PAR 30</h5>
+                        <h5>EVOLUCIÓN DE LA MOROSIDAD</h5>
                     </div>
 
                     <div className='col-12' id=''>
-                        <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button>
+                        {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
+
+                        <div className='row'>
+                            <div className='col-8'>
+                                <div className='table-responsive' id='Tabla_MOROSIDAD_SECC'>
+                                    <table id='Tabla_MOROSIDAD' className='display table table-striped'>
+                                        <tfoot >
+                                            <tr>
+                                                <th className="fw-bold fs-5">TOTAL</th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='col-12'>
+                            <div id="chart_MOROSIDAD" style={{ height: 400 }}></div>
+                        </div>
+                    </div>
+
+                    <div className='col-12' id=''>
+                        {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
 
                         <div className='row'>
                             <div className='col-6'>
-                                <div id="chart_evolucion" style={{ height: 500 }}></div>
+                                <div className='table-responsive' id='Tabla_MOROSIDAD_cartera_SECC'>
+                                    <table id='Tabla_MOROSIDAD_cartera' className='display table table-striped'>
+                                    </table>
+                                </div>
                             </div>
                             <div className='col-6'>
+                                <div id="chart_CARTERA" style={{ height: 400 }}></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+                    <div className='col-12 d-none' id=''>
+                        {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
+
+                        <div className='row'>
+                            <div className='col-7'>
+                                <div id="chart_evolucion" style={{ height: 500 }}></div>
+                            </div>
+                            <div className='col-5'>
                                 <div className='table-responsive' id='Tabla_Evo_SECC'>
                                     <table id='Tabla_Evo' className='display table table-striped'>
                                     </table>
@@ -1081,7 +1633,33 @@ function Dashboard() {
 
                     <hr />
                     <div className='bg-warning bg-opacity-50 mb-3'>
-                        <h5>DESCRIPCION COLOCACION</h5>
+                        <h5>COMPORTAMIENTO</h5>
+                    </div>
+
+                    <div className='col-12' id=''>
+                        {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
+
+                        <div className='row'>
+                            <div className='col-8'>
+                                <div className='table-responsive' id='Tabla_COMPORTAMIENTO_SECC'>
+                                    <table id='Tabla_COMPORTAMIENTO' className='display table table-striped'>
+                                        <tfoot >
+                                            <tr>
+                                                <th className="fw-bold fs-5">TOTAL</th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                                <th className="fw-bold fs-5"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='col-12'>
+                            <div id="chart_COMPORTAMIENTO" style={{ height: 400 }}></div>
+                        </div>
                     </div>
 
                     <div className='col-12 '>

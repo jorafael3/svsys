@@ -39,12 +39,12 @@ function Por_Cliente() {
             FECHA_FIN: FECHA_FIN,
             RUC: ruc
         }
-        console.log('param: ', param);
-
-        console.log('param: ', param);
-        let url = "Mora/Cargar_Datos_Cliente"
+    
+        
+        let url = "mora/CARGAR_CLIENTES"
         ajax.AjaxSendReceiveData(url, param, function (x) {
             console.log('x: ', x);
+            
             Tabla_Clientes(x);
         })
     }
@@ -66,7 +66,7 @@ function Por_Cliente() {
             dom: 'frtip',
             "paging": true,
             "pageLength": 10,
-            // buttons: ['colvis',"excel"],
+            buttons: ['colvis',"excel"],
             scrollCollapse: true,
             scrollX: true,
             columnDefs: [
@@ -76,10 +76,10 @@ function Por_Cliente() {
                 // { width: 180, targets: 9 },
                 // { width: 200, targets: 10 },
             ],
-            // order: [[2, "asc"], [0, "desc"]],
-            // fixedColumns: {
-            //     left: 2
-            // },
+            order: [[2, "asc"], [0, "desc"]],
+            fixedColumns: {
+                left: 2
+            },
             columns: [{
                 data: "FechaCorte",
                 title: "FECHA CORTE",
@@ -244,16 +244,16 @@ function Por_Cliente() {
                 // },
             ],
             "createdRow": function (row, data, index) {
-                // $('td', row).eq(0).addClass("fw-bold fs-7 ");
-                // $('td', row).eq(1).addClass("fw-bold fs-7 ");
-                // $('td', row).eq(2).addClass("fw-bold fs-7 ");
-                // $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
-                // $('td', row).eq(4).addClass("fw-bold fs-7 ");
-                // $('td', row).eq(5).addClass("fw-bold fs-7 bg-info bg-opacity-10");
-                // for (let i = 5; i <= 40; i++) {
-                //     $('td', row).eq(i).addClass("fw-bold fs-7");
-                // }
-                // $('td', row).eq(7).addClass("bg-warning bg-opacity-10");
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-success bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-7 ");
+                $('td', row).eq(5).addClass("fw-bold fs-7 bg-info bg-opacity-10");
+                for (let i = 5; i <= 40; i++) {
+                    $('td', row).eq(i).addClass("fw-bold fs-7");
+                }
+                $('td', row).eq(7).addClass("bg-warning bg-opacity-10");
 
 
 
@@ -278,7 +278,7 @@ function Por_Cliente() {
                                 <label className="required fs-6 fw-semibold mb-2">Fecha Inicio</label>
                                 <input
                                     onChange={(item) => {
-                                        console.log('item: ', item.target.value);
+                                        
                                         setFECHA_INI(item.target.value)
                                     }}
                                     defaultValue={FECHA_INI}
@@ -288,7 +288,7 @@ function Por_Cliente() {
                                 <label className="required fs-6 fw-semibold mb-2">Fecha Fin</label>
                                 <input
                                     onChange={(item) => {
-                                        console.log('item: ', item.target.value);
+                                        
                                         setFECHA_FIN(item.target.value)
                                     }}
                                     defaultValue={FECHA_FIN}

@@ -18,7 +18,26 @@ function Mora() {
 
     return (
         <CRow>
+
+            <div className='card'>
+                <div className='card-body'>
+                    <ul className="nav nav-pills flex-column flex-sm-row">
+                        <li className="nav-item">
+                            <button className="flex-sm-fill text-sm-center nav-link fw-bold active" >Morosidad</button>
+                        </li>
+                        <li className="nav-item">
+                            <button className="flex-sm-fill text-sm-center nav-link fw-bold" >Historial</button>
+                        </li>
+                        <li className="nav-item">
+                            <button className="flex-sm-fill text-sm-center nav-link fw-bold" >Link</button>
+                        </li>
+                      
+                    </ul>
+                </div>
+            </div>
+
             <div className='col-lg-12 col-sm-6 mt-3'>
+
                 <div className="form-check form-switch">
                     <input className="form-check-input" type="radio" name='ra' role="switch"
                         id="check_guia" defaultChecked={DASHBOARD}
@@ -43,8 +62,6 @@ function Mora() {
             {PORCLIENTE && <Clientes />}
 
 
-
-         
         </CRow>
 
     )
