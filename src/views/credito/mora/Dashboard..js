@@ -884,184 +884,251 @@ function Dashboard() {
 
     //** CREDITOS CANCELADOS */
 
+    const [DATOS_CANCELADOS, setDATOS_CANCELADOS] = useState([]);
+
+
     function Cargar_Creditos_Cancelados() {
 
         let url = "mora/Cargar_Creditos_Cancelados"
         ajax.AjaxSendReceiveData(url, [], function (x) {
 
+            let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
+            console.log('datos: ', datos);
+            // TIPO_CANCELACION
+            setDATOS_CANCELADOS(datos);
 
-
-            $('#TABLA_CR_CANCELADOS').empty();
-            if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
-                $('#TABLA_CR_CANCELADOS').DataTable().destroy();
-                $('#SECC_TABLA_CR_CANCELADOS').empty();
-            }
-            let tabla = `
-                <table id='TABLA_CR_CANCELADOS' class='table display table-striped'>
-                </table>
-            `;
-            $('#SECC_TABLA_CR_CANCELADOS').append(tabla);
-            let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
-                destroy: true,
-                data: x,
-                dom: 'frtip',
-                paging: true,
-                pageLength: 5,
-                // info: false,
-                // buttons: ['colvis', "excel"],
-                scrollCollapse: true,
-                scrollX: true,
-                order: [[0, "desc"]],
-                columnDefs: [
-                    { width: 100, targets: 0 },
-                    { width: 300, targets: 2 },
-                ],
-                fixedColumns: {
-                    left: 3
-                },
-                columns: [{
-                    data: "FechaCorte",
-                    title: "FECHA CORTE",
-                    // width: 130
-                },
-                {
-                    "data": "Identificacion",
-                    "title": "IDENTIFICACION"
-                },
-                {
-                    "data": "Cliente",
-                    "title": "CLIENTE"
-                },
-                {
-                    "data": "NumeroCredito",
-                    "title": "NUMERO DE CREDITO",
-                    visible: false
-                },
-                {
-                    "data": "NumeroCreditoNuevo",
-                    "title": "NUMERO DE CREDITO NUEVO",
-                    visible: false
-                },
-                {
-                    "data": "Oficina",
-                    "title": "OFICINA"
-                },
-                {
-                    "data": "OrigenCredito",
-                    "title": "ORIGEN DEL CREDITO",
-                    visible: false
-                },
-                {
-                    "data": "EstadoCredito",
-                    "title": "ESTADO DEL CREDITO"
-                },
-                {
-                    "data": "MontoOriginal",
-                    "title": "MONTO ORIGINAL"
-                },
-                {
-                    "data": "PlazoOriginal",
-                    "title": "PLAZO ORIGINAL"
-                },
-                {
-                    "data": "FechaDesembolso",
-                    "title": "FECHA DESEMBOLSO"
-                },
-                {
-                    "data": "FechaCancelacion",
-                    "title": "FECHA CANCELACION"
-                },
-                {
-                    "data": "Atraso",
-                    "title": "ATRASO",
-                    visible: false
-
-                },
-                {
-                    "data": "TipoCancelacion",
-                    "title": "TIPO DE CANCELACION"
-                },
-                {
-                    "data": "DispositivoNotificacion",
-                    "title": "DISPOSITIVO DE NOTIFICACION"
-                },
-                {
-                    "data": "Celular_01",
-                    "title": "CELULAR 01"
-                },
-                {
-                    "data": "Celular_02",
-                    "title": "CELULAR 02"
-                },
-                {
-                    "data": "Celular_03",
-                    "title": "CELULAR 03"
-                },
-                {
-                    "data": "TelefonoNegocio_01",
-                    "title": "TELEFONO DE NEGOCIO 01"
-                },
-                {
-                    "data": "TelefonoNegocio_02",
-                    "title": "TELEFONO DE NEGOCIO 02"
-                },
-                {
-                    "data": "TelefonoNegocio_03",
-                    "title": "TELEFONO DE NEGOCIO 03"
-                },
-                {
-                    "data": "TelefonoDomicilio_01",
-                    "title": "TELEFONO DOMICILIO 01"
-                },
-                {
-                    "data": "TelefonoDomicilio_02",
-                    "title": "TELEFONO DOMICILIO 02"
-                },
-                {
-                    "data": "TelefonoDomicilio_03",
-                    "title": "TELEFONO DOMICILIO 03"
-                },
-                {
-                    "data": "TelefonoLaboral_01",
-                    "title": "TELEFONO LABORAL 01"
-                },
-                {
-                    "data": "TelefonoLaboral_02",
-                    "title": "TELEFONO LABORAL 02"
-                },
-                {
-                    "data": "TelefonoLaboral_03",
-                    "title": "TELEFONO LABORAL 03"
-                }
-                    // {
-                    //     data: "FACTURADO",
-                    //     title: "FACTURADO TOTAL",
-                    //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
-                    // },
-                ],
-                "createdRow": function (row, data, index) {
-                    $('td', row).eq(0).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(1).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(2).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(3).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(4).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
-                    $('td', row).eq(6).addClass("fw-bold fs-7 ");
-                    $('td', row).eq(7).addClass("fw-bold fs-7 ");
-                    for (let i = 6; i <= 40; i++) {
-                        $('td', row).eq(i).addClass("fw-bold fs-7");
-                    }
-
-                    if (data["EstadoCredito"] == "VIGENTE") {
-                        $('td', row).eq(4).addClass("text-primary");
-
-                    } else {
-                        $('td', row).eq(4).addClass("text-success");
-
-                    }
-                },
+            x.map(function (obj) {
+                let a = obj.TipoCancelacion
+                a = a.replace(" ", '-')
+                a = a.replace(", ", '-')
+                obj.TipoCancelacion = a
             })
+
+            let uniqueChoferIdsMap = new Map();
+            x.forEach(item => {
+                uniqueChoferIdsMap.set(item.TipoCancelacion, item);
+            });
+            // Obteniendo un array de objetos únicos
+            let uniqueObjects = Array.from(uniqueChoferIdsMap.values());
+            $("#TIPO_CANCELACION").empty()
+            $("#TIPO_CANCELACION").append("<option value='TODO'>TODO</option>")
+            uniqueObjects.map(function (x) {
+                if ((x.TipoCancelacion).trim() == "") {
+                    x.TipoCancelacion = "SIN-DEFINIR"
+                }
+                $("#TIPO_CANCELACION").append("<option value=" + x.TipoCancelacion + ">" + x.TipoCancelacion + "</option>")
+            })
+
+            Tabla_Creditos_Cancelados(datos)
         });
+    }
+
+    function Tabla_Creditos_Cancelados(datos) {
+
+        $('#TABLA_CR_CANCELADOS').empty();
+        if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
+            $('#TABLA_CR_CANCELADOS').DataTable().destroy();
+            $('#SECC_TABLA_CR_CANCELADOS').empty();
+        }
+        let tabla = `
+            <table id='TABLA_CR_CANCELADOS' class='table display table-striped'>
+            </table>
+        `;
+        $('#SECC_TABLA_CR_CANCELADOS').append(tabla);
+        let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'frtip',
+            paging: true,
+            pageLength: 5,
+            // info: false,
+            // buttons: ['colvis', "excel"],
+            scrollCollapse: true,
+            scrollX: true,
+            order: [[0, "desc"]],
+            columnDefs: [
+                { width: 100, targets: 0 },
+                { width: 300, targets: 1 },
+            ],
+            fixedColumns: {
+                left: 2
+            },
+            columns: [{
+                data: "FechaCorte",
+                title: "FECHA CORTE",
+                // width: 130
+            },
+            {
+                "data": "Identificacion",
+                "title": "IDENTIFICACION"
+            },
+            {
+                "data": "Cliente",
+                "title": "CLIENTE",
+                visible: false
+            },
+            {
+                "data": "NumeroCredito",
+                "title": "NUMERO DE CREDITO",
+                visible: false
+            },
+            {
+                "data": "NumeroCreditoNuevo",
+                "title": "NUMERO DE CREDITO NUEVO",
+                visible: false
+            },
+            {
+                "data": "Oficina",
+                "title": "OFICINA",
+                visible: false
+
+            },
+            {
+                "data": "OrigenCredito",
+                "title": "ORIGEN DEL CREDITO",
+                visible: false
+            },
+            {
+                "data": "EstadoCredito",
+                "title": "ESTADO DEL CREDITO"
+            },
+            {
+                "data": "TipoCancelacion",
+                "title": "TIPO DE CANCELACION"
+            },
+            {
+                "data": "MontoOriginal",
+                "title": "MONTO ORIGINAL"
+            },
+            {
+                "data": "CuotasRestantes",
+                "title": "CUOTAS RESTANTES"
+            },
+            {
+                "data": "PlazoOriginal",
+                "title": "PLAZO ORIGINAL"
+            },
+            {
+                "data": "FechaDesembolso",
+                "title": "FECHA DESEMBOLSO"
+            },
+            {
+                "data": "FechaCancelacion",
+                "title": "FECHA CANCELACION"
+            },
+            {
+                "data": "Atraso",
+                "title": "ATRASO",
+                visible: false
+
+            },
+
+            {
+                "data": "DispositivoNotificacion",
+                "title": "DISPOSITIVO DE NOTIFICACION"
+            },
+            {
+                "data": "Celular_01",
+                "title": "CELULAR 01"
+            },
+            {
+                "data": "Celular_02",
+                "title": "CELULAR 02"
+            },
+            {
+                "data": "Celular_03",
+                "title": "CELULAR 03"
+            },
+            {
+                "data": "TelefonoNegocio_01",
+                "title": "TELEFONO DE NEGOCIO 01"
+            },
+            {
+                "data": "TelefonoNegocio_02",
+                "title": "TELEFONO DE NEGOCIO 02"
+            },
+            {
+                "data": "TelefonoNegocio_03",
+                "title": "TELEFONO DE NEGOCIO 03"
+            },
+            {
+                "data": "TelefonoDomicilio_01",
+                "title": "TELEFONO DOMICILIO 01"
+            },
+            {
+                "data": "TelefonoDomicilio_02",
+                "title": "TELEFONO DOMICILIO 02"
+            },
+            {
+                "data": "TelefonoDomicilio_03",
+                "title": "TELEFONO DOMICILIO 03"
+            },
+            {
+                "data": "TelefonoLaboral_01",
+                "title": "TELEFONO LABORAL 01"
+            },
+            {
+                "data": "TelefonoLaboral_02",
+                "title": "TELEFONO LABORAL 02"
+            },
+            {
+                "data": "TelefonoLaboral_03",
+                "title": "TELEFONO LABORAL 03"
+            }
+                // {
+                //     data: "FACTURADO",
+                //     title: "FACTURADO TOTAL",
+                //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
+                // },
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 ");
+                $('td', row).eq(4).addClass("fw-bold fs-7 ");
+                $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-7 ");
+                $('td', row).eq(7).addClass("fw-bold fs-7 ");
+
+                for (let i = 6; i <= 40; i++) {
+                    $('td', row).eq(i).addClass("fw-bold fs-7");
+                }
+                if (data["EstadoCredito"] == "VIGENTE") {
+                    $('td', row).eq(2).addClass("text-primary");
+                } else {
+                    $('td', row).eq(2).addClass("text-success");
+                }
+
+
+                let c2 = `
+                <span class="text-muted">`+ data["Identificacion"] + `<span><br>
+                <span class="">`+ data["Cliente"] + `<span><br>
+                `
+                $('td', row).eq(1).html(c2);
+
+            },
+        })
+    }
+
+    function filtrar_Cancelados() {
+        let ESTADO = $("#TIPO_CANCELACION").val()
+        let datafiltrada = DATOS_CANCELADOS
+
+        if (ESTADO != "TODO") {
+            if (ESTADO == "SIN-DEFINIR") {
+                ESTADO = ""
+            }
+            datafiltrada = datafiltrada.filter(item => (item.TipoCancelacion).trim() == ESTADO)
+        }
+
+        Tabla_Creditos_Cancelados(datafiltrada)
+    }
+
+    function Pie_Cancelados(data) {
+
+        let unique = [...new Set(data.map(item => item.chofer_id))];
+
     }
 
     //** MOROSIDAD */
@@ -1461,7 +1528,7 @@ function Dashboard() {
     function COMPORTAMIENTO() {
         let url = "mora/COMPORTAMIENTO"
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+
             COMPORTAMIENTO_TABLA(x)
         })
     }
@@ -1557,12 +1624,17 @@ function Dashboard() {
                         <h5>CREDITOS CANCELADOS</h5>
                     </div>
                     <div className='col-12 mb-2'>
+                        <div className='col-4' >
+                            <h6>Tipo de Cancelacion</h6>
+                            <select onChange={filtrar_Cancelados} className='form-select' id="TIPO_CANCELACION">
+
+                            </select>
+                        </div>
                         {/* <button onClick={Cargar_Creditos_Cancelados} className='btn btn-success text-light fw-bold'>Cargar</button> */}
                         <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS'>
                             <table id='TABLA_CR_CANCELADOS' className='table display table-striped'>
 
                             </table>
-
                         </div>
                     </div>
 
