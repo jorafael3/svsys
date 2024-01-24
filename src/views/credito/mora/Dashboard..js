@@ -893,15 +893,18 @@ function Dashboard() {
         ajax.AjaxSendReceiveData(url, [], function (x) {
 
             let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
-            console.log('datos: ', datos);
+
             // TIPO_CANCELACION
             setDATOS_CANCELADOS(datos);
 
             x.map(function (obj) {
                 let a = obj.TipoCancelacion
-                a = a.replace(" ", '-')
-                a = a.replace(", ", '-')
+                if (a != null || a != "") {
+                    a = a.replace(" ", '-')
+                    a = a.replace(", ", '-')
+                }
                 obj.TipoCancelacion = a
+
             })
 
             let uniqueChoferIdsMap = new Map();
@@ -919,7 +922,9 @@ function Dashboard() {
                 $("#TIPO_CANCELACION").append("<option value=" + x.TipoCancelacion + ">" + x.TipoCancelacion + "</option>")
             })
 
-            Tabla_Creditos_Cancelados(datos)
+            Tabla_Creditos_Cancelados(datos);
+            Pie_Cancelados(datos);
+            line_cancelados(datos);
         });
     }
 
@@ -960,7 +965,7 @@ function Dashboard() {
             },
             {
                 "data": "Identificacion",
-                "title": "IDENTIFICACION"
+                "title": "CLIENTE"
             },
             {
                 "data": "Cliente",
@@ -1103,7 +1108,7 @@ function Dashboard() {
 
                 let c2 = `
                 <span class="text-muted">`+ data["Identificacion"] + `<span><br>
-                <span class="">`+ data["Cliente"] + `<span><br>
+                <span class="text-dark">`+ data["Cliente"] + `<span><br>
                 `
                 $('td', row).eq(1).html(c2);
 
@@ -1127,8 +1132,164 @@ function Dashboard() {
 
     function Pie_Cancelados(data) {
 
-        let unique = [...new Set(data.map(item => item.chofer_id))];
+        let unique = [...new Set(data.map(item => item.TipoCancelacion))];
+        console.log('unique: ', unique);
+        let ARRAY = []
+        unique.map(function (x) {
+            let fil = data.filter(item => item.TipoCancelacion == x)
+            if (x == "") x = "SIN-DEFINIR"
+            let b = {
+                ESTADO: x,
+                CANTIDAD: fil.length
+            }
+            ARRAY.push(b);
+        });
 
+
+
+
+        am4core.ready(function () {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+            var chart = am4core.create("CANCELADOS_PIE", am4charts.PieChart3D);
+            chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+
+            // chart.legend = new am4charts.Legend();
+            chart.legend = new am4charts.Legend();
+            chart.legend.position = "right";
+            chart.legend.scrollable = true;
+            chart.legend.maxHeight = 250;
+
+            chart.data = ARRAY
+
+            var series = chart.series.push(new am4charts.PieSeries3D());
+            series.dataFields.value = "CANTIDAD";
+            series.dataFields.category = "ESTADO";
+            series.ticks.template.disabled = true;
+            series.alignLabels = false;
+            series.labels.template.text = "{value.percent.formatNumber('#.0')}%";
+            series.labels.template.radius = am4core.percent(-40);
+            series.labels.template.fill = am4core.color("white");
+            series.colors.list = [
+                am4core.color("#845EC2"),
+                am4core.color("#D65DB1"),
+                am4core.color("#FF6F91"),
+                am4core.color("#FF9671"),
+                am4core.color("#FFC75F"),
+                am4core.color("#F9F871"),
+            ];
+        }); // end am4core.ready()
+
+    }
+
+    function line_cancelados(data) {
+        let ARRAY = [];
+        let unique = [...new Set(data.map(item => item.FechaCorte))];
+
+        unique.map(function (x) {
+            let can = data.filter(i => i.FechaCorte == x && i.EstadoCredito == "CANCELADO")
+            let vig = data.filter(i => i.FechaCorte == x && i.EstadoCredito == "VIGENTE")
+
+            let b = {
+                FECHA: x,
+                CANCELADOS: can.length,
+                VIGENTES: vig.length,
+            }
+            ARRAY.push(b)
+        });
+        console.log('ARRAY: ', ARRAY);
+
+        ARRAY.sort((a, b) => {
+            if (a.FECHA < b.FECHA) {
+                return -1;
+            }
+            if (a.FECHA > b.FECHA) {
+                return 1;
+            }
+
+            // names must be equal
+            return 0;
+        });
+
+        am4core.ready(function () {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+
+
+            // Create chart instance
+            var chart = am4core.create("CANCELADOS_LINE", am4charts.XYChart);
+
+            // Add data
+            chart.data = ARRAY;
+
+            // Create axes
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            dateAxis.renderer.grid.template.location = 0;
+            dateAxis.renderer.minGridDistance = 50;
+
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            // valueAxis.logarithmic = true;
+            valueAxis.renderer.minGridDistance = 20;
+
+            // Create series
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.name = "Cancelados"
+            series.dataFields.valueY = "CANCELADOS";
+            series.dataFields.dateX = "FECHA";
+            series.tensionX = 0.8;
+            series.strokeWidth = 2;
+            series.stroke = am4core.color("#4680ff");
+            series.tooltipText = `{CANCELADOS}`;
+            series.fill = am4core.color("#4680ff");
+
+
+            var series2 = chart.series.push(new am4charts.LineSeries());
+            series2.name = "1 cuota restante"
+            series2.dataFields.valueY = "VIGENTES";
+            series2.dataFields.dateX = "FECHA";
+            series2.tensionX = 0.8;
+            series2.strokeWidth = 2;
+            series2.stroke = am4core.color("#F39C12");
+            series2.tooltipText = `{VIGENTES}`;
+            series2.fill = am4core.color("#F39C12");
+
+            // var bullet = series.bullets.push(new am4charts.CircleBullet());
+            // bullet.circle.fill = am4core.color("#fff");
+            // bullet.circle.strokeWidth = 1;
+
+            // Add cursor
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.fullWidthLineX = true;
+            chart.cursor.xAxis = dateAxis;
+            chart.cursor.lineX.strokeWidth = 0;
+            chart.cursor.lineX.fill = am4core.color("#000");
+            chart.cursor.lineX.fillOpacity = 0.1;
+            chart.chartContainer.wheelable = true;
+            // Add scrollbar
+            chart.scrollbarX = new am4core.Scrollbar();
+
+            chart.legend = new am4charts.Legend();
+            chart.legend.parent = chart.plotContainer;
+            chart.legend.zIndex = 100;
+            // Add a guide
+            // let range = valueAxis.axisRanges.create();
+            // range.value = 90.4;
+            // range.grid.stroke = am4core.color("#396478");
+            // range.grid.strokeWidth = 1;
+            // range.grid.strokeOpacity = 1;
+            // range.grid.strokeDasharray = "3,3";
+            // range.label.inside = true;
+            // range.label.text = "Average";
+            // range.label.fill = range.grid.stroke;
+            // range.label.verticalCenter = "bottom";
+
+        }); // end am4core.ready()
     }
 
     //** MOROSIDAD */
@@ -1630,12 +1791,23 @@ function Dashboard() {
 
                             </select>
                         </div>
-                        {/* <button onClick={Cargar_Creditos_Cancelados} className='btn btn-success text-light fw-bold'>Cargar</button> */}
-                        <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS'>
-                            <table id='TABLA_CR_CANCELADOS' className='table display table-striped'>
+                        <div className='col-12'>
+                            <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS'>
+                                <table id='TABLA_CR_CANCELADOS' className='table display table-striped'>
 
-                            </table>
+                                </table>
+                            </div>
                         </div>
+                        <div className='row p-5'>
+                            <div className='col-6'>
+                                <div id='CANCELADOS_PIE' style={{ height: 300 }}></div>
+                            </div>
+                            <div className='col-6'>
+                                <div id='CANCELADOS_LINE' style={{ height: 300 }}></div>
+                            </div>
+                        </div>
+
+
                     </div>
 
                     <div className='bg-warning bg-opacity-50 mb-3'>
@@ -1646,7 +1818,7 @@ function Dashboard() {
                         {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
 
                         <div className='row'>
-                            <div className='col-8'>
+                            <div className='col-12'>
                                 <div className='table-responsive' id='Tabla_MOROSIDAD_SECC'>
                                     <table id='Tabla_MOROSIDAD' className='display table table-striped'>
                                         <tfoot >
@@ -1672,13 +1844,13 @@ function Dashboard() {
                         {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
 
                         <div className='row'>
-                            <div className='col-6'>
+                            <div className='col-7'>
                                 <div className='table-responsive' id='Tabla_MOROSIDAD_cartera_SECC'>
                                     <table id='Tabla_MOROSIDAD_cartera' className='display table table-striped'>
                                     </table>
                                 </div>
                             </div>
-                            <div className='col-6'>
+                            <div className='col-12'>
                                 <div id="chart_CARTERA" style={{ height: 400 }}></div>
                             </div>
                         </div>
