@@ -891,6 +891,7 @@ function Dashboard() {
 
         let url = "mora/Cargar_Creditos_Cancelados"
         ajax.AjaxSendReceiveData(url, [], function (x) {
+            console.log('x: ', x);
 
             let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
 
@@ -917,7 +918,7 @@ function Dashboard() {
             $("#TIPO_CANCELACION").append("<option value='TODO'>TODO</option>")
             uniqueObjects.map(function (x) {
                 if ((x.TipoCancelacion).trim() == "") {
-                    x.TipoCancelacion = "SIN-DEFINIR"
+                    x.TipoCancelacion = "1-CUOTA-RESTANTE"
                 }
                 $("#TIPO_CANCELACION").append("<option value=" + x.TipoCancelacion + ">" + x.TipoCancelacion + "</option>")
             })
@@ -1121,7 +1122,7 @@ function Dashboard() {
         let datafiltrada = DATOS_CANCELADOS
 
         if (ESTADO != "TODO") {
-            if (ESTADO == "SIN-DEFINIR") {
+            if (ESTADO == "1-CUOTA-RESTANTE") {
                 ESTADO = ""
             }
             datafiltrada = datafiltrada.filter(item => (item.TipoCancelacion).trim() == ESTADO)
