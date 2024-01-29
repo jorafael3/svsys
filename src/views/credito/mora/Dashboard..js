@@ -893,8 +893,6 @@ function Dashboard() {
         ajax.AjaxSendReceiveData(url, [], function (x) {
 
 
-
-
             x.map(function (obj) {
                 let a = (obj.TipoCancelacion).trim()
                 if (a != null || a != "") {
@@ -933,6 +931,7 @@ function Dashboard() {
             Pie_Cancelados(datos);
             line_cancelados(datos);
             Pie_Plazo(datos);
+            Tabla_Rango_Monto(datos)
         });
     }
 
@@ -1354,6 +1353,87 @@ function Dashboard() {
         }); // end am4core.ready()
     }
 
+    function Tabla_Rango_Monto(data) {
+
+        let unique = [...new Set(data.map(item => item.RANGO))];
+
+        let ARRAY = [];
+        unique.map(function (x) {
+            let fil = data.filter(i => i.RANGO == x);
+            let pos = 0
+            if (x == "500-1000") {
+                pos = 1;
+            }else if (x == "1000-1500") {
+                pos = 2;
+            }else if (x == "1500-2000") {
+                pos = 3;
+            }else if (x == "2000 >") {
+                pos = 4;
+            }
+            let b = {
+                RANGO: x,
+                CANTIDAD: fil.length,
+                POS: pos
+            }
+            ARRAY.push(b)
+        })
+
+        console.log('ARRAY: ', ARRAY);
+
+        $('#TABLA_CR_CANCELADOS_RANGO').empty();
+        if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS_RANGO')) {
+            $('#TABLA_CR_CANCELADOS_RANGO').DataTable().destroy();
+            $('#SECC_TABLA_CR_CANCELADOS_RANGO').empty();
+        }
+        let tabla = `
+            <table id='TABLA_CR_CANCELADOS_RANGO' class='table display table-striped'>
+            </table>
+        `;
+        $('#SECC_TABLA_CR_CANCELADOS_RANGO').append(tabla);
+        let TABLA_ = $('#TABLA_CR_CANCELADOS_RANGO').DataTable({
+            destroy: true,
+            data: ARRAY,
+            dom: 'rtip',
+            paging: false,
+            pageLength: 5,
+            info: false,
+            buttons: ["excel"],
+            order: [[2, "asc"]],
+            // scrollCollapse: true,
+            // scrollX: true,
+            // columnDefs: [
+            //     { width: 100, targets: 0 },
+            //     { width: 300, targets: 2 },
+            // ],
+            columns: [
+                {
+                    "data": "RANGO",
+                    "title": "MONTO ORIGINAL",
+                    className: "text-start"
+                },
+                {
+                    "data": "CANTIDAD",
+                    "title": "CANTIDAD",
+                    className: "text-center"
+                },
+                {
+                    "data": "POS",
+                    "title": "POS",
+                    className: "text-center",
+                    visible:false
+                }
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(4).addClass("fw-bold fs-7 bg-light");
+                $('td', row).eq(5).addClass("fw-bold fs-7 ");
+            },
+        })
+    }
+
     //** MOROSIDAD */
 
     function MOROSIDAD_POR_DIA() {
@@ -1586,7 +1666,7 @@ function Dashboard() {
     function CLIENTES_FONDO_GARANTIA() {
         let url = "mora/CLIENTES_FONDO_GARANTIA"
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
+
 
             TABLA_CLIENTES_FONDO_GARANTIA(x)
         })
@@ -2111,6 +2191,13 @@ function Dashboard() {
                             </div>
                             <div className='col-6'>
                                 <div id='CANCELADOS_LINE' style={{ height: 300 }}></div>
+                            </div>
+                            <div className='col-6'>
+                                <div className='table-responsive' id='SECC_TABLA_CR_CANCELADOS_RANGO'>
+                                    <table id='TABLA_CR_CANCELADOS_RANGO' className='table display table-striped'>
+
+                                    </table>
+                                </div>
                             </div>
                         </div>
 

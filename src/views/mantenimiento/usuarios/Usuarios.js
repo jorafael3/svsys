@@ -373,7 +373,7 @@ function Usuarios() {
                 
                 let url = 'usuarios/Nuevo_Usuario';
                 ajax.AjaxSendReceiveData(url, param, function (x) {
-                    
+                    console.log('x: ', x);
                     if (x[0] == 1) {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Usuarios();
@@ -381,7 +381,7 @@ function Usuarios() {
                     } else if (x[0] == -1) {
                         ajax.Mensaje(x[1].toString(), "Pruebe con otro nombre de usuario", "info");
                     } else {
-                        ajax.Mensaje(x[1].toString(), "intente en un momento", "success");
+                        ajax.Mensaje(x[1].toString(), "intente en un momento", "error");
                     }
                 });
             } else {
