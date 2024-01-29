@@ -891,22 +891,28 @@ function Dashboard() {
 
         let url = "mora/Cargar_Creditos_Cancelados"
         ajax.AjaxSendReceiveData(url, [], function (x) {
-            console.log('x: ', x);
 
-            let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
 
-            // TIPO_CANCELACION
-            setDATOS_CANCELADOS(datos);
+
 
             x.map(function (obj) {
-                let a = obj.TipoCancelacion
+                let a = (obj.TipoCancelacion).trim()
                 if (a != null || a != "") {
+                    if (a == "-1" || a == "") {
+                        a = "1-CUOTA-RESTANTE"
+                    }
+                    if (a == "PRECANCELACIÓN" || a == "PRECANCELACI�N") {
+                        a = "PRECANCELACION"
+                    }
                     a = a.replace(" ", '-')
                     a = a.replace(", ", '-')
                 }
                 obj.TipoCancelacion = a
 
             })
+
+            let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
+            setDATOS_CANCELADOS(datos);
 
             let uniqueChoferIdsMap = new Map();
             x.forEach(item => {
@@ -915,17 +921,18 @@ function Dashboard() {
             // Obteniendo un array de objetos únicos
             let uniqueObjects = Array.from(uniqueChoferIdsMap.values());
             $("#TIPO_CANCELACION").empty()
-            $("#TIPO_CANCELACION").append("<option value='TODO'>TODO</option>")
+            $("#TIPO_CANCELACION").append("<option class='fw-bold fs-5' value='TODO'>TODO</option>")
             uniqueObjects.map(function (x) {
-                if ((x.TipoCancelacion).trim() == "") {
-                    x.TipoCancelacion = "1-CUOTA-RESTANTE"
-                }
-                $("#TIPO_CANCELACION").append("<option value=" + x.TipoCancelacion + ">" + x.TipoCancelacion + "</option>")
+                // if ((x.TipoCancelacion).trim() == "") {
+                //     x.TipoCancelacion = "1-CUOTA-RESTANTE"
+                // }
+                $("#TIPO_CANCELACION").append("<option class='fw-bold fs-5' value=" + x.TipoCancelacion + ">" + x.TipoCancelacion + "</option>")
             })
 
             Tabla_Creditos_Cancelados(datos);
             Pie_Cancelados(datos);
             line_cancelados(datos);
+            Pie_Plazo(datos);
         });
     }
 
@@ -1122,23 +1129,26 @@ function Dashboard() {
         let datafiltrada = DATOS_CANCELADOS
 
         if (ESTADO != "TODO") {
-            if (ESTADO == "1-CUOTA-RESTANTE") {
-                ESTADO = ""
-            }
+            // if (ESTADO == "1-CUOTA-RESTANTE") {
+            //     ESTADO = ""
+            // }
             datafiltrada = datafiltrada.filter(item => (item.TipoCancelacion).trim() == ESTADO)
         }
 
         Tabla_Creditos_Cancelados(datafiltrada)
+        line_cancelados(datafiltrada);
+        Pie_Plazo(datafiltrada);
+
     }
 
     function Pie_Cancelados(data) {
 
         let unique = [...new Set(data.map(item => item.TipoCancelacion))];
-        console.log('unique: ', unique);
+
         let ARRAY = []
         unique.map(function (x) {
             let fil = data.filter(item => item.TipoCancelacion == x)
-            if (x == "") x = "SIN-DEFINIR"
+            if (x == "") x = "1-CUOTA-RESTANTE"
             let b = {
                 ESTADO: x,
                 CANTIDAD: fil.length
@@ -1186,7 +1196,69 @@ function Dashboard() {
 
     }
 
+    function Pie_Plazo(data) {
+
+
+        let unique = [...new Set(data.map(item => item.PlazoOriginal))];
+
+
+        let ARRAY = []
+        unique.map(function (x) {
+            let fil = data.filter(item => item.PlazoOriginal == x)
+            let b = {
+                ESTADO: x,
+                CANTIDAD: fil.length
+            }
+            ARRAY.push(b);
+        });
+
+        ARRAY.sort(function (a, b) {
+            if (parseInt(a.ESTADO) > parseInt(b.ESTADO)) {
+                return 1;
+            }
+            if (parseInt(a.ESTADO) < parseInt(b.ESTADO)) {
+                return -1;
+            }
+            return 0;
+        });
+
+
+        am4core.ready(function () {
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+            var chart = am4core.create("PLAZO_PIE", am4charts.PieChart3D);
+            chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+            // chart.legend = new am4charts.Legend();
+            chart.legend = new am4charts.Legend();
+            chart.legend.position = "right";
+            chart.legend.scrollable = true;
+            chart.legend.maxHeight = 250;
+            chart.legend.labels.template.text = "Plazo: [bold]{name}[/]({CANTIDAD})";
+            chart.data = ARRAY
+
+            var series = chart.series.push(new am4charts.PieSeries3D());
+            series.dataFields.value = "CANTIDAD";
+            series.dataFields.category = "ESTADO";
+            series.ticks.template.disabled = true;
+            series.alignLabels = false;
+            series.labels.template.text = "{value.percent.formatNumber('#.0')}%";
+            series.labels.template.radius = am4core.percent(-40);
+            series.labels.template.fill = am4core.color("white");
+            // series.colors.list = [
+            //     am4core.color("#845EC2"),
+            //     am4core.color("#D65DB1"),
+            //     am4core.color("#FF6F91"),
+            //     am4core.color("#FF9671"),
+            //     am4core.color("#FFC75F"),
+            //     am4core.color("#F9F871"),
+            // ];
+        }); // end am4core.ready()
+
+    }
+
     function line_cancelados(data) {
+
         let ARRAY = [];
         let unique = [...new Set(data.map(item => item.FechaCorte))];
 
@@ -1201,7 +1273,6 @@ function Dashboard() {
             }
             ARRAY.push(b)
         });
-        console.log('ARRAY: ', ARRAY);
 
         ARRAY.sort((a, b) => {
             if (a.FECHA < b.FECHA) {
@@ -1210,26 +1281,16 @@ function Dashboard() {
             if (a.FECHA > b.FECHA) {
                 return 1;
             }
-
-            // names must be equal
             return 0;
         });
 
         am4core.ready(function () {
 
-            // Themes begin
             am4core.useTheme(am4themes_animated);
-            // Themes end
-
-
-
-            // Create chart instance
             var chart = am4core.create("CANCELADOS_LINE", am4charts.XYChart);
 
-            // Add data
             chart.data = ARRAY;
 
-            // Create axes
             var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
             dateAxis.renderer.grid.template.location = 0;
             dateAxis.renderer.minGridDistance = 50;
@@ -1297,7 +1358,13 @@ function Dashboard() {
 
     function MOROSIDAD_POR_DIA() {
         let url = "mora/MOROSIDAD_POR_DIA"
-        ajax.AjaxSendReceiveData(url, [], function (x) {
+        let filtro = $("#EV_FILTRO").val()
+
+        let param = {
+            tipo: filtro
+        }
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+
 
 
             x.map(function (x) {
@@ -1493,13 +1560,13 @@ function Dashboard() {
                 var trend = chart.series.push(new am4charts.LineSeries());
                 trend.dataFields.valueY = "TOTAL_POR";
                 trend.dataFields.dateX = "FechaCorte";
-                trend.strokeWidth = 2
+                trend.strokeWidth = 1
                 trend.stroke = trend.fill = am4core.color("#c00");
                 trend.data = data;
 
                 var bullet = trend.bullets.push(new am4charts.CircleBullet());
                 // bullet.tooltipText = "{date}\n[bold font-size: 17px]value: {valueY}[/]";
-                bullet.strokeWidth = 2;
+                bullet.strokeWidth = 1;
                 bullet.stroke = am4core.color("#fff")
                 bullet.circle.fill = trend.stroke;
 
@@ -1514,18 +1581,226 @@ function Dashboard() {
         });
     }
 
+    //* FONDO DE GARANTIA */
+
+    function CLIENTES_FONDO_GARANTIA() {
+        let url = "mora/CLIENTES_FONDO_GARANTIA"
+        ajax.AjaxSendReceiveData(url, [], function (x) {
+            console.log('x: ', x);
+
+            TABLA_CLIENTES_FONDO_GARANTIA(x)
+        })
+    }
+
+    function TABLA_CLIENTES_FONDO_GARANTIA(datos) {
+        $('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA').empty();
+        if ($.fn.dataTable.isDataTable('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA')) {
+            $('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA').DataTable().destroy();
+            $('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA_SECC').empty();
+        }
+
+        let tabla = `
+            <table id='Tabla_MOROSIDAD_cartera_FONDO_GARANTIA' class='table display table-striped'>
+            </table>
+        `;
+        $('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA_SECC').append(tabla);
+        let TABLA_ = $('#Tabla_MOROSIDAD_cartera_FONDO_GARANTIA').DataTable({
+            destroy: true,
+            data: datos,
+            dom: 'frtip',
+            paging: true,
+            pageLength: 5,
+            // info: false,
+            // buttons: ['colvis', "excel"],
+            scrollCollapse: true,
+            scrollX: true,
+            order: [[0, "desc"]],
+            columnDefs: [
+                { width: 100, targets: 0 },
+                { width: 300, targets: 1 },
+            ],
+            fixedColumns: {
+                left: 2
+            },
+            columns: [{
+                data: "FechaCorte",
+                title: "FECHA CORTE",
+                // width: 130
+            },
+            {
+                "data": "Identificacion",
+                "title": "CLIENTE"
+            },
+            {
+                "data": "Cliente",
+                "title": "CLIENTE",
+                visible: false
+            },
+            {
+                "data": "TipoCartera",
+                "title": "NUMERO DE CREDITO",
+                visible: false
+            },
+            {
+                "data": "NumeroCredito",
+                "title": "NUMERO DE CREDITO",
+                // visible: false
+            },
+            {
+                "data": "NumeroCreditoNuevo",
+                "title": "NUMERO DE CREDITO NUEVO",
+                visible: false
+            },
+            {
+                "data": "Oficina",
+                "title": "OFICINA",
+                // visible: false
+
+            },
+            {
+                "data": "OrigenCredito",
+                "title": "ORIGEN DEL CREDITO",
+                // visible: false
+            },
+            {
+                "data": "EstadoCredito",
+                "title": "ESTADO DEL CREDITO"
+            },
+            {
+                "data": "TipoCancelacion",
+                "title": "TIPO DE CANCELACION",
+                visible: false
+            },
+            {
+                "data": "MontoOriginal",
+                "title": "MONTO ORIGINAL"
+            },
+            {
+                "data": "CuotasRestantes",
+                "title": "CUOTAS RESTANTES"
+            },
+            {
+                "data": "PlazoOriginal",
+                "title": "PLAZO ORIGINAL"
+            },
+            {
+                "data": "FechaDesembolso",
+                "title": "FECHA DESEMBOLSO"
+            },
+            {
+                "data": "FechaCancelacion",
+                "title": "FECHA CANCELACION"
+            },
+            {
+                "data": "Atraso",
+                "title": "ATRASO",
+                visible: false
+
+            },
+
+            {
+                "data": "DispositivoNotificacion",
+                "title": "DISPOSITIVO DE NOTIFICACION"
+            },
+            {
+                "data": "Celular_01",
+                "title": "CELULAR 01"
+            },
+            {
+                "data": "Celular_02",
+                "title": "CELULAR 02"
+            },
+            {
+                "data": "Celular_03",
+                "title": "CELULAR 03"
+            },
+            {
+                "data": "TelefonoNegocio_01",
+                "title": "TELEFONO DE NEGOCIO 01"
+            },
+            {
+                "data": "TelefonoNegocio_02",
+                "title": "TELEFONO DE NEGOCIO 02"
+            },
+            {
+                "data": "TelefonoNegocio_03",
+                "title": "TELEFONO DE NEGOCIO 03"
+            },
+            {
+                "data": "TelefonoDomicilio_01",
+                "title": "TELEFONO DOMICILIO 01"
+            },
+            {
+                "data": "TelefonoDomicilio_02",
+                "title": "TELEFONO DOMICILIO 02"
+            },
+            {
+                "data": "TelefonoDomicilio_03",
+                "title": "TELEFONO DOMICILIO 03"
+            },
+            {
+                "data": "TelefonoLaboral_01",
+                "title": "TELEFONO LABORAL 01"
+            },
+            {
+                "data": "TelefonoLaboral_02",
+                "title": "TELEFONO LABORAL 02"
+            },
+            {
+                "data": "TelefonoLaboral_03",
+                "title": "TELEFONO LABORAL 03"
+            }
+                // {
+                //     data: "FACTURADO",
+                //     title: "FACTURADO TOTAL",
+                //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
+                // },
+            ],
+            "createdRow": function (row, data, index) {
+                $('td', row).eq(0).addClass("fw-bold fs-7 ");
+                $('td', row).eq(1).addClass("fw-bold fs-7 ");
+                $('td', row).eq(2).addClass("fw-bold fs-7 ");
+                $('td', row).eq(3).addClass("fw-bold fs-7 ");
+                $('td', row).eq(4).addClass("fw-bold fs-7 ");
+                $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
+                $('td', row).eq(6).addClass("fw-bold fs-7 ");
+                $('td', row).eq(7).addClass("fw-bold fs-7 ");
+
+                for (let i = 6; i <= 40; i++) {
+                    $('td', row).eq(i).addClass("fw-bold fs-7");
+                }
+                // if (data["EstadoCredito"] == "VIGENTE") {
+                //     $('td', row).eq(2).addClass("text-primary");
+                // } else {
+                //     $('td', row).eq(2).addClass("text-success");
+                // }
+
+
+                let c2 = `
+                <span class="text-muted">`+ data["Identificacion"] + `<span><br>
+                <span class="text-dark">`+ data["Cliente"] + `<span><br>
+                `
+                $('td', row).eq(1).html(c2);
+
+            },
+        })
+    }
+
     function MOROSIDAD_CARTERA() {
         let url = "mora/MOROSIDAD_CARTERA"
-        ajax.AjaxSendReceiveData(url, [], function (x) {
-
+        let filtro = $("#MO_FILTRO").val()
+        let param = {
+            tipo: filtro
+        }
+        ajax.AjaxSendReceiveData(url, param, function (x) {
             x.map(function (x) {
                 x.TOTAL = parseInt(x.CARTERABANCO) + parseInt(x.FONDODEGARANTIA)
             })
             MOROSIDAD_CARTERA_TABLA(x)
-            MOROSIDAD_CARTERA_GRAFICO(x)
+            const primerYUltimoDato = [x[0], x[x.length - 1]];
+            MOROSIDAD_CARTERA_GRAFICO(x, primerYUltimoDato)
         })
     }
-
 
     function MOROSIDAD_CARTERA_TABLA(data) {
         $('#Tabla_MOROSIDAD_cartera').empty();
@@ -1595,7 +1870,7 @@ function Dashboard() {
         })
     }
 
-    function MOROSIDAD_CARTERA_GRAFICO(data) {
+    function MOROSIDAD_CARTERA_GRAFICO(data, primerYUltimoDato) {
         am4core.ready(function () {
 
             // Themes begin
@@ -1618,10 +1893,11 @@ function Dashboard() {
             // valueAxis.renderer.minGridDistance = 0;
             // Create series
             var series = chart.series.push(new am4charts.LineSeries());
+            series.name = "FONDO DE GARANTIA"
             series.dataFields.valueY = "FONDODEGARANTIA";
             series.dataFields.dateX = "FechaCorte";
             series.tooltipText = "{FONDODEGARANTIA}"
-            series.strokeWidth = 2;
+            series.strokeWidth = 3;
             series.minBulletDistance = 5;
 
             // Drop-shaped tooltips
@@ -1649,7 +1925,7 @@ function Dashboard() {
             // Make bullets grow on hover
             var bullet = series.bullets.push(new am4charts.CircleBullet());
             bullet.circle.strokeWidth = 2;
-            bullet.circle.radius = 2;
+            bullet.circle.radius = 3;
             bullet.circle.fill = am4core.color("#fff");
             let labelBullet = series.bullets.push(new am4charts.LabelBullet());
             // labelBullet.label.text = "{FONDODEGARANTIA}";
@@ -1679,20 +1955,46 @@ function Dashboard() {
 
             // dateAxis.start = 0.79;
             dateAxis.keepSelection = true;
+            chart.legend = new am4charts.Legend();
+            chart.legend.parent = chart.plotContainer;
+            chart.legend.zIndex = 100;
 
+            function createTrendLine(data) {
+                var trend = chart.series.push(new am4charts.LineSeries());
+                trend.dataFields.valueY = "FONDODEGARANTIA";
+                trend.dataFields.dateX = "FechaCorte";
+                trend.strokeWidth = 1
+                trend.stroke = trend.fill = am4core.color("#c00");
+                trend.data = data;
+
+                var bullet = trend.bullets.push(new am4charts.CircleBullet());
+                // bullet.tooltipText = "{date}\n[bold font-size: 17px]value: {valueY}[/]";
+                bullet.strokeWidth = 1;
+                bullet.stroke = am4core.color("#fff")
+                bullet.circle.fill = trend.stroke;
+
+                var hoverState = bullet.states.create("hover");
+                hoverState.properties.scale = 1.7;
+
+                return trend;
+            };
+
+            createTrendLine(primerYUltimoDato);
 
 
         });
     }
-
     //*** COMPORTAMIENTO */
 
     function COMPORTAMIENTO() {
         let url = "mora/COMPORTAMIENTO"
-        ajax.AjaxSendReceiveData(url, [], function (x) {
-
-            COMPORTAMIENTO_TABLA(x)
-        })
+        let filtro = $("#CO_FILTRO").val()
+        let param = {
+            tipo: filtro
+        }
+        ajax.AjaxSendReceiveData(url, param, function (x) {
+            COMPORTAMIENTO_TABLA(x);
+        });
     }
 
     function COMPORTAMIENTO_TABLA(data) {
@@ -1761,8 +2063,6 @@ function Dashboard() {
         })
     }
 
-
-
     useEffect(() => {
         // CARGAR_EVOLUCION_MOROSIDAD_TABLA();
         // CARGAR_EVOLUCION_MOROSIDAD_GRAFICO();
@@ -1772,6 +2072,7 @@ function Dashboard() {
         MOROSIDAD_POR_DIA();
         MOROSIDAD_CARTERA();
         COMPORTAMIENTO();
+        CLIENTES_FONDO_GARANTIA();
 
     }, []);
 
@@ -1801,7 +2102,12 @@ function Dashboard() {
                         </div>
                         <div className='row p-5'>
                             <div className='col-6'>
+                                <h5> TIPO DE CANCELACION</h5>
                                 <div id='CANCELADOS_PIE' style={{ height: 300 }}></div>
+                            </div>
+                            <div className='col-6'>
+                                <h5>PLAZO</h5>
+                                <div id='PLAZO_PIE' style={{ height: 300 }}></div>
                             </div>
                             <div className='col-6'>
                                 <div id='CANCELADOS_LINE' style={{ height: 300 }}></div>
@@ -1817,6 +2123,16 @@ function Dashboard() {
 
                     <div className='col-12' id=''>
                         {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
+
+                        <div className='col-2'>
+                            <h5>Vista</h5>
+                            <select onChange={MOROSIDAD_POR_DIA} name="" id="EV_FILTRO" className='form-select fs-4 p-2'>
+                                <option value="1">Dia</option>
+                                <option value="2">Mes</option>
+                                <option value="3">Año</option>
+                            </select>
+                        </div>
+
 
                         <div className='row'>
                             <div className='col-12'>
@@ -1841,10 +2157,29 @@ function Dashboard() {
                         </div>
                     </div>
 
-                    <div className='col-12' id=''>
-                        {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
+                    <div className='bg-warning bg-opacity-50 mb-3'>
+                        <h5>FONDO DE GARANTIA</h5>
+                    </div>
 
+                    <div className='col-12' id=''>
+
+                        <div className='col-12'>
+                            <h5>CLIENTES EN FONDO DE GARANTIA</h5>
+                            <div className='table-responsive' id='Tabla_MOROSIDAD_cartera_FONDO_GARANTIA_SECC'>
+                                <table id='Tabla_MOROSIDAD_cartera_FONDO_GARANTIA' className='display table table-striped'>
+                                </table>
+                            </div>
+                        </div>
+                        <div className='col-2'>
+                            <h5>Vista</h5>
+                            <select onChange={MOROSIDAD_CARTERA} name="" id="MO_FILTRO" className='form-select fs-4 p-2'>
+                                <option value="1">Dia</option>
+                                <option value="2">Mes</option>
+                                <option value="3">Año</option>
+                            </select>
+                        </div>
                         <div className='row'>
+
                             <div className='col-7'>
                                 <div className='table-responsive' id='Tabla_MOROSIDAD_cartera_SECC'>
                                     <table id='Tabla_MOROSIDAD_cartera' className='display table table-striped'>
@@ -1883,7 +2218,14 @@ function Dashboard() {
 
                     <div className='col-12' id=''>
                         {/* <button onClick={Cargar_Dasboard} className='btn btn-success text-light fw-bold'>Cargar</button> */}
-
+                        <div className='col-2'>
+                            <h5>Vista</h5>
+                            <select onChange={COMPORTAMIENTO} name="" id="CO_FILTRO" className='form-select fs-4 p-2'>
+                                <option value="1">Dia</option>
+                                <option value="2">Mes</option>
+                                <option value="3">Año</option>
+                            </select>
+                        </div>
                         <div className='row'>
                             <div className='col-8'>
                                 <div className='table-responsive' id='Tabla_COMPORTAMIENTO_SECC'>

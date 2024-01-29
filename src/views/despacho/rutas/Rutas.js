@@ -970,7 +970,7 @@ function Rutas() {
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">HOLCIM</span>
                                 </label>
-                                <input readOnly id='N_HOLCIM' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input id='N_HOLCIM' type="text" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -1096,7 +1096,7 @@ function Rutas() {
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span className="required">HOLCIM</span>
                                 </label>
-                                <input readOnly defaultValue={E_HOLCIM} id='N_HOLCIM_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
+                                <input defaultValue={E_HOLCIM} id='N_HOLCIM_E' type="number" className="form-control form-control-solid" placeholder="" name="target_title" />
                             </div>
                             <div className="col-md-6 fv-row fv-plugins-icon-container">
                                 <label className="d-flex align-items-center fs-6 fw-semibold mb-2">
