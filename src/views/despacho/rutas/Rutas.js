@@ -27,6 +27,7 @@ function Rutas() {
     const [visible_nc, setVisible_nc] = useState(false);
     const [visible_ne, setvisible_ne] = useState(false);
     const [visible_i, setVisible_i] = useState(false);
+    const [visible_nr, setVisible_nr] = useState(false);
     // const [RUTA_ID, setRUTA_ID] = useState("");
 
 
@@ -68,7 +69,8 @@ function Rutas() {
                     text: `<span class"fw-bold"><i class="bi bi-plus-circle-fill fs-4"></i></span>`,
                     className: 'btn btn-success',
                     action: function (e, dt, node, config) {
-                        Nueva_Ruta();
+                        // Nueva_Ruta();
+                        setVisible_nr(true);
                     },
                 },
             ],
@@ -129,7 +131,7 @@ function Rutas() {
             ID: data
         }
         RUTA_ID = (data);
-        
+
 
         let url = "rutas/Cargar_Rutas_dia";
         ajax.AjaxSendReceiveData(url, param, function (x) {
@@ -155,7 +157,7 @@ function Rutas() {
 
     function Tabla_Rutas_dia(datos) {
         console.log('datos: ', datos);
-        
+
 
 
         $('#Tabla_Rutas_dia_SECC').empty();
@@ -461,7 +463,7 @@ function Rutas() {
         }, 500);
         $('#Tabla_Rutas_dia').on('click', 'td.btn_detalles', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
             setVisible_i(true);
             setD_ID(data["ID"]);
             setD_ID_DT(data["RUTA_DETALLE_ID"]);
@@ -473,7 +475,7 @@ function Rutas() {
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_eliminar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
             if (data["despachado"] == 0) {
                 Eliminar_ruta_dia_detalle(data["RUTA_DET_ID"])
             } else {
@@ -483,7 +485,7 @@ function Rutas() {
 
         $('#Tabla_Rutas_dia').on('click', 'td.btn_Modificar', function (respuesta) {
             var data = TABLA_.row(this).data();
-            
+
 
 
             setvisible_ne(true);
@@ -512,7 +514,7 @@ function Rutas() {
             ID: D_ID,
             D_ID_DT: D_ID_DT,
         }
-        
+
 
         const host = window.location.hostname;
         const port = window.location.port;
@@ -520,7 +522,7 @@ function Rutas() {
 
         let url = "misrutas/Cargar_Documento"
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            
+
 
             if (x[0] == 1) {
                 let DATA = x[1];
@@ -611,9 +613,13 @@ function Rutas() {
 
     function Nueva_Ruta() {
         let url = "rutas/Nueva_Ruta";
+        let FECHA = $("#FECHA_NUEVA_RUTA").val();
         let param = {
-            CREADO_POR: sesion.GET_DATOS_SESION()["Usuario"]
+            CREADO_POR: sesion.GET_DATOS_SESION()["Usuario"],
+            FECHA_NUEVA_RUTA: moment(FECHA).format("YYYYMMDD")
         }
+        console.log('param: ', param);
+
         ajax.AjaxSendReceiveData(url, param, function (x) {
 
             if (x[0] == 1) {
@@ -723,7 +729,7 @@ function Rutas() {
                 if (x[0] == 1) {
                     ajax.Mensaje(x[1], "", "success");
                     Cargar_Rutas_dia(RUTA_ID);
-                    
+
                     setVisible_n(false);
                 } else {
                     ajax.Mensaje(x[1].toString(), "", "error")
@@ -750,7 +756,7 @@ function Rutas() {
             GUIA: E_GUIA,
 
         }
-        
+
 
 
 
@@ -775,7 +781,7 @@ function Rutas() {
     }
 
     function Eliminar_ruta_dia_detalle(ID) {
-        
+
         let param = {
             RUTA_DIA_ID: ID,
         }
@@ -790,14 +796,14 @@ function Rutas() {
         }).then((result) => {
             /* Read more about isConfirmed, isDenied below */
             if (result.isConfirmed) {
-                
+
                 let url = "rutas/Eliminar_Ruta_Dia_detalle"
                 ajax.AjaxSendReceiveData(url, param, function (x) {
 
                     if (x[0] == 1) {
                         ajax.Mensaje(x[1], "", "success");
                         Cargar_Rutas_dia(RUTA_ID);
-                        
+
                     } else {
                         ajax.Mensaje(x[1].toString(), "", "error")
                     }
@@ -1193,6 +1199,30 @@ function Rutas() {
                         Cerrar
                     </CButton>
                     {/* <CButton color="primary" onClick={Nueva_ruta_dia_detalle} >Guardar Cambios</CButton> */}
+                </CModalFooter>
+            </CModal>
+
+            <CModal size="sm" id='AD_MODAL_NUEVA_RUTA' backdrop="static" visible={visible_nr} onClose={() => setVisible_nr(false)}>
+                <CModalHeader>
+                    <CModalTitle>Nueva Ruta</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div id="kt_modal_new_target_form" className="form fv-plugins-bootstrap5 fv-plugins-framework" action="#">
+
+                        <div className='col-12 p-3'>
+                            <h5>Fecha de la ruta</h5>
+                            <input defaultValue={
+                                moment().format("YYYY-MM-DD")
+                            } id='FECHA_NUEVA_RUTA' type="date" className='form-control' />
+                        </div>
+
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setVisible_nr(false)}>
+                        Cerrar
+                    </CButton>
+                    <CButton color="primary" onClick={Nueva_Ruta} >Guardar</CButton>
                 </CModalFooter>
             </CModal>
         </CRow>

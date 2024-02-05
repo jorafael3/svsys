@@ -39,17 +39,15 @@ function Mis_rutas() {
     function Cargar_Mis_Rutas() {
         setUSUARIO(d["Usuario"])
         setPLACA(d["PLACA"])
-
-
         let param = {
-            USUARIO: d["Usuario_ID"]
+            USUARIO_ID: d["Usuario_ID"]
         }
+        console.log('param: ', param);
 
 
         let url = "misrutas/Cargar_Mis_Rutas"
         ajax.AjaxSendReceiveData(url, param, function (x) {
-
-
+            console.log('x: ', x);
             $('#Tabla_Rutas_SECC').empty();
             if ($.fn.dataTable.isDataTable('#Tabla_Rutas')) {
                 $('#Tabla_Rutas').DataTable().destroy();

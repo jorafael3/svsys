@@ -936,6 +936,7 @@ function Dashboard() {
     }
 
     function Tabla_Creditos_Cancelados(datos) {
+        console.log('datos: ', datos);
 
         $('#TABLA_CR_CANCELADOS').empty();
         if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
@@ -950,11 +951,11 @@ function Dashboard() {
         let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
             destroy: true,
             data: datos,
-            dom: 'frtip',
+            dom: 'Bfrtip',
             paging: true,
             pageLength: 5,
             // info: false,
-            // buttons: ['colvis', "excel"],
+            buttons: ["excel"],
             scrollCollapse: true,
             scrollX: true,
             order: [[0, "desc"]],
@@ -993,7 +994,6 @@ function Dashboard() {
                 "data": "Oficina",
                 "title": "OFICINA",
                 visible: false
-
             },
             {
                 "data": "OrigenCredito",
@@ -1001,12 +1001,34 @@ function Dashboard() {
                 visible: false
             },
             {
+                "data": "DispositivoNotificacion",
+                "title": "CELULAR"
+            },
+            {
+                "data": "CuotaImpaga",
+                "title": "CUOTA IMPAGA"
+            },
+            {
+                "data": "ValorCuota",
+                "title": "VALOR CUOTA"
+            },
+            {
+                "data": "AtrasoMaximo",
+                "title": "ATRASO MAX"
+            },
+            {
+                "data": "Atraso",
+                "title": "ATRASO",
+            },
+            {
                 "data": "EstadoCredito",
-                "title": "ESTADO DEL CREDITO"
+                "title": "ESTADO",
+                visible:false
             },
             {
                 "data": "TipoCancelacion",
-                "title": "TIPO DE CANCELACION"
+                "title": "TIPO DE CANCELACION",
+                visible:false
             },
             {
                 "data": "MontoOriginal",
@@ -1027,17 +1049,6 @@ function Dashboard() {
             {
                 "data": "FechaCancelacion",
                 "title": "FECHA CANCELACION"
-            },
-            {
-                "data": "Atraso",
-                "title": "ATRASO",
-                visible: false
-
-            },
-
-            {
-                "data": "DispositivoNotificacion",
-                "title": "DISPOSITIVO DE NOTIFICACION"
             },
             {
                 "data": "Celular_01",
@@ -1102,23 +1113,25 @@ function Dashboard() {
                 $('td', row).eq(5).addClass("fw-bold fs-7 bg-warning bg-opacity-10");
                 $('td', row).eq(6).addClass("fw-bold fs-7 ");
                 $('td', row).eq(7).addClass("fw-bold fs-7 ");
-
                 for (let i = 6; i <= 40; i++) {
                     $('td', row).eq(i).addClass("fw-bold fs-7");
                 }
-                if (data["EstadoCredito"] == "VIGENTE") {
-                    $('td', row).eq(2).addClass("text-primary");
-                } else {
-                    $('td', row).eq(2).addClass("text-success");
-                }
-
-
+                // if (data["EstadoCredito"] == "VIGENTE") {
+                //     $('td', row).eq(2).addClass("text-primary");
+                // } else {
+                //     $('td', row).eq(2).addClass("text-success");
+                // }
+                let c1 = `
+                <span class="text-dark">Num. Credito:<span><br>
+                <span class="text-dark">`+ data["NumeroCredito"] + `<span><br>
+                <span class="text-muted">`+ data["FechaCorte"] + `<span><br>
+                `
                 let c2 = `
                 <span class="text-muted">`+ data["Identificacion"] + `<span><br>
                 <span class="text-dark">`+ data["Cliente"] + `<span><br>
                 `
+                $('td', row).eq(0).html(c1);
                 $('td', row).eq(1).html(c2);
-
             },
         })
     }
@@ -1378,7 +1391,7 @@ function Dashboard() {
             ARRAY.push(b)
         })
 
-        console.log('ARRAY: ', ARRAY);
+        
 
         $('#TABLA_CR_CANCELADOS_RANGO').empty();
         if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS_RANGO')) {
