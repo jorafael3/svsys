@@ -41,6 +41,10 @@ function Dashboard() {
     const [DATOS_TOTALES, setDATOS_TOTALES] = useState([]);
     const [DATOS_TOTALES_CORTE, setDATOS_TOTALES_CORTE] = useState([]);
 
+    //! ***************************************************************************
+    //! ***************************************************************************
+    //! ***************************************************************************
+    //! ************ ANTIGUO *******************************************
 
 
     function Cargar_Dasboard() {
@@ -881,6 +885,10 @@ function Dashboard() {
 
     }
 
+    //! ***************************************************************************
+    //! ***************************************************************************
+    //! ***************************************************************************
+
 
     //** CREDITOS CANCELADOS */
 
@@ -1457,8 +1465,7 @@ function Dashboard() {
             tipo: filtro
         }
         ajax.AjaxSendReceiveData(url, param, function (x) {
-
-
+            console.log('x: ', x);
 
             x.map(function (x) {
                 let total = parseInt(x.CANCELADO) + parseInt(x.VENCIDO) + parseInt(x.VIGENTE)
@@ -2386,6 +2393,8 @@ function Dashboard() {
                             </div>
                         </div>
                     </div>
+
+                    
                 </CCardBody>
             </CCard>
         </CCol>
