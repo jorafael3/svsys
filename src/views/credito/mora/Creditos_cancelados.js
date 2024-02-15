@@ -71,14 +71,67 @@ function Creditos_Cancelados() {
                 } else {
                     obj.TipoCancelacion_filtro = a
                 }
+                //** PLANTILLA SMS */
+
+                obj.telefono = obj.DispositivoNotificacion
+                obj.cuota = obj.ValorCuota
+                obj.contrato = obj.NumeroCredito
+               
+
+                //** PREDICTIVA SMS */
+                obj.pr_nombre = obj.Cliente
+                obj.pr_apellido = ""
+                obj.pr_tipoid = "cc"
+                obj.pr_id = obj.Identificacion
+                obj.pr_edad = ""
+                obj.pr_sexo = ""
+                obj.pr_pais = ""
+                obj.pr_departamento = ""
+                obj.pr_ciudad = ""
+                obj.pr_zona = ""
+                obj.pr_direccion = ""
+                obj.pr_opt1 = obj.NumeroCredito
+                obj.pr_opt2 = obj.ValorCuota
+                obj.pr_opt4 = ""
+                obj.pr_opt5 = ""
+                obj.pr_opt6 = ""
+                obj.pr_opt7 = ""
+                obj.pr_opt8 = ""
+                obj.pr_opt9 = ""
+                obj.pr_opt10 = ""
+                obj.pr_opt11 = ""
+                obj.pr_opt12 = ""
+                obj.pr_tel1 = obj.DispositivoNotificacion
+                obj.pr_tel2 = obj.TelefonoDomicilio_01 == -1 ? "" : obj.TelefonoDomicilio_01
+                obj.pr_tel4 = obj.TelefonoDomicilio_02 == -1 ? "" : obj.TelefonoDomicilio_02
+                obj.pr_tel5 = obj.TelefonoDomicilio_03 == -1 ? "" : obj.TelefonoDomicilio_03
+                obj.pr_tel6 = obj.TelefonoLaboral_01 == -1 ? "" : obj.TelefonoLaboral_01
+                obj.pr_tel7 = obj.TelefonoLaboral_02 == -1 ? "" : obj.TelefonoLaboral_02
+                obj.pr_tel8 = obj.TelefonoLaboral_03 == -1 ? "" : obj.TelefonoLaboral_03
+                obj.pr_tel9 = obj.TelefonoNegocio_01 == -1 ? "" : obj.TelefonoNegocio_01
+                obj.pr_tel10 = obj.TelefonoNegocio_02 == -1 ? "" : obj.TelefonoNegocio_02
+                obj.pr_tel11 = obj.TelefonoNegocio_03 == -1 ? "" : obj.TelefonoNegocio_03
+                obj.pr_email = ""
+
+                //*** WHATP */
+
+                obj.w_nombre = obj.Cliente
+                obj.w_tel = obj.DispositivoNotificacion
+                obj.w_contrato = obj.NumeroCredito
+                obj.w_cuota = obj.ValorCuota
+                obj.w_variable3 = ""
+                obj.w_variable4 = ""
+                obj.w_variable5 = ""
+                obj.w_variable6 = ""
+                obj.w_variable7 = ""
+                obj.w_variable8 = ""
+                obj.w_variable9 = ""
+                obj.w_variable10 = ""
 
             })
 
-            //** PLANTILLA SMS */
             // x.map(function(obj){
-            //     obj.telefono = obj.DispositivoNotificacion
-            //     obj.cuota = obj.ValorCuota
-            //     obj.contrato = obj.NumeroCredito
+
             // })
 
 
@@ -96,7 +149,7 @@ function Creditos_Cancelados() {
             // let uniqueObjects = Array.from(uniqueChoferIdsMap.values());
 
             let unique = [...new Set(datos.map(item => item.TipoCancelacion_filtro))];
-            
+
 
             let ARRAY_TIPOS_CANCELACION = [];
             unique.map(function (x) {
@@ -113,7 +166,7 @@ function Creditos_Cancelados() {
                 ARRAY_TIPOS_CANCELACION.push(b)
             });
 
-            
+
 
 
             $("#TIPO_CANCELACION").empty()
@@ -161,7 +214,7 @@ function Creditos_Cancelados() {
                 extend: 'excelHtml5',
                 text: 'Export To Excel (DataSet1)',
                 action: function (e, dt, node, config) {
-                    var dataToExport = datos.map(function(row) {
+                    var dataToExport = datos.map(function (row) {
                         return {
                             Name: row.name,
                             Age: row.age,
@@ -188,7 +241,7 @@ function Creditos_Cancelados() {
                 //     $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, node, config, dataToExport);
 
                 // }
-            },"excel"],
+            }, "excel"],
             scrollCollapse: true,
             scrollX: true,
             order: [[0, "desc"]],
@@ -228,9 +281,35 @@ function Creditos_Cancelados() {
                 "title": "OFICINA",
                 visible: false
             },
+            
             {
                 "data": "OrigenCredito",
                 "title": "ORIGEN DEL CREDITO",
+                visible: false
+            },
+            {
+                "data": "EstadoCredito",
+                "title": "EstadoCredito",
+                visible: false
+            },
+            {
+                "data": "TipoCartera",
+                "title": "TipoCartera",
+                visible: false
+            },
+            {
+                "data": "TipoTablaAmortizacion",
+                "title": "TipoTablaAmortizacion",
+                visible: false
+            }, 
+            {
+                "data": "TipoGracia",
+                "title": "TipoGracia",
+                visible: false
+            },
+            {
+                "data": "PeriodosGracia",
+                "title": "PeriodosGracia",
                 visible: false
             },
             {
@@ -254,11 +333,6 @@ function Creditos_Cancelados() {
                 "title": "ATRASO",
             },
             {
-                "data": "EstadoCredito",
-                "title": "ESTADO",
-                visible: false
-            },
-            {
                 "data": "TipoCancelacion",
                 "title": "TIPO DE CANCELACION",
                 visible: false
@@ -268,20 +342,40 @@ function Creditos_Cancelados() {
                 "title": "MONTO ORIGINAL"
             },
             {
-                "data": "CuotasRestantes",
-                "title": "CUOTAS RESTANTES"
-            },
-            {
                 "data": "PlazoOriginal",
                 "title": "PLAZO ORIGINAL"
             },
             {
+                "data": "Saldo",
+                "title": "Saldo"
+            },
+            {
+                "data": "ValorAPagar",
+                "title": "ValorAPagar"
+            },
+            {
                 "data": "FechaDesembolso",
-                "title": "FECHA DESEMBOLSO"
+                "title": "FechaDesembolso"
+            },
+            {
+                "data": "FechaPrimerVencimiento",
+                "title": "FechaPrimerVencimiento"
+            },
+            {
+                "data": "FechaVencimiento",
+                "title": "FechaVencimiento"
             },
             {
                 "data": "FechaCancelacion",
-                "title": "FECHA CANCELACION"
+                "title": "FechaCancelacion"
+            },
+            {
+                "data": "CuotasRestantes",
+                "title": "CUOTAS RESTANTES"
+            },
+            {
+                "data": "CuotaImpaga",
+                "title": "CuotaImpaga"
             },
             {
                 "data": "Celular_01",
@@ -330,12 +424,12 @@ function Creditos_Cancelados() {
             {
                 "data": "TelefonoLaboral_03",
                 "title": "TELEFONO LABORAL 03"
+            },
+            {
+                "data": "telefono",
+                "title": "TELEFONO LABORAL 03"
             }
-                // {
-                //     data: "FACTURADO",
-                //     title: "FACTURADO TOTAL",
-                //     render: $.fn.dataTable.render.number(',', '.', 2, "$")
-                // },
+               
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-7 ");
