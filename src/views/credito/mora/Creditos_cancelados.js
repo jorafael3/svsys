@@ -28,6 +28,10 @@ var TIPO_CARTERA = 2;
 function Creditos_Cancelados() {
 
     const [DATOS_CANCELADOS, setDATOS_CANCELADOS] = useState([]);
+    const [DATOS_CANCELADOS_SMS, setDATOS_CANCELADOS_SMS] = useState([]);
+    const [DATOS_CANCELADOS_PREDICTIVA, setDATOS_CANCELADOS_PREDICTIVA] = useState([]);
+    const [DATOS_CANCELADOS_WHAT, setDATOS_CANCELADOS_WHAT] = useState([]);
+
     // const [TIPO_CARTERA, setTIPO_CARTERA] = useState(1);
 
 
@@ -69,6 +73,17 @@ function Creditos_Cancelados() {
                 }
 
             })
+
+            //** PLANTILLA SMS */
+            // x.map(function(obj){
+            //     obj.telefono = obj.DispositivoNotificacion
+            //     obj.cuota = obj.ValorCuota
+            //     obj.contrato = obj.NumeroCredito
+            // })
+
+
+
+
 
             let datos = x.filter(item => item.EstadoCredito == "CANCELADO" || (item.CuotasRestantes <= 1 && item.EstadoCredito == "VIGENTE"));
             setDATOS_CANCELADOS(datos);
@@ -142,7 +157,38 @@ function Creditos_Cancelados() {
             paging: true,
             pageLength: 5,
             // info: false,
-            buttons: ["excel"],
+            buttons: [{
+                extend: 'excelHtml5',
+                text: 'Export To Excel (DataSet1)',
+                action: function (e, dt, node, config) {
+                    var dataToExport = datos.map(function(row) {
+                        return {
+                            Name: row.name,
+                            Age: row.age,
+                            Country: row.country
+                        };
+                    });
+                    $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, node, config, dataToExport);
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                text: 'Export To Excel (DataSet2)',
+                exportOptions: {
+                    columns: [0, 1, 2] // Exportar solo las columnas 0, 1 y 2
+                }
+                // action: function (e, dt, node, config) {
+                //     var dataToExport = datos.map(function(row) {
+                //         return {
+                //             Name: row.Identificacion,
+                //             Age: row.NumeroCredito,
+                //         };
+                //     });
+                //     console.log('dataToExport: ', dataToExport);
+                //     $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, node, config, dataToExport);
+
+                // }
+            },"excel"],
             scrollCollapse: true,
             scrollX: true,
             order: [[0, "desc"]],
