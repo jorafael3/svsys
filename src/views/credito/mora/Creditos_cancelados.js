@@ -73,12 +73,11 @@ function Creditos_Cancelados() {
                 }
                 //** PLANTILLA SMS */
 
-                obj.telefono = obj.DispositivoNotificacion
+                obj.telefono = obj.DispositivoNotificacion == -1 ? "" : obj.DispositivoNotificacion
                 obj.cuota = obj.ValorCuota
-                obj.contrato = obj.NumeroCredito
-               
+                obj.contrato = obj.NumeroCredito == -1 ? "" : obj.NumeroCredito
 
-                //** PREDICTIVA SMS */
+                //** PREDICTIVA */
                 obj.pr_nombre = obj.Cliente
                 obj.pr_apellido = ""
                 obj.pr_tipoid = "cc"
@@ -90,7 +89,7 @@ function Creditos_Cancelados() {
                 obj.pr_ciudad = ""
                 obj.pr_zona = ""
                 obj.pr_direccion = ""
-                obj.pr_opt1 = obj.NumeroCredito
+                obj.pr_opt1 = obj.NumeroCredito == -1 ? "" : obj.NumeroCredito
                 obj.pr_opt2 = obj.ValorCuota
                 obj.pr_opt4 = ""
                 obj.pr_opt5 = ""
@@ -101,7 +100,7 @@ function Creditos_Cancelados() {
                 obj.pr_opt10 = ""
                 obj.pr_opt11 = ""
                 obj.pr_opt12 = ""
-                obj.pr_tel1 = obj.DispositivoNotificacion
+                obj.pr_tel1 = obj.DispositivoNotificacion == -1 ? "" : obj.DispositivoNotificacion
                 obj.pr_tel2 = obj.TelefonoDomicilio_01 == -1 ? "" : obj.TelefonoDomicilio_01
                 obj.pr_tel4 = obj.TelefonoDomicilio_02 == -1 ? "" : obj.TelefonoDomicilio_02
                 obj.pr_tel5 = obj.TelefonoDomicilio_03 == -1 ? "" : obj.TelefonoDomicilio_03
@@ -116,8 +115,8 @@ function Creditos_Cancelados() {
                 //*** WHATP */
 
                 obj.w_nombre = obj.Cliente
-                obj.w_tel = obj.DispositivoNotificacion
-                obj.w_contrato = obj.NumeroCredito
+                obj.w_tel = obj.DispositivoNotificacion == -1 ? "" : obj.DispositivoNotificacion
+                obj.w_contrato = obj.NumeroCredito == -1 ? "" : obj.NumeroCredito
                 obj.w_cuota = obj.ValorCuota
                 obj.w_variable3 = ""
                 obj.w_variable4 = ""
@@ -203,6 +202,12 @@ function Creditos_Cancelados() {
             </table>
         `;
         $('#SECC_TABLA_CR_CANCELADOS').append(tabla);
+
+        var allColumns = Array.from({ length: 41 }, (_, i) => i);
+        var sms = Array.from({ length: 3 }, (_, i) => i + 41);
+        var predic = Array.from({ length: 32 }, (_, i) => i + 44);
+        var what = Array.from({ length: 12 }, (_, i) => i + 76);
+
         let TABLA_ = $('#TABLA_CR_CANCELADOS').DataTable({
             destroy: true,
             data: datos,
@@ -212,23 +217,30 @@ function Creditos_Cancelados() {
             // info: false,
             buttons: [{
                 extend: 'excelHtml5',
-                text: 'Export To Excel (DataSet1)',
-                action: function (e, dt, node, config) {
-                    var dataToExport = datos.map(function (row) {
-                        return {
-                            Name: row.name,
-                            Age: row.age,
-                            Country: row.country
-                        };
-                    });
-                    $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, node, config, dataToExport);
+                text: 'EXCEL COMPLETO',
+                exportOptions: {
+                    columns: allColumns // Exportar solo las columnas 0, 1 y 2
                 }
             },
             {
                 extend: 'excelHtml5',
-                text: 'Export To Excel (DataSet2)',
+                text: 'SMS',
                 exportOptions: {
-                    columns: [0, 1, 2] // Exportar solo las columnas 0, 1 y 2
+                    columns: sms // Exportar solo las columnas 0, 1 y 2
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                text: 'PREDICTIVO',
+                exportOptions: {
+                    columns: predic // Exportar solo las columnas 0, 1 y 2
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                text: 'WHATSAPP',
+                exportOptions: {
+                    columns: what // Exportar solo las columnas 0, 1 y 2
                 }
                 // action: function (e, dt, node, config) {
                 //     var dataToExport = datos.map(function(row) {
@@ -241,7 +253,7 @@ function Creditos_Cancelados() {
                 //     $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, node, config, dataToExport);
 
                 // }
-            }, "excel"],
+            }],
             scrollCollapse: true,
             scrollX: true,
             order: [[0, "desc"]],
@@ -281,7 +293,7 @@ function Creditos_Cancelados() {
                 "title": "OFICINA",
                 visible: false
             },
-            
+
             {
                 "data": "OrigenCredito",
                 "title": "ORIGEN DEL CREDITO",
@@ -301,7 +313,7 @@ function Creditos_Cancelados() {
                 "data": "TipoTablaAmortizacion",
                 "title": "TipoTablaAmortizacion",
                 visible: false
-            }, 
+            },
             {
                 "data": "TipoGracia",
                 "title": "TipoGracia",
@@ -428,8 +440,63 @@ function Creditos_Cancelados() {
             {
                 "data": "telefono",
                 "title": "TELEFONO LABORAL 03"
-            }
-               
+            },
+
+            //** SMS */
+            { data: 'telefono', title: 'Teléfono' },
+            { data: 'cuota', title: 'Cuota' },
+            { data: 'contrato', title: 'Contrato' },
+
+            //* PREDICTIVA  */
+
+            { data: 'pr_nombre', title: 'Nombre' },
+            { data: 'pr_apellido', title: 'Apellido' },
+            { data: 'pr_tipoid', title: 'Tipo de ID' },
+            { data: 'pr_id', title: 'ID' },
+            { data: 'pr_edad', title: 'Edad' },
+            { data: 'pr_sexo', title: 'Sexo' },
+            { data: 'pr_pais', title: 'País' },
+            { data: 'pr_departamento', title: 'Departamento' },
+            { data: 'pr_ciudad', title: 'Ciudad' },
+            { data: 'pr_zona', title: 'Zona' },
+            { data: 'pr_direccion', title: 'Dirección' },
+            { data: 'pr_opt1', title: 'Opt1' },
+            { data: 'pr_opt2', title: 'Opt2' },
+            { data: 'pr_opt4', title: 'Opt4' },
+            { data: 'pr_opt5', title: 'Opt5' },
+            { data: 'pr_opt6', title: 'Opt6' },
+            { data: 'pr_opt7', title: 'Opt7' },
+            { data: 'pr_opt8', title: 'Opt8' },
+            { data: 'pr_opt9', title: 'Opt9' },
+            { data: 'pr_opt10', title: 'Opt10' },
+            { data: 'pr_opt11', title: 'Opt11' },
+            { data: 'pr_opt12', title: 'Opt12' },
+            { data: 'pr_tel1', title: 'Teléfono 1' },
+            { data: 'pr_tel2', title: 'Teléfono 2' },
+            { data: 'pr_tel4', title: 'Teléfono 4' },
+            { data: 'pr_tel5', title: 'Teléfono 5' },
+            { data: 'pr_tel6', title: 'Teléfono 6' },
+            { data: 'pr_tel7', title: 'Teléfono 7' },
+            { data: 'pr_tel8', title: 'Teléfono 8' },
+            { data: 'pr_tel9', title: 'Teléfono 9' },
+            { data: 'pr_tel10', title: 'Teléfono 10' },
+            { data: 'pr_tel11', title: 'Teléfono 11' },
+
+            //** WHATPS */
+
+            { data: 'w_nombre', title: 'Nombre' },
+            { data: 'w_tel', title: 'Teléfono' },
+            { data: 'w_contrato', title: 'Contrato' },
+            { data: 'w_cuota', title: 'Cuota' },
+            { data: 'w_variable3', title: 'Variable 3' },
+            { data: 'w_variable4', title: 'Variable 4' },
+            { data: 'w_variable5', title: 'Variable 5' },
+            { data: 'w_variable6', title: 'Variable 6' },
+            { data: 'w_variable7', title: 'Variable 7' },
+            { data: 'w_variable8', title: 'Variable 8' },
+            { data: 'w_variable9', title: 'Variable 9' },
+            { data: 'w_variable10', title: 'Variable 10' }
+
             ],
             "createdRow": function (row, data, index) {
                 $('td', row).eq(0).addClass("fw-bold fs-7 ");
