@@ -944,7 +944,7 @@ function Dashboard() {
     }
 
     function Tabla_Creditos_Cancelados(datos) {
-        console.log('datos: ', datos);
+        
 
         $('#TABLA_CR_CANCELADOS').empty();
         if ($.fn.dataTable.isDataTable('#TABLA_CR_CANCELADOS')) {
@@ -1465,7 +1465,7 @@ function Dashboard() {
             tipo: filtro
         }
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            console.log('x: ', x);
+            
 
             x.map(function (x) {
                 let total = parseInt(x.CANCELADO) + parseInt(x.VENCIDO) + parseInt(x.VIGENTE)

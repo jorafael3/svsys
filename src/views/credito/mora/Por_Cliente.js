@@ -43,7 +43,7 @@ function Por_Cliente() {
         
         let url = "mora/CARGAR_CLIENTES"
         ajax.AjaxSendReceiveData(url, param, function (x) {
-            console.log('x: ', x);
+            
             
             Tabla_Clientes(x);
         })

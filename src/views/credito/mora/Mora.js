@@ -11,6 +11,7 @@ import Dashboard from "../mora/Dashboard."
 import Creditos_Cancelados from "../mora/Creditos_cancelados"
 import Morosidad from "../mora/Morosidad"
 import Fondo_Garantia from "../mora/Fondo_garantia"
+import Prueba_archivo from "../mora/Prueba"
 
 
 function Mora() {
@@ -29,6 +30,7 @@ function Mora() {
         $("#BTN_CC").addClass("active");
 
     }
+
     function Historial() {
         $("#SECC_HC").show(100);
         $("#SECC_CC").hide();
@@ -60,6 +62,19 @@ function Mora() {
 
     }
 
+    function Prueba() {
+        $("#SECC_PR").show(100);
+
+        $("#SECC_FG").hide();
+        $("#SECC_CC").hide();
+        $("#SECC_M").hide();
+        $("#SECC_HC").hide();
+
+        $(".nav-link").removeClass("active");
+        $("#BTN_PR").addClass("active");
+
+    }
+
     return (
         <CRow>
 
@@ -77,6 +92,9 @@ function Mora() {
                         </li>
                         <li className="nav-item">
                             <button id='BTN_HC' onClick={Historial} className="flex-sm-fill text-sm-center nav-link fw-bold" >HISTORIAL CC</button>
+                        </li>
+                        <li className="nav-item">
+                            <button id='BTN_PR' onClick={Prueba} className="flex-sm-fill text-sm-center nav-link fw-bold" >PRUEBA</button>
                         </li>
                     </ul>
                 </div>
@@ -118,6 +136,10 @@ function Mora() {
             <div id='SECC_HC' style={{ display: "none" }} className='mt-2'>
                 {/* {PORCLIENTE && <Clientes />} */}
                 <Clientes />
+            </div>
+            <div id='SECC_PR' style={{ display: "none" }} className='mt-2'>
+                {/* {PORCLIENTE && <Clientes />} */}
+                <Prueba_archivo />
             </div>
 
         </CRow>
